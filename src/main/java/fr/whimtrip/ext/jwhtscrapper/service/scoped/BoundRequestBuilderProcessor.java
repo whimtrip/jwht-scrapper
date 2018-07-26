@@ -6,13 +6,12 @@
  * This code is licensed to WhimTrip©. For any question, please contact the author of the file.
  */
 
-package fr.whimtrip.ext.jwhtscrapper.service;
+package fr.whimtrip.ext.jwhtscrapper.service.scoped;
 
 import fr.whimtrip.core.util.WhimtripUtils;
-import fr.whimtrip.ext.jwhtscrapper.intfr.ExceptionLogger;
+import fr.whimtrip.core.util.intrf.ExceptionLogger;
 import fr.whimtrip.ext.jwhtscrapper.intfr.Proxy;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ProxyFinder;
-import fr.whimtrip.ext.jwhtscrapper.service.scoped.ProxyManagerClient;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.cookie.Cookie;

@@ -2,11 +2,13 @@ package fr.whimtrip.ext.jwhtscrapper.service.scoped;
 
 import fr.whimtrip.core.util.WhimtripUtils;
 import fr.whimtrip.ext.jwhthtmltopojo.HtmlToPojoEngine;
-import fr.whimtrip.ext.jwhthtmltopojo.adapter.HtmlAdapter;
-import fr.whimtrip.ext.jwhthtmltopojo.adapter.HtmlField;
+import fr.whimtrip.ext.jwhthtmltopojo.HtmlToPojoUtils;
+import fr.whimtrip.ext.jwhthtmltopojo.adapter.DefaultHtmlAdapterImpl;
+import fr.whimtrip.ext.jwhthtmltopojo.adapter.HtmlToPojoAnnotationMap;
 import fr.whimtrip.ext.jwhthtmltopojo.annotation.Selector;
 import fr.whimtrip.ext.jwhthtmltopojo.exception.FieldShouldNotBeSetException;
 import fr.whimtrip.ext.jwhthtmltopojo.exception.ParseException;
+import fr.whimtrip.ext.jwhthtmltopojo.intrf.HtmlField;
 import fr.whimtrip.ext.jwhtscrapper.annotation.Link;
 import fr.whimtrip.ext.jwhtscrapper.annotation.LinkObject;
 import fr.whimtrip.ext.jwhtscrapper.annotation.LinkObjects;
@@ -21,19 +23,15 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static fr.whimtrip.ext.jwhthtmltopojo.adapter.HtmlField.castValue;
+public class ScrapperHtmlAdapter<T> extends DefaultHtmlAdapterImpl<T> {
 
-public class ScrapperHtmlAdapter<T> extends HtmlAdapter<T> {
-
-
-    private HtmlField<T> htmlField;
 
     public ScrapperHtmlAdapter(HtmlToPojoEngine htmlToPojoEngine, Class<T> clazz) {
         super(htmlToPojoEngine, clazz);
     }
 
     @Override
-    protected T loadFromNode(Element node, T newInstance) {
+    public T loadFromNode(Element node, T newInstance) {
 
         for (HtmlField<T> htmlField : htmlFieldCache.values()) {
 
@@ -48,7 +46,7 @@ public class ScrapperHtmlAdapter<T> extends HtmlAdapter<T> {
 
             if(shouldFieldBeSet)
             {
-                checkWarningSign(htmlField.getField(), newInstance, fieldValue);
+                checkWarningSign(htmlField.getField(), fieldValue);
 
                 htmlField.setFieldOrThrow(newInstance, fieldValue);
             }
@@ -80,7 +78,7 @@ public class ScrapperHtmlAdapter<T> extends HtmlAdapter<T> {
     }
 
 
-    static void checkWarningSign(Field field, Object newInstance, Object value) throws WarningSignException {
+    private void checkWarningSign(Field field, Object value) throws WarningSignException {
         if(field.getAnnotation(WarningSign.class) != null)
         {
             if( isWarningSignTriggered(field, value))
@@ -88,9 +86,11 @@ public class ScrapperHtmlAdapter<T> extends HtmlAdapter<T> {
         }
     }
 
-    private static boolean isWarningSignTriggered(Field field, Object value) {
+    private boolean isWarningSignTriggered(Field field, Object value) {
         boolean retry = false;
+
         WarningSign warningSign = field.getAnnotation(WarningSign.class);
+
         if(        warningSign.triggeredOn() != WarningSign.TriggeredOn.ANY_VALUE_MATCHING_REGEX
                 && warningSign.triggeredOn() != WarningSign.TriggeredOn.ANY_VALUE_NOT_MATCHING_REGEX)
         {
@@ -98,7 +98,13 @@ public class ScrapperHtmlAdapter<T> extends HtmlAdapter<T> {
             Selector selector = field.getAnnotation(Selector.class);
             Object castedDefaultValue = null;
             try {
-                castedDefaultValue = castValue(selector.defValue(), value.getClass(), "");
+                castedDefaultValue = HtmlToPojoUtils.castValue(
+                        selector.defValue(),
+                        value.getClass(),
+                        "",
+                        selector.locale().equals(Selector.NO_VALUE) ?
+                                Locale.getDefault() : Locale.forLanguageTag(selector.locale())
+                );
             }catch(IllegalArgumentException e)
             {
                 throw new ParseException(selector.defValue(), Locale.getDefault(), field);
@@ -124,7 +130,10 @@ public class ScrapperHtmlAdapter<T> extends HtmlAdapter<T> {
             {
                 retry = true;
             }
-        }else if(value instanceof String){
+        }
+
+        else if(value instanceof String)
+        {
             Pattern pattern = Pattern.compile(warningSign.triggeredOnRegex());
             Matcher m = pattern.matcher((String)value);
             boolean match = m.find();

@@ -36,14 +36,12 @@ public @interface WarningSign {
     }
 
     /**
-     * Defines in which case the request should be done once again
-     * @return
+     * @return Defines in which case the request should be done once again
      */
     TriggeredOn triggeredOn();
 
     /**
-     * The regex value that will be used to runDuringTests for the retry on annotation
-     * @return
+     * @return The regex value that will be used to runDuringTests for the retry on annotation
      */
     String triggeredOnRegex() default "";
 

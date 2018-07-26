@@ -9,7 +9,8 @@
 package fr.whimtrip.ext.jwhtscrapper.service.scoped;
 
 import fr.whimtrip.core.util.WhimtripUtils;
-import fr.whimtrip.ext.jwhtscrapper.intfr.ExceptionLogger;
+import fr.whimtrip.core.util.intrf.ExceptionLogger;
+import fr.whimtrip.ext.jwhtscrapper.exception.ScrapperException;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrapperHelper;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -30,13 +31,13 @@ import java.util.concurrent.FutureTask;
  * @param <P> Parent Class
  * @param <M> Model on which HTML will be mapped
  */
-public class AutomaticFieldScrapperClient<P, M> {
+public class AutomaticInnerScrapperClient<P, M> {
 
-    private static final Logger log = LoggerFactory.getLogger(AutomaticFieldScrapperClient.class);
+    private static final Logger log = LoggerFactory.getLogger(AutomaticInnerScrapperClient.class);
     private static final long SLEEP_TIME_BETWEEN_GATHERING_OF_RESULTS = 1000;
     private static final int LENGTH_OF_THE_PERCENTAGE_BAR = 100;
     private static final int WIDTH_OF_THE_PERCENTAGE_BAR = 2;
-    private final ScrappingContext<?, P, M, ? extends ScrapperHelper<P, M>> context;
+    private final ScrappingContext<P, M, ? extends ScrapperHelper<P, M>> context;
 
     private final HtmlAutoScrapper<M> htmlAutoScrapper;
 
@@ -44,11 +45,20 @@ public class AutomaticFieldScrapperClient<P, M> {
 
     private final List<FutureTask<Object>> runningTasks = new ArrayList<>();
 
+    private final List<P> pList = new ArrayList<>();
+
+
     private int finishedTasks = 0;
+    private int startedScrapsCount = 0;
+    private int validFinishedTasks = 0;
+    private int failedFinishedTasks = 0;
+    private boolean scrapStarted = false;
+    private boolean stopped = false;
+    private RequestScrappingContext requestScrappingContext;
 
 
-    public AutomaticFieldScrapperClient(
-            ScrappingContext<?, P, M, ? extends ScrapperHelper<P, M>> context,
+    public AutomaticInnerScrapperClient(
+            ScrappingContext<P, M, ? extends ScrapperHelper<P, M>> context,
             HtmlAutoScrapper<M> htmlAutoScrapper,
             ExceptionLogger exceptionLoggerService
     )
@@ -58,27 +68,37 @@ public class AutomaticFieldScrapperClient<P, M> {
         this.exceptionLoggerService = exceptionLoggerService;
     }
 
-    public List<Object> scrap() throws InterruptedException, ExecutionException
+    public synchronized List<Object> scrap() throws InterruptedException, ExecutionException, ScrapperException
     {
+        if(scrapStarted)
+            throw new ScrapperException("Scrap Cannot be started twice");
+
+        scrapStarted = true;
         List results = new ArrayList<>();
-        RequestScrappingContext requestScrappingContext = context.requestScrappingContext;
-        List<P> plist = getParentAsList(context.getContainerObject());
+        requestScrappingContext = context.requestScrappingContext;
 
-        int numberOfScraps = 0;
+        synchronized (pList) {
+            pList.addAll(context.getParentObjects());
+        }
 
-        Iterator<P> iterator = plist.iterator();
+        startedScrapsCount = 0;
+
+        Iterator<P> iterator = pList.iterator();
         List<P> pSublist = new ArrayList<>();
 
         do {
             pSublist.clear();
-            pSublist.addAll(newPSublist(numberOfScraps, requestScrappingContext, plist, iterator));
-            iterator = plist.iterator();
-            startThreads(numberOfScraps, pSublist);
+            pSublist.addAll(newPSublist(startedScrapsCount, iterator));
+            iterator = pList.iterator();
+            startThreads(startedScrapsCount, pSublist);
 
-            numberOfScraps += pSublist.size();
+            startedScrapsCount += pSublist.size();
 
             ScrappingResult scrappingResult = emptyFinishedThreads(results, requestScrappingContext);
             log.info("nonScrappedThreads= {}, valids = {}.", scrappingResult.failed, scrappingResult.valid);
+
+            validFinishedTasks += scrappingResult.valid;
+            failedFinishedTasks += scrappingResult.valid;
 
             int delay = context.getRequestScrappingContext().getRequestsConfig().periodicDelay();
 
@@ -86,7 +106,7 @@ public class AutomaticFieldScrapperClient<P, M> {
                 WhimtripUtils.waitForWithOutputToConsole((long)delay, 20);
             }
 
-        } while(numberOfScraps < requestScrappingContext.getScrapLimit() && iterator.hasNext());
+        } while(startedScrapsCount < requestScrappingContext.getScrapLimit() && iterator.hasNext() && !stopped);
 
         while(!runningTasks.isEmpty())
         {
@@ -115,7 +135,7 @@ public class AutomaticFieldScrapperClient<P, M> {
                         * LENGTH_OF_THE_PERCENTAGE_BAR + 0.5);
 
 
-        StringBuilder outBuilder = new StringBuilder();
+        StringBuilder outBuilder = new StringBuilder().append("\n");
 
         for (int j = 0; j < WIDTH_OF_THE_PERCENTAGE_BAR; j++) {
             outBuilder.append("||");
@@ -128,7 +148,7 @@ public class AutomaticFieldScrapperClient<P, M> {
             outBuilder.append("||\n");
         }
 
-        System.out.println(outBuilder.toString());
+        log.trace(outBuilder.toString());
 
         return scrappingResult;
 
@@ -152,34 +172,40 @@ public class AutomaticFieldScrapperClient<P, M> {
 
 
 
-    private List<P> newPSublist(int numberOfScraps,
-                                RequestScrappingContext requestScrappingContext,
-                                List<P> pList,
-                                Iterator<P> iterator)
-    {
+    private synchronized List<P> newPSublist(
+            int numberOfScraps,
+            Iterator<P> iterator
+    ){
         List<P> pSublist = new ArrayList<>();
         int runningThreads = runningTasks.size();
         log.info("There are actually " + runningThreads + " running threads");
-        List<P> copiedPList = new ArrayList<>();
-        copiedPList.addAll(pList);
+        List<P> copiedPList;
 
-        while (numberOfScraps < requestScrappingContext.getScrapLimit()
-                && runningThreads < requestScrappingContext.getParrallelThreads()
-                && iterator.hasNext())
-        {
-            P p = iterator.next();
-            pSublist.add(p);
-            copiedPList.remove(p);
-            numberOfScraps ++;
-            runningThreads ++;
+        synchronized (pList) {
+            copiedPList = new ArrayList<>(pList);
+
+            while (
+                    numberOfScraps < requestScrappingContext.getScrapLimit()
+                 && runningThreads < requestScrappingContext.getParrallelThreads()
+                 && iterator.hasNext()
+            ){
+                P p = iterator.next();
+                pSublist.add(p);
+                copiedPList.remove(p);
+                numberOfScraps++;
+                runningThreads++;
+            }
+
+            pList.clear();
+            pList.addAll(copiedPList);
+
         }
-        pList.clear();
-        pList.addAll(copiedPList);
+
         return pSublist;
     }
 
 
-    private ScrappingResult removeFinishedThreads(List results, RequestScrappingContext requestScrappingContext)
+    private ScrappingResult removeFinishedThreads(List<Object> results, RequestScrappingContext requestScrappingContext)
             throws ExecutionException, InterruptedException
     {
         List<FutureTask> copiedTasks = new ArrayList<>();
@@ -241,6 +267,9 @@ public class AutomaticFieldScrapperClient<P, M> {
         {
             if(quantity > numberOfThreadsStarted)
             {
+                if(stopped)
+                    break;
+
                 FutureTask<Object> ft = new ScrapperFutureTask<>(
                         new ScrapperThreadCallable(p, context, htmlAutoScrapper)
                 );
@@ -267,21 +296,42 @@ public class AutomaticFieldScrapperClient<P, M> {
         return runningTasks;
     }
 
-    public ScrappingContext<?, P, M, ? extends ScrapperHelper<P, M>> getContext() {
+    public ScrappingContext<P, M, ? extends ScrapperHelper<P, M>> getContext() {
         return context;
     }
 
-    private static class ScrappingResult{
+    private static class ScrappingResult {
         int valid = 0;
         int failed = 0;
     }
 
     public void stopRunningTasks() {
+        stopped = true;
         for (FutureTask ft : runningTasks) {
             ft.cancel(true);
         }
     }
 
+
+    public ScrappingStats getScrapingStats() {
+        if(!scrapStarted)
+            return new ScrappingStats(0,0,0,0, 0);
+
+        int runningTasks = startedScrapsCount - finishedTasks;
+
+        return new ScrappingStats(
+                finishedTasks, runningTasks,
+                validFinishedTasks,
+                failedFinishedTasks,
+                pList.size() + runningTasks
+        );
+    }
+
+    public void addPElements(List<P> newPList){
+        synchronized (pList) {
+            pList.addAll(newPList);
+        }
+    }
 
     public static class ScrapperFutureTask<P, M> extends FutureTask<Object>
     {

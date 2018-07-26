@@ -50,4 +50,8 @@ public @interface RequestsConfig {
     LinkField[] defaultPostFields() default {};
 
     boolean followRedirections() default true;
+
+    boolean rotatingUserAgent() default true;
+
+    boolean allowInfiniteRedirections() default false;
 }

@@ -8,12 +8,11 @@
 
 package fr.whimtrip.ext.jwhtscrapper.service.scoped;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.whimtrip.core.util.intrf.ExceptionLogger;
 import fr.whimtrip.ext.jwhtscrapper.annotation.ProxyConfig;
 import fr.whimtrip.ext.jwhtscrapper.annotation.RequestsConfig;
-import fr.whimtrip.ext.jwhtscrapper.intfr.ExceptionLogger;
+import fr.whimtrip.ext.jwhtscrapper.intfr.BasicObjectMapper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ProxyFinder;
-import fr.whimtrip.ext.jwhtscrapper.service.BoundRequestBuilderProcessor;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.cookie.Cookie;
@@ -29,8 +28,10 @@ public class ProxyManagerClientBuilder{
     private int timeout = RequestsConfig.DEFAULT_TIMEOUT;
     private boolean useProxy = true;
     private boolean connectToProxyBeforeRequest = false;
+    private boolean allowInfiniteRedirections = false;
+    private boolean rotatingUserAgent = false;
     private int maxRequestRetries = RequestsConfig.DEFAULT_MAX_REQUEST_RETRIES;
-    private final ObjectMapper objectMapper;
+    private final BasicObjectMapper objectMapper;
     private final ExceptionLogger exceptionLogger;
     private final AsyncHttpClient asyncHttpClient;
     private HttpHeaders defaultHeaders;
@@ -40,7 +41,7 @@ public class ProxyManagerClientBuilder{
 
     public ProxyManagerClientBuilder(
             @NotNull final AsyncHttpClient asyncHttpClient,
-            @NotNull final ObjectMapper objectMapper,
+            @NotNull final BasicObjectMapper objectMapper,
             @NotNull final ExceptionLogger exceptionLogger,
             @NotNull final BoundRequestBuilderProcessor boundRequestBuilder
     ){
@@ -102,7 +103,19 @@ public class ProxyManagerClientBuilder{
         return this;
     }
 
-    public ProxyManagerClient createProxyManagerClient() {
+    public ProxyManagerClientBuilder setAllowInfiniteRedirections(boolean allowInfiniteRedirections) {
+
+        this.allowInfiniteRedirections = allowInfiniteRedirections;
+        return this;
+    }
+
+    public ProxyManagerClientBuilder setRotatingUserAgent(boolean rotatingUserAgent) {
+
+        this.rotatingUserAgent = rotatingUserAgent;
+        return this;
+    }
+
+    public ProxyManagerClient build() {
         return new ProxyManagerClient(
                 objectMapper,
                 exceptionLogger,
@@ -114,6 +127,8 @@ public class ProxyManagerClientBuilder{
                 timeout,
                 useProxy,
                 connectToProxyBeforeRequest,
+                rotatingUserAgent,
+                allowInfiniteRedirections,
                 maxRequestRetries,
                 defaultHeaders,
                 defaultCookies

@@ -11,31 +11,33 @@ package fr.whimtrip.ext.jwhtscrapper.service.scoped;
 
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrapperHelper;
 
+import java.util.List;
+
 /**
  *
- * @param <C> Object that contains the P objects. This object is either a List< P > or P itself
  * @param <P> P is the parent object which will be used each time to create the request and that
  *           in the end will be modified.
  * @param <M> M is the model on which the Html responses will be mapped
  * @param <H> H is the Scrapper Helper instance that will be used to interpole some code in
  *           the different steps of the scrapping task.
  */
-public class ScrappingContext<C, P, M,  H extends ScrapperHelper<P, M>> {
+public class ScrappingContext<P, M,  H extends ScrapperHelper<P, M>> {
 
-    C containerObject;
+    List<P> parentObjects;
     Class<P> parentClazz;
     Class<M> modelClazz;
     H helper;
     RequestScrappingContext requestScrappingContext;
-    String name;
 
 
-    public C getContainerObject() {
-        return containerObject;
+    public List<P> getParentObjects() {
+
+        return parentObjects;
     }
 
-    public ScrappingContext setContainerObject(C containerObject) {
-        this.containerObject = containerObject;
+    public ScrappingContext setParentObjects(List<P> parentObjects) {
+
+        this.parentObjects = parentObjects;
         return this;
     }
 
@@ -75,13 +77,4 @@ public class ScrappingContext<C, P, M,  H extends ScrapperHelper<P, M>> {
         return this;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public ScrappingContext setName(String name) {
-
-        this.name = name;
-        return this;
-    }
 }

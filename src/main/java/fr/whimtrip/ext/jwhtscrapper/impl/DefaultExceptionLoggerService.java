@@ -1,6 +1,6 @@
 package fr.whimtrip.ext.jwhtscrapper.impl;
 
-import fr.whimtrip.ext.jwhtscrapper.intfr.ExceptionLogger;
+import fr.whimtrip.core.util.intrf.ExceptionLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

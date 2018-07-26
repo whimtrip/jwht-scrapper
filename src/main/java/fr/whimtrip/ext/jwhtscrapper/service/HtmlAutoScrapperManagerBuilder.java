@@ -1,9 +1,10 @@
 package fr.whimtrip.ext.jwhtscrapper.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.whimtrip.core.util.intrf.ExceptionLogger;
 import fr.whimtrip.ext.jwhthtmltopojo.HtmlToPojoEngine;
-import fr.whimtrip.ext.jwhtscrapper.intfr.ExceptionLogger;
+import fr.whimtrip.ext.jwhtscrapper.intfr.BasicObjectMapper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ProxyFinder;
+import fr.whimtrip.ext.jwhtscrapper.service.scoped.BoundRequestBuilderProcessor;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.DefaultAsyncHttpClient;
 import org.asynchttpclient.DefaultAsyncHttpClientConfig;
@@ -17,7 +18,7 @@ public class HtmlAutoScrapperManagerBuilder {
     private final HtmlToPojoEngine htmlToPojoEngine;
     private final ExceptionLogger exceptionLogger;
 
-    private ObjectMapper objectMapper;
+    private BasicObjectMapper objectMapper;
     private AsyncHttpClient asyncHttpClient;
     private ProxyFinder proxyFinder;
     private BoundRequestBuilderProcessor boundRequestBuilderProcessor;
@@ -28,7 +29,7 @@ public class HtmlAutoScrapperManagerBuilder {
     }
 
 
-    public HtmlAutoScrapperManagerBuilder setObjectMapper(ObjectMapper objectMapper) {
+    public HtmlAutoScrapperManagerBuilder setObjectMapper(BasicObjectMapper objectMapper) {
 
         this.objectMapper = objectMapper;
         return this;
@@ -53,8 +54,6 @@ public class HtmlAutoScrapperManagerBuilder {
     }
 
     public HtmlAutoScrapperManager createHtmlAutoScrapperManager() {
-
-        this.objectMapper = objectMapper == null ? new ObjectMapper() : objectMapper;
         this.asyncHttpClient = asyncHttpClient == null ? buildAsyncHttpClient() : asyncHttpClient;
         this.boundRequestBuilderProcessor = boundRequestBuilderProcessor == null ?
                 new BoundRequestBuilderProcessor(proxyFinder, exceptionLogger) :

@@ -23,18 +23,25 @@ package fr.whimtrip.ext.jwhtscrapper.service.scoped;
 import fr.whimtrip.core.util.WhimtripUtils;
 import fr.whimtrip.core.util.exception.ObjectCreationException;
 import fr.whimtrip.ext.jwhthtmltopojo.HtmlToPojoEngine;
-import fr.whimtrip.ext.jwhthtmltopojo.adapter.HtmlAdapter;
-import fr.whimtrip.ext.jwhthtmltopojo.annotation.HasLink;
-import fr.whimtrip.ext.jwhthtmltopojo.exception.LinkException;
-import fr.whimtrip.ext.jwhtscrapper.annotation.*;
+import fr.whimtrip.ext.jwhthtmltopojo.adapter.HtmlToPojoAnnotationMap;
+import fr.whimtrip.ext.jwhthtmltopojo.intrf.HtmlAdapter;
+import fr.whimtrip.ext.jwhtscrapper.annotation.HasLink;
+import fr.whimtrip.ext.jwhtscrapper.annotation.Link;
+import fr.whimtrip.ext.jwhtscrapper.annotation.LinkListsFromBuilder;
+import fr.whimtrip.ext.jwhtscrapper.annotation.WarningSign;
+import fr.whimtrip.ext.jwhtscrapper.exception.LinkException;
+import fr.whimtrip.ext.jwhtscrapper.exception.ModelBindingException;
 import fr.whimtrip.ext.jwhtscrapper.exception.WarningSignException;
+import fr.whimtrip.ext.jwhtscrapper.intfr.BasicObjectMapper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.HttpRequestEditor;
 import fr.whimtrip.ext.jwhtscrapper.intfr.LinkListFactory;
-import fr.whimtrip.ext.jwhtscrapper.service.BoundRequestBuilderProcessor;
 import org.asynchttpclient.BoundRequestBuilder;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -51,26 +58,28 @@ public class HtmlAutoScrapper<T> {
 
     private static final Logger log = LoggerFactory.getLogger(HtmlAutoScrapper.class);
 
-    private ProxyManagerClient proxyManagerClient;
+    private final ProxyManagerClient proxyManagerClient;
+    private final BasicObjectMapper objectMapper;
+    private final BoundRequestBuilderProcessor boundRequestBuilderProcessor;
+    private final HtmlAdapter<T> htmlAdapter;
+    private final HtmlToPojoEngine htmlToPojoEngine;
+    private final Class<T> persistentClass;
 
-    private HtmlAdapter<T> htmlAdapter;
 
-    private Class<T> persistentClass;
 
-    private HtmlToPojoEngine htmlToPojoEngine;
 
-    private boolean throwExceptions;
+    private final boolean throwExceptions;
 
-    private int warningSignDelay;
-    private boolean parallelizeLinkListPolling = false;
-    private boolean followRedirections;
-    private BoundRequestBuilderProcessor boundRequestBuilderProcessor;
+    private final int warningSignDelay;
+    private final boolean parallelizeLinkListPolling;
+    private final boolean followRedirections;
 
 
     public HtmlAutoScrapper(
             ProxyManagerClient proxyManagerClient,
             HtmlToPojoEngine htmlToPojoEngine,
             BoundRequestBuilderProcessor boundRequestBuilderProcessor,
+            BasicObjectMapper objectMapper,
             Class<T> clazz,
             boolean throwEx,
             boolean parallelizeLinkListPolling,
@@ -78,6 +87,8 @@ public class HtmlAutoScrapper<T> {
             int warningSignDelay
     ) {
         this.proxyManagerClient = proxyManagerClient;
+        this.boundRequestBuilderProcessor = boundRequestBuilderProcessor;
+        this.objectMapper = objectMapper;
         this.parallelizeLinkListPolling = parallelizeLinkListPolling;
 
         this.persistentClass = clazz;
@@ -88,37 +99,39 @@ public class HtmlAutoScrapper<T> {
         throwExceptions = throwEx;
         this.warningSignDelay = warningSignDelay;
         this.followRedirections = followRedirections;
+
     }
 
-    public T scrap(BoundRequestBuilder req) throws ExecutionException, InterruptedException {
+    public T scrap(BoundRequestBuilder req) throws ExecutionException, InterruptedException, ModelBindingException {
         return scrap(req, null);
     }
 
-    public T scrap(BoundRequestBuilder req, T obj) throws ExecutionException, InterruptedException {
+    public T scrap(BoundRequestBuilder req, T obj) throws ExecutionException, InterruptedException, ModelBindingException{
         return scrap(req,  obj, htmlAdapter);
     }
 
-    public <U> U scrap(BoundRequestBuilder req, U obj, HtmlAdapter<U> adapter)
-            throws ExecutionException, InterruptedException
+    private <U> U scrap(BoundRequestBuilder req, U obj, HtmlAdapter<U> adapter)
+            throws ExecutionException, InterruptedException, ModelBindingException
     {
         return scrap(req, obj, adapter, followRedirections);
     }
 
-    public <U> U scrap(BoundRequestBuilder req, U obj, HtmlAdapter<U> adapter, boolean followRedirections)
-            throws ExecutionException, InterruptedException
+    @SuppressWarnings("unchecked")
+    private <U> U scrap(BoundRequestBuilder req, U obj, HtmlAdapter<U> adapter, boolean followRedirections)
+            throws ExecutionException, InterruptedException, ModelBindingException
     {
-        String htmlResponse =
-                proxyManagerClient
-                        .getResponse(req, followRedirections);
+        return scrap(req, obj, adapter, followRedirections, obj == null ? (Class<U>) persistentClass :  (Class<U>) obj.getClass());
+    }
+
+    private <U> U scrap(BoundRequestBuilder req, U obj, HtmlAdapter<U> adapter, boolean followRedirections, Class<U> mappedClazz)
+            throws ExecutionException, InterruptedException, ModelBindingException
+    {
+        String rawResponse =
+                proxyManagerClient.getResponse(req, followRedirections);
 
         try {
 
-            if (obj == null) {
-                obj = adapter.fromHtml(htmlResponse);
-            } else {
-                obj = adapter.fromHtml(htmlResponse, obj);
-            }
-
+            obj = buildObject(obj, adapter, mappedClazz, rawResponse);
             resolveBasicLinks(obj, adapter);
 
             return obj;
@@ -144,7 +157,10 @@ public class HtmlAutoScrapper<T> {
             boundRequestBuilderProcessor.printReq(req);
             WhimtripUtils.waitForWithOutputToConsole((long) warningSignDelay, 20);
             req = boundRequestBuilderProcessor.recreateRequest(req, proxyManagerClient);
-            return scrap(req, obj, adapter, followRedirections);
+            return scrap(req, obj, adapter, followRedirections, mappedClazz);
+        }
+        catch (IOException e) {
+            throw new ModelBindingException(e);
         }
     }
 
@@ -181,16 +197,35 @@ public class HtmlAutoScrapper<T> {
     }
 
 
+    private <U> U buildObject(
+            @Nullable U obj,
+            @Nullable final HtmlAdapter<U> adapter,
+            @Nullable final Class<U> mappedClazz,
+            @NotNull final String rawResponse
+    ) throws IOException
+    {
+        if (obj == null) {
+            obj = objectMapper == null ?
+                    adapter.fromHtml(rawResponse)
+                    : objectMapper.readValue(rawResponse, mappedClazz);
+        } else {
+            obj = objectMapper == null ?
+                    adapter.fromHtml(rawResponse, obj)
+                    : objectMapper.readValue(rawResponse, mappedClazz, obj);
+        }
+        return obj;
+    }
+
     private <P, U> void resolveBasicLinks(P model, HtmlAdapter<P> adapter) throws ExecutionException, InterruptedException {
 
         log.info("Resolving basic links for model type " + model.getClass());
 
-        List<HtmlAdapter.HtmlToPojoAnnotationMap<Link>> links = adapter.getFieldList(Link.class);
-        List<HtmlAdapter.HtmlToPojoAnnotationMap<HasLink>> hasLinks = adapter.getFieldList(HasLink.class);
-        List<HtmlAdapter.HtmlToPojoAnnotationMap<LinkListsFromBuilder>> linkListsFromBuilders = adapter.getFieldList(LinkListsFromBuilder.class);
+        List<HtmlToPojoAnnotationMap<Link>> links = adapter.getFieldList(Link.class);
+        List<HtmlToPojoAnnotationMap<HasLink>> hasLinks = adapter.getFieldList(HasLink.class);
+        List<HtmlToPojoAnnotationMap<LinkListsFromBuilder>> linkListsFromBuilders = adapter.getFieldList(LinkListsFromBuilder.class);
 
 
-        for(HtmlAdapter.HtmlToPojoAnnotationMap<HasLink> hasLink : hasLinks)
+        for(HtmlToPojoAnnotationMap<HasLink> hasLink : hasLinks)
         {
             if(Collection.class.isAssignableFrom((Class<U>) hasLink.getField().getType()))
             {
@@ -223,7 +258,7 @@ public class HtmlAutoScrapper<T> {
             }
         }
 
-        for(HtmlAdapter.HtmlToPojoAnnotationMap<LinkListsFromBuilder> linkList : linkListsFromBuilders)
+        for(HtmlToPojoAnnotationMap<LinkListsFromBuilder> linkList : linkListsFromBuilders)
         {
             if(List.class.isAssignableFrom(linkList.getField().getType())) {
 
@@ -251,15 +286,13 @@ public class HtmlAutoScrapper<T> {
         followLinks(links, model, adapter);
     }
 
-    public <U, P> void followLinks(List<HtmlAdapter.HtmlToPojoAnnotationMap<Link>> links, P model, HtmlAdapter<P> adapter) throws ExecutionException, InterruptedException {
+    public <U, P> void followLinks(List<HtmlToPojoAnnotationMap<Link>> links, P model, HtmlAdapter<P> adapter) throws ExecutionException, InterruptedException {
 
-        for (HtmlAdapter.HtmlToPojoAnnotationMap<Link> link : links) {
+        for (HtmlToPojoAnnotationMap<Link> link : links) {
             Field objField = ((ScrapperHtmlAdapter<P>) adapter).getLinkObject(link);
 
-            if (objField == null) {
-                throw new LinkException("Field " + link.getName() + " has a @Link " +
-                        "annotation but isn't mapped to any object through @LinkObject or @LinkObjects");
-            }
+            if (objField == null) throw new LinkException(link.getField());
+
             Pattern pattern = Pattern.compile(link.getAnnotation().regexCondition());
             String linkVal = "";
             try{
@@ -327,7 +360,7 @@ public class HtmlAutoScrapper<T> {
         }
     }
 
-    public <U, P> List<U> followLinkLists(HtmlAdapter.HtmlToPojoAnnotationMap<LinkListsFromBuilder> links,
+    public <U, P> List<U> followLinkLists(HtmlToPojoAnnotationMap<LinkListsFromBuilder> links,
                                        P parent, HtmlAdapter<U> adapter) throws ExecutionException, InterruptedException {
         LinkListFactory<P> listFactory = WhimtripUtils.createNewInstance(links.getAnnotation().value());
         List<U> ulist = new ArrayList<>();
@@ -366,7 +399,6 @@ public class HtmlAutoScrapper<T> {
 
                 if (newObj != null)
                     ulist.add(newObj);
-                System.out.println("Outputing Link List Contents : " + newObj);
             }
 
 
@@ -395,7 +427,6 @@ public class HtmlAutoScrapper<T> {
 
                 if (newObj != null)
                     ulist.add(newObj);
-                System.out.println("Outputing Link List Contents : " + newObj);
             }
         }
 

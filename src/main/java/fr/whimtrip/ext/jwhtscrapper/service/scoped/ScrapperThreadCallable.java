@@ -25,17 +25,19 @@ public class ScrapperThreadCallable<P, M> implements Callable<Object> {
     private static final Logger log = LoggerFactory.getLogger(ScrapperThreadCallable.class);
 
     private final P parentObject;
-    private final ScrappingContext<?, P, M, ? extends ScrapperHelper<P, M>> context;
+    private final ScrappingContext<P, M, ? extends ScrapperHelper<P, M>> context;
     private final RequestScrappingContext requestScrappingContext;
     private final ScrapperHelper<P, M> scrapperHelper;
     private final HtmlAutoScrapper<M> htmlAutoScrapper;
 
+
     private boolean done = false;
     private boolean scrapped = false;
 
+
     public ScrapperThreadCallable(
             final P parentObject,
-            final ScrappingContext<?, P, M, ? extends ScrapperHelper<P, M>> context,
+            final ScrappingContext<P, M, ? extends ScrapperHelper<P, M>> context,
             final HtmlAutoScrapper<M> htmlAutoScrapper
     )
     {
@@ -60,7 +62,7 @@ public class ScrapperThreadCallable<P, M> implements Callable<Object> {
                     req = htmlAutoScrapper.prepareScrapPost(url);
                 }
 
-                scrapperHelper.editRequest(req, parentObject);
+                req = scrapperHelper.editRequest(req, parentObject);
 
                 model = scrapperHelper.instanciateModel(parentObject);
 

@@ -20,13 +20,13 @@
 
 package fr.whimtrip.ext.jwhtscrapper.service.scoped;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.whimtrip.core.util.intrf.ExceptionLogger;
 import fr.whimtrip.ext.jwhtscrapper.exception.ProxyRequestTimeoutException;
 import fr.whimtrip.ext.jwhtscrapper.exception.RequestFailedException;
-import fr.whimtrip.ext.jwhtscrapper.intfr.ExceptionLogger;
+import fr.whimtrip.ext.jwhtscrapper.intfr.BasicObjectMapper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.Proxy;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ProxyFinder;
-import fr.whimtrip.ext.jwhtscrapper.service.BoundRequestBuilderProcessor;
+import fr.whimtrip.ext.jwhtscrapper.service.RotatingUserAgent;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.cookie.Cookie;
@@ -51,42 +51,42 @@ public class ProxyManagerClient {
 
     private static final Logger log = LoggerFactory.getLogger(ProxyManagerClient.class);
 
-    private static final String SCRAPPER_USER_AGENT = "Mozilla/5.0 (Windows NT 6.2; Win64; x64)" +
-            " AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36 OPR/48.0.2685.50";
     private static final String USER_AGENT_HEADER_NAME = "User-Agent";
 
 
 
     private HttpHeaders defaultHeaders;
 
-    private int awaitBetweenRequests;
-    private int proxyChangeRate;
-    private int timeout;
-    private int maxRequestRetries;
+    private final int awaitBetweenRequests;
+    private final int proxyChangeRate;
+    private final int timeout;
+    private final boolean rotatingUserAgent;
+    private final int maxRequestRetries;
+    private final boolean useProxy;
+    private final boolean connectToProxyBeforeRequest;
+    private final boolean allowInfiniteRedirections;
 
-    private Long lastRequest;
-
-    private int lastProxyChange;
-
-    private boolean useProxy, connectToProxyBeforeRequest = false;
-
-    private List<Cookie> defaultCookies;
-
-    private boolean allowInfiniteRedirections = true;
-
-    private AsyncHttpClient asyncHttpClient;
 
     private final ExceptionLogger exceptionLogger;
 
-    private final ObjectMapper objectMapper;
+    private final BasicObjectMapper objectMapper;
 
     private final ProxyFinder proxyFinder;
 
     private final BoundRequestBuilderProcessor boundRequestBuilderProcessor;
 
 
+
+    private Long lastRequest;
+
+    private int lastProxyChange;
+
+    private List<Cookie> defaultCookies;
+
+    private AsyncHttpClient asyncHttpClient;
+
     ProxyManagerClient(
-            ObjectMapper objectMapper,
+            BasicObjectMapper objectMapper,
             ExceptionLogger exceptionLogger,
             AsyncHttpClient asyncHttpClient,
             ProxyFinder proxyFinder,
@@ -96,6 +96,8 @@ public class ProxyManagerClient {
             int timeout,
             boolean useProxy,
             boolean connectToProxyBeforeRequest,
+            boolean rotatingUserAgent,
+            boolean allowInfiniteRedirections,
             int maxRequestRetries,
             HttpHeaders defaultHeaders,
             Cookie... defaultCookies
@@ -109,17 +111,18 @@ public class ProxyManagerClient {
         this.awaitBetweenRequests = awaitBetweenRequests;
         this.proxyChangeRate = proxyChangeRate;
         this.timeout = timeout;
+        this.rotatingUserAgent = rotatingUserAgent;
+        this.allowInfiniteRedirections = allowInfiniteRedirections;
         this.maxRequestRetries = maxRequestRetries;
         this.connectToProxyBeforeRequest = connectToProxyBeforeRequest;
-        lastRequest = System.currentTimeMillis() - awaitBetweenRequests;
-        lastProxyChange = proxyChangeRate;
+        this.lastRequest = System.currentTimeMillis() - awaitBetweenRequests;
+        this.lastProxyChange = proxyChangeRate;
         this.useProxy = useProxy;
 
         this.defaultCookies = new ArrayList<>();
         this.defaultCookies.addAll(Arrays.asList(defaultCookies));
 
         this.defaultHeaders = new DefaultHttpHeaders();
-        this.defaultHeaders.add(USER_AGENT_HEADER_NAME, SCRAPPER_USER_AGENT);
 
         if(defaultHeaders != null)
             this.defaultHeaders.add(defaultHeaders);
@@ -212,7 +215,8 @@ public class ProxyManagerClient {
     {
         req.resetCookies();
         req.clearHeaders();
-        req.setHeaders(boundRequestBuilderProcessor.newHttpHeaders(defaultHeaders));
+        req.setHeaders(buildDefaultHeaders());
+
         req.setCookies(defaultCookies);
         if(useProxy)
         {
@@ -222,6 +226,13 @@ public class ProxyManagerClient {
                 setProxy(req);
         }
         return req;
+    }
+
+    private HttpHeaders buildDefaultHeaders() {
+
+        HttpHeaders headers = boundRequestBuilderProcessor.newHttpHeaders(defaultHeaders);
+        return rotatingUserAgent ?
+                headers : headers.add(USER_AGENT_HEADER_NAME, RotatingUserAgent.pickRandomUserAgent());
     }
 
     private void setProxy(BoundRequestBuilder req) {
@@ -361,7 +372,7 @@ public class ProxyManagerClient {
 
         if(!requestIssued)
         {
-            checkProxy("Redoing last request with url " + boundRequestBuilderProcessor.getUrlFromRequestBuilder(req));
+            checkProxy(boundRequestBuilderProcessor.getUrlFromRequestBuilder(req));
 
             if(tries >= maxRequestRetries)
                 throw new ProxyRequestTimeoutException(actE);

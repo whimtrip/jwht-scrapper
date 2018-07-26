@@ -30,8 +30,6 @@
     </scm>
 
 
-
-
     <inceptionYear>2018-...</inceptionYear>
 
     <organization>
@@ -52,7 +50,7 @@
         </developer>
     </developers>
     <distributionManagement>
-        <!--<snapshotRepository>
+        <snapshotRepository>
             <id>sonatype-nexus-snapshots</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
@@ -60,36 +58,8 @@
             <id>nexus-releases</id>
             <name>Nexus Release Repository</name>
             <url>http://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>-->
-        <snapshotRepository>
-            <id>mvn.fr.whimtrip</id>
-            <url>s3p://mvn.fr.whimtrip/snapshot</url>
-        </snapshotRepository>
-        <repository>
-            <id>mvn.fr.whimtrip</id>
-            <url>s3p://mvn.fr.whimtrip/release</url>
         </repository>
     </distributionManagement>
-
-
-    <repositories>
-        <!-- Private Whimtrip mvn repo -->
-        <repository>
-            <id>mvn.fr.whimtrip.snapshot</id>
-            <name>Whimtrip Private Repo</name>
-            <url>s3p://mvn.fr.whimtrip/snapshot</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <!-- Private Whimtrip mvn repo -->
-        <repository>
-            <id>mvn.fr.whimtrip.release</id>
-            <name>Whimtrip Private Repo</name>
-            <url>s3p://mvn.fr.whimtrip/release</url>
-        </repository>
-
-    </repositories>
 
 
 
@@ -106,8 +76,21 @@
         <dependency>
             <groupId>fr.whimtrip</groupId>
             <artifactId>whimtrip-ext-htmltopojo</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>1.0.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>fr.whimtrip</groupId>
+                    <artifactId>whimtrip-core-utils</artifactId>
+                 </exclusion>
+            </exclusions>
         </dependency>
+
+        <dependency>
+            <groupId>fr.whimtrip</groupId>
+            <artifactId>whimtrip-core-utils</artifactId>
+            <version>1.0.9</version>
+        </dependency>
+
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
@@ -115,15 +98,6 @@
         </dependency>
 
     </dependencies>
-
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>clojars.org</id>
-            <name>Clojars Repository</name>
-            <url>http://clojars.org/repo</url>
-        </pluginRepository>
-    </pluginRepositories>
 
 
 
@@ -204,16 +178,6 @@
             </plugin>
         </plugins>
 
-
-        <!-- Extension to access to an s3 bucket as maven repo transparently -->
-
-        <extensions>
-            <extension>
-                <groupId>s3-wagon-private</groupId>
-                <artifactId>s3-wagon-private</artifactId>
-                <version>LATEST</version>
-            </extension>
-        </extensions>
     </build>
 
 </project>
