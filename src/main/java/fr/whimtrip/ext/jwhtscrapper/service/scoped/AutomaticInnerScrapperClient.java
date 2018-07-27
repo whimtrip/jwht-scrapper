@@ -11,9 +11,12 @@ package fr.whimtrip.ext.jwhtscrapper.service.scoped;
 import fr.whimtrip.core.util.WhimtripUtils;
 import fr.whimtrip.core.util.intrf.ExceptionLogger;
 import fr.whimtrip.ext.jwhtscrapper.exception.ScrapperException;
+import fr.whimtrip.ext.jwhtscrapper.impl.ScrappingStatsImpl;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrapperHelper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrappingStats;
 import fr.whimtrip.ext.jwhtscrapper.service.base.ScrapperThreadCallable;
+import fr.whimtrip.ext.jwhtscrapper.service.holder.RequestsScrappingContext;
+import fr.whimtrip.ext.jwhtscrapper.service.holder.ScrappingContext;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +56,7 @@ public class AutomaticInnerScrapperClient<P, M> {
     private int failedFinishedTasks = 0;
     private boolean scrapStarted = false;
     private boolean stopped = false;
-    private RequestScrappingContext requestScrappingContext;
+    private RequestsScrappingContext requestsScrappingContext;
 
 
     public AutomaticInnerScrapperClient(
@@ -74,7 +77,7 @@ public class AutomaticInnerScrapperClient<P, M> {
 
         scrapStarted = true;
         List results = new ArrayList<>();
-        requestScrappingContext = context.getRequestScrappingContext();
+        requestsScrappingContext = context.getRequestsScrappingContext();
 
         synchronized (pList) {
             pList.addAll(context.getParentObjects());
@@ -93,29 +96,29 @@ public class AutomaticInnerScrapperClient<P, M> {
 
             startedScrapsCount += pSublist.size();
 
-            ScrappingResult scrappingResult = emptyFinishedThreads(results, requestScrappingContext);
+            ScrappingResult scrappingResult = emptyFinishedThreads(results, requestsScrappingContext);
             log.info("nonScrappedThreads= {}, valids = {}.", scrappingResult.failed, scrappingResult.valid);
 
             validFinishedTasks += scrappingResult.valid;
             failedFinishedTasks += scrappingResult.valid;
 
-            int delay = context.getRequestScrappingContext().getRequestsConfig().periodicDelay();
+            int delay = context.getRequestsScrappingContext().getRequestsConfig().periodicDelay();
 
             if(delay > 0 && scrappingResult.valid >= 1) {
                 WhimtripUtils.waitForWithOutputToConsole((long)delay, 20);
             }
 
-        } while(startedScrapsCount < requestScrappingContext.getScrapLimit() && iterator.hasNext() && !stopped);
+        } while(startedScrapsCount < requestsScrappingContext.getScrapLimit() && iterator.hasNext() && !stopped);
 
         while(!runningTasks.isEmpty())
         {
-            emptyFinishedThreads(results, requestScrappingContext);
+            emptyFinishedThreads(results, requestsScrappingContext);
         }
 
         return results;
     }
 
-    private ScrappingResult emptyFinishedThreads(List results, RequestScrappingContext requestScrappingContext)
+    private ScrappingResult emptyFinishedThreads(List results, RequestsScrappingContext requestsScrappingContext)
             throws ExecutionException, InterruptedException {
 
         try {
@@ -126,10 +129,10 @@ public class AutomaticInnerScrapperClient<P, M> {
             e.printStackTrace();
         }
 
-        ScrappingResult scrappingResult = removeFinishedThreads(results, requestScrappingContext);
+        ScrappingResult scrappingResult = removeFinishedThreads(results, requestsScrappingContext);
 
         int     percentageOfTasksFinished = (int)((float) (finishedTasks)
-                                / (requestScrappingContext.getScrapLimit()) * 100 + 0.5),
+                                / (requestsScrappingContext.getScrapLimit()) * 100 + 0.5),
                 actualNumberOfBars = (int) (((float) percentageOfTasksFinished) / 100
                         * LENGTH_OF_THE_PERCENTAGE_BAR + 0.5);
 
@@ -184,8 +187,8 @@ public class AutomaticInnerScrapperClient<P, M> {
             copiedPList = new ArrayList<>(pList);
 
             while (
-                    numberOfScraps < requestScrappingContext.getScrapLimit()
-                 && runningThreads < requestScrappingContext.getParrallelThreads()
+                    numberOfScraps < requestsScrappingContext.getScrapLimit()
+                 && runningThreads < requestsScrappingContext.getParrallelThreads()
                  && iterator.hasNext()
             ){
                 P p = iterator.next();
@@ -204,7 +207,7 @@ public class AutomaticInnerScrapperClient<P, M> {
     }
 
 
-    private ScrappingResult removeFinishedThreads(List<Object> results, RequestScrappingContext requestScrappingContext)
+    private ScrappingResult removeFinishedThreads(List<Object> results, RequestsScrappingContext requestsScrappingContext)
             throws ExecutionException, InterruptedException
     {
         List<FutureTask> copiedTasks = new ArrayList<>();
@@ -237,7 +240,8 @@ public class AutomaticInnerScrapperClient<P, M> {
                 exceptionLoggerService.logException(e);
                 log.info(String.format("Thread n°%s is terminated", copiedTasks.indexOf(ft)));
                 runningTasks.remove(actFt);
-                if (requestScrappingContext.isThrowExceptions()) {
+                if (requestsScrappingContext.isThrowExceptions()) {
+                    stopRunningTasks();
                     throw e;
                 }
             }

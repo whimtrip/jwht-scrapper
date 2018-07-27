@@ -67,9 +67,9 @@ public class ScrapperHtmlAdapter<T> extends DefaultHtmlAdapterImpl<T> {
      * <p>
      *     This method features a major difference from the classic
      *     implementation. Before calling {@link HtmlField#setFieldOrThrow(Object, Object)}
-     *     warning signs are checked. When warning signs are detected
-     *     an {@link WarningSignException} will be triggered and handled
-     *     by the calling stack.
+     *     warning signs are checked {@link #checkAndThrowWarningSign(Field, Object)}.
+     *     When warning signs are detected an {@link WarningSignException}
+     *     will be triggered and handled by the calling stack.
      * </p>
      *
      * @see HtmlAdapter#loadFromNode(Element, Object)})

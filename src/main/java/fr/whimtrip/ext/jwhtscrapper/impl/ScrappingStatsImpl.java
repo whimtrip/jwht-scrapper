@@ -1,4 +1,4 @@
-package fr.whimtrip.ext.jwhtscrapper.service.scoped;
+package fr.whimtrip.ext.jwhtscrapper.impl;
 
 import fr.whimtrip.ext.jwhtscrapper.service.base.AutomaticScrapperClient;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrappingStats;

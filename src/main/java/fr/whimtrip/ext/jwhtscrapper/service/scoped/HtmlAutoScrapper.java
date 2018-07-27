@@ -35,6 +35,7 @@ import fr.whimtrip.ext.jwhtscrapper.exception.WarningSignException;
 import fr.whimtrip.ext.jwhtscrapper.intfr.BasicObjectMapper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.HttpRequestEditor;
 import fr.whimtrip.ext.jwhtscrapper.intfr.LinkListFactory;
+import fr.whimtrip.ext.jwhtscrapper.service.holder.LinkPreparatorHolder;
 import org.asynchttpclient.BoundRequestBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

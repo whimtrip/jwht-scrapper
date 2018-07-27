@@ -6,7 +6,7 @@
  * This code is licensed to WhimTrip©. For any question, please contact the author of the file.
  */
 
-package fr.whimtrip.ext.jwhtscrapper.service.scoped;
+package fr.whimtrip.ext.jwhtscrapper.service.holder;
 
 import fr.whimtrip.ext.jwhtscrapper.annotation.Link;
 import fr.whimtrip.ext.jwhtscrapper.annotation.LinkField;

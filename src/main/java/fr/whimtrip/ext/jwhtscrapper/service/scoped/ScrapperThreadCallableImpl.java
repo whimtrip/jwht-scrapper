@@ -13,6 +13,8 @@ import fr.whimtrip.ext.jwhtscrapper.exception.WarningSignException;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrapperHelper;
 import fr.whimtrip.ext.jwhtscrapper.service.base.AutomaticScrapperClient;
 import fr.whimtrip.ext.jwhtscrapper.service.base.ScrapperThreadCallable;
+import fr.whimtrip.ext.jwhtscrapper.service.holder.RequestsScrappingContext;
+import fr.whimtrip.ext.jwhtscrapper.service.holder.ScrappingContext;
 import org.asynchttpclient.BoundRequestBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +49,7 @@ public class ScrapperThreadCallableImpl<P, M> implements ScrapperThreadCallable<
 
     private final P parentObject;
     private final ScrappingContext<P, M, ? extends ScrapperHelper<P, M>> context;
-    private final RequestScrappingContext requestScrappingContext;
+    private final RequestsScrappingContext requestsScrappingContext;
     private final ScrapperHelper<P, M> scrapperHelper;
     private final HtmlAutoScrapper<M> htmlAutoScrapper;
 
@@ -66,7 +68,7 @@ public class ScrapperThreadCallableImpl<P, M> implements ScrapperThreadCallable<
         this.context = context;
         this.htmlAutoScrapper = htmlAutoScrapper;
         scrapperHelper = context.getHelper();
-        requestScrappingContext = context.getRequestScrappingContext();
+        requestsScrappingContext = context.getRequestsScrappingContext();
     }
 
     /**
@@ -93,7 +95,7 @@ public class ScrapperThreadCallableImpl<P, M> implements ScrapperThreadCallable<
                 String url = scrapperHelper.createUrl(parentObject);
                 BoundRequestBuilder req;
 
-                if (requestScrappingContext.getMethod() == Link.Method.GET) {
+                if (requestsScrappingContext.getMethod() == Link.Method.GET) {
                     req = htmlAutoScrapper.prepareScrapGet(url);
                 } else {
                     req = htmlAutoScrapper.prepareScrapPost(url);

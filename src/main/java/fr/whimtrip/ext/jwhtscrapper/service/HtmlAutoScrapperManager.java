@@ -29,6 +29,8 @@ import fr.whimtrip.ext.jwhtscrapper.annotation.WarningSign;
 import fr.whimtrip.ext.jwhtscrapper.intfr.BasicObjectMapper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ProxyFinder;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrapperHelper;
+import fr.whimtrip.ext.jwhtscrapper.service.holder.RequestsScrappingContext;
+import fr.whimtrip.ext.jwhtscrapper.service.holder.ScrappingContext;
 import fr.whimtrip.ext.jwhtscrapper.service.scoped.*;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
@@ -249,14 +251,14 @@ public class HtmlAutoScrapperManager {
 
     /**
      * <p>
-     *     Automatic factory method using {@link RequestScrappingContext}
+     *     Automatic factory method using {@link RequestsScrappingContext}
      *     built using annotations gathered on top of {@link ScrapperHelper}
      *     implementation.
      * </p>
      * @param requestPreparator context of the scrapping request
      * @return built in {@link ProxyManagerClient}
      */
-    public ProxyManagerClient createProxyManagerClient(RequestScrappingContext requestPreparator) {
+    public ProxyManagerClient createProxyManagerClient(RequestsScrappingContext requestPreparator) {
         RequestsConfig config = requestPreparator.getRequestsConfig();
         ProxyConfig proxyConfig = config.proxyConfig();
 
@@ -298,7 +300,7 @@ public class HtmlAutoScrapperManager {
 
     /**
      * <p>
-     *     Automatic factory method using {@link RequestScrappingContext}
+     *     Automatic factory method using {@link RequestsScrappingContext}
      *     built using annotations gathered on top of {@link ScrapperHelper}
      *     implementation.
      *     Built {@link ProxyManagerClient} is already required in order
@@ -315,10 +317,10 @@ public class HtmlAutoScrapperManager {
         return createHtmlAutoScrapper(
                 proxyClient,
                 context.getModelClazz(),
-                context.getRequestScrappingContext().isThrowExceptions(),
-                context.getRequestScrappingContext().getRequestsConfig().parallelizeLinkListPolling(),
-                context.getRequestScrappingContext().getRequestsConfig().followRedirections(),
-                context.getRequestScrappingContext().getRequestsConfig().warningSignDelay()
+                context.getRequestsScrappingContext().isThrowExceptions(),
+                context.getRequestsScrappingContext().getRequestsConfig().parallelizeLinkListPolling(),
+                context.getRequestsScrappingContext().getRequestsConfig().followRedirections(),
+                context.getRequestsScrappingContext().getRequestsConfig().warningSignDelay()
         );
     }
 }

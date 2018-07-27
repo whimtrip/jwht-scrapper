@@ -8,7 +8,7 @@
 
 package fr.whimtrip.ext.jwhtscrapper.intfr;
 
-import fr.whimtrip.ext.jwhtscrapper.service.scoped.LinkPreparatorHolder;
+import fr.whimtrip.ext.jwhtscrapper.service.holder.LinkPreparatorHolder;
 import org.asynchttpclient.BoundRequestBuilder;
 
 import java.lang.reflect.Field;

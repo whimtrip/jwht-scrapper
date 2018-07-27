@@ -12,7 +12,7 @@ import fr.whimtrip.core.util.exception.ObjectCreationException;
 import fr.whimtrip.ext.jwhtscrapper.annotation.Scrapper;
 import fr.whimtrip.ext.jwhtscrapper.exception.ModelBindingException;
 import fr.whimtrip.ext.jwhtscrapper.service.base.AutomaticScrapperClient;
-import fr.whimtrip.ext.jwhtscrapper.service.scoped.RequestScrappingContext;
+import fr.whimtrip.ext.jwhtscrapper.service.holder.RequestsScrappingContext;
 import org.asynchttpclient.BoundRequestBuilder;
 import org.jetbrains.annotations.NotNull;
 
@@ -29,16 +29,16 @@ public interface ScrapperHelper<P, M> {
 
     /**
      * readAndSave method. It can be used to retrieve vars from the builder, etc...
-     * @return initialized {@link RequestScrappingContext}
+     * @return initialized {@link RequestsScrappingContext}
      */
-    default RequestScrappingContext init() throws ObjectCreationException {
+    default RequestsScrappingContext init() throws ObjectCreationException {
         Scrapper scrapper = this.getClass().getAnnotation(Scrapper.class);
 
         if(scrapper == null)
             throw new ObjectCreationException(this.getClass() + ". Classes implementing ScrapperHelper must have an @Scrapper annotation.");
 
 
-        return RequestScrappingContext.build(scrapper);
+        return new RequestsScrappingContext(scrapper);
     }
 
     /**

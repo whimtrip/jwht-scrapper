@@ -14,6 +14,7 @@ import fr.whimtrip.ext.jwhtscrapper.exception.ScrapperException;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrapperHelper;
 import fr.whimtrip.ext.jwhtscrapper.service.base.AutomaticScrapperManager;
 import fr.whimtrip.ext.jwhtscrapper.service.base.AutomaticScrapperClient;
+import fr.whimtrip.ext.jwhtscrapper.service.holder.ScrappingContext;
 import fr.whimtrip.ext.jwhtscrapper.service.scoped.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -139,7 +140,7 @@ public class AutomaticScrapperManagerImpl implements AutomaticScrapperManager {
 
         ProxyManagerClient proxyClient =
                 this.htmlAutoScrapperManager
-                        .createProxyManagerClient(context.getRequestScrappingContext());
+                        .createProxyManagerClient(context.getRequestsScrappingContext());
         HtmlAutoScrapper autoScrapper =
                 this.htmlAutoScrapperManager
                         .createHtmlAutoScrapper(proxyClient, context);

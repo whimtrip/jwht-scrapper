@@ -5,7 +5,7 @@ import fr.whimtrip.ext.jwhtscrapper.exception.ScrapNotFinishedException;
 import fr.whimtrip.ext.jwhtscrapper.exception.ScrapperAlreadyStartedException;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrapperHelper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrappingStats;
-import fr.whimtrip.ext.jwhtscrapper.service.scoped.ScrappingStatsImpl;
+import fr.whimtrip.ext.jwhtscrapper.impl.ScrappingStatsImpl;
 
 import java.util.List;
 import java.util.concurrent.Callable;
