@@ -190,7 +190,7 @@ public class AutomaticScrapperManagerBuilder {
                         .setAsyncHttpClient(asyncHttpClient)
                         .setObjectMapper(getOrBuildObjectMapper())
                         .setProxyFinder(proxyFinder)
-                        .createHtmlAutoScrapperManager(),
+                        .build(),
                     exceptionLogger
         );
     }

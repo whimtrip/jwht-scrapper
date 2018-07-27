@@ -113,19 +113,18 @@ public class AutomaticScrapperManagerImpl implements AutomaticScrapperManager {
     @SuppressWarnings("unchecked")
     private <P, H extends ScrapperHelper<P, ?>> ScrappingContext<P, ?, H> prepareScrappers(List<P> parentObjs, H helper)
     {
-
-        ScrappingContext<P, ?, H> context = (ScrappingContext<P, ?, H>) new ScrappingContext<>();
-        context.setHelper(helper);
-        context.setParentObjects(parentObjs);
-
+        Class<P> parentClazz;
         if((parentObjs).isEmpty())
-            context.setParentClazz( (Class<P>) Object.class );
+            parentClazz = (Class<P>) Object.class;
         else
-            context.setParentClazz( (Class<P>) ((parentObjs).get(0).getClass()));
+            parentClazz =(Class<P>) ((parentObjs).get(0).getClass());
 
-        context.setRequestScrappingContext(helper.init());
-        context.setModelClazz(context.getRequestScrappingContext().getModelClass());
-        return context;
+        return (ScrappingContext<P, ?, H>)
+                new ScrappingContext(
+                        parentObjs,
+                        parentClazz,
+                        helper
+                );
     }
 
 

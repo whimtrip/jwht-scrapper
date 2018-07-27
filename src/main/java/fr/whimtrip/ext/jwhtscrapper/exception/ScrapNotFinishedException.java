@@ -1,6 +1,7 @@
 package fr.whimtrip.ext.jwhtscrapper.exception;
 
-/**
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException; /**
  * <p>Part of project jwht-scrapper</p>
  * <p>Created on 26/07/18</p>
  *
@@ -15,5 +16,15 @@ public class ScrapNotFinishedException extends ScrapperException {
                 " a timeout in the AutomaticScrapperClient.getResults(Long Timeout, TimeUnit timeUnit)" +
                 " method"
         );
+    }
+
+    public ScrapNotFinishedException(TimeoutException e, String scrapperThreadName) {
+        super(
+                "Scrapper " + scrapperThreadName + " has not yet finished running. The" +
+                " process was aborted by the " + ExecutionException.class + " triggered" +
+                " because of the timeout provided."
+        );
+        initCause(e);
+
     }
 }

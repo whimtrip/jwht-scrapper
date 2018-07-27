@@ -11,18 +11,39 @@ package fr.whimtrip.ext.jwhtscrapper.service.scoped;
 import fr.whimtrip.ext.jwhtscrapper.annotation.Link;
 import fr.whimtrip.ext.jwhtscrapper.exception.WarningSignException;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrapperHelper;
+import fr.whimtrip.ext.jwhtscrapper.service.base.AutomaticScrapperClient;
+import fr.whimtrip.ext.jwhtscrapper.service.base.ScrapperThreadCallable;
 import org.asynchttpclient.BoundRequestBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.Callable;
 
-/**
- * Created by LOUISSTEIMBERG on 22/11/2017.
- */
-public class ScrapperThreadCallable<P, M> implements Callable<Object> {
 
-    private static final Logger log = LoggerFactory.getLogger(ScrapperThreadCallable.class);
+/**
+ *
+ *
+ * <p>Part of project jwht-scrapper</p>
+ * <p>Created on 26/07/18</p>
+ *
+ * <p>
+ *     The {@link ScrapperThreadCallable} specific implementations that will
+ *     trigger each single scrap operation from each unique item of the input
+ *     parent objects list. This will use both the {@link ScrapperHelper}
+ *     implementation provided by the end-user, and the {@link HtmlAutoScrapper}
+ *     instance provided through the builders used to create the current
+ *     {@link AutomaticScrapperClient}.
+ * </p>
+ *
+ * @author Louis-wht
+ * @since 1.0.0
+ * @param <P> P is the parent object which will be used each time to create the request and that
+ *           in the end will be modified.
+ * @param <M> M is the model on which the Html responses will be mapped
+ */
+public class ScrapperThreadCallableImpl<P, M> implements ScrapperThreadCallable<P, M> {
+
+    private static final Logger log = LoggerFactory.getLogger(ScrapperThreadCallableImpl.class);
 
     private final P parentObject;
     private final ScrappingContext<P, M, ? extends ScrapperHelper<P, M>> context;
@@ -35,7 +56,7 @@ public class ScrapperThreadCallable<P, M> implements Callable<Object> {
     private boolean scrapped = false;
 
 
-    public ScrapperThreadCallable(
+    public ScrapperThreadCallableImpl(
             final P parentObject,
             final ScrappingContext<P, M, ? extends ScrapperHelper<P, M>> context,
             final HtmlAutoScrapper<M> htmlAutoScrapper
@@ -44,10 +65,26 @@ public class ScrapperThreadCallable<P, M> implements Callable<Object> {
         this.parentObject = parentObject;
         this.context = context;
         this.htmlAutoScrapper = htmlAutoScrapper;
-        scrapperHelper = context.helper;
+        scrapperHelper = context.getHelper();
         requestScrappingContext = context.getRequestScrappingContext();
     }
 
+    /**
+     * <p>
+     *     This implementation of {@link Callable#call()} method
+     *     provides the core processing that will interact with
+     *     both the {@link ScrapperHelper} provided by the end
+     *     user and the {@link HtmlAutoScrapper} instance in
+     *     order to interact and scrap properly the input
+     *     parent object of type {@code <P>}, turn it into
+     *     a {@code <M>} type object and finally return an
+     *     Object.
+     * </p>
+     * @return the result of this scrapping returned by
+     *         {@link ScrapperHelper#returnResult(Object, Object)}
+     * @throws Exception if any of the steps involved in
+     *                   the scrapping throw an exception.
+     */
     @Override
     public Object call() throws Exception {
         M model = null;
@@ -85,25 +122,39 @@ public class ScrapperThreadCallable<P, M> implements Callable<Object> {
                 }
 
                 scrapped = scrapperHelper.wasScrapped(parentObject, model);
-                done = true;
 
                 return scrapperHelper.returnResult(parentObject, model);
             }
-            done = true;
             return null;
-        }catch(Exception e)
+        }
+
+        catch(Exception e)
         {
             scrapperHelper.handleException(e, parentObject, model);
-            scrapped = true;
-            done = true;
+            scrapped = false;
             throw e;
+        }
+
+        finally
+        {
+            done = true;
         }
     }
 
+    /**
+     * @see ScrapperThreadCallable#isDone()
+     * @return see {@link ScrapperThreadCallable#isDone()}
+     */
+    @Override
     public boolean isDone() {
         return done;
     }
 
+    /**
+     * @see ScrapperThreadCallable#hasScrapped()
+     * @return see {@link ScrapperThreadCallable#hasScrapped()}
+     */
+    @Override
     public boolean hasScrapped() {
         return scrapped;
     }

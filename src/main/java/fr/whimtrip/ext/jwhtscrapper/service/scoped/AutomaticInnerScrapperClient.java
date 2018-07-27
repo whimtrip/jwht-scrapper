@@ -12,6 +12,8 @@ import fr.whimtrip.core.util.WhimtripUtils;
 import fr.whimtrip.core.util.intrf.ExceptionLogger;
 import fr.whimtrip.ext.jwhtscrapper.exception.ScrapperException;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrapperHelper;
+import fr.whimtrip.ext.jwhtscrapper.intfr.ScrappingStats;
+import fr.whimtrip.ext.jwhtscrapper.service.base.ScrapperThreadCallable;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,7 +77,7 @@ public class AutomaticInnerScrapperClient<P, M> {
 
         scrapStarted = true;
         List results = new ArrayList<>();
-        requestScrappingContext = context.requestScrappingContext;
+        requestScrappingContext = context.getRequestScrappingContext();
 
         synchronized (pList) {
             pList.addAll(context.getParentObjects());
@@ -271,7 +273,7 @@ public class AutomaticInnerScrapperClient<P, M> {
                     break;
 
                 FutureTask<Object> ft = new ScrapperFutureTask<>(
-                        new ScrapperThreadCallable(p, context, htmlAutoScrapper)
+                        new ScrapperThreadCallableImpl(p, context, htmlAutoScrapper)
                 );
                 fts.add(ft);
                 runningTasks.add(ft);
@@ -315,11 +317,11 @@ public class AutomaticInnerScrapperClient<P, M> {
 
     public ScrappingStats getScrapingStats() {
         if(!scrapStarted)
-            return new ScrappingStats(0,0,0,0, 0);
+            return new ScrappingStatsImpl(0,0,0,0, 0);
 
         int runningTasks = startedScrapsCount - finishedTasks;
 
-        return new ScrappingStats(
+        return new ScrappingStatsImpl(
                 finishedTasks, runningTasks,
                 validFinishedTasks,
                 failedFinishedTasks,
