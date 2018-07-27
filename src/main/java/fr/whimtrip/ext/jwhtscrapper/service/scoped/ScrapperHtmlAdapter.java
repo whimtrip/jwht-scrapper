@@ -8,11 +8,9 @@ import fr.whimtrip.ext.jwhthtmltopojo.adapter.HtmlToPojoAnnotationMap;
 import fr.whimtrip.ext.jwhthtmltopojo.annotation.Selector;
 import fr.whimtrip.ext.jwhthtmltopojo.exception.FieldShouldNotBeSetException;
 import fr.whimtrip.ext.jwhthtmltopojo.exception.ParseException;
+import fr.whimtrip.ext.jwhthtmltopojo.intrf.HtmlAdapter;
 import fr.whimtrip.ext.jwhthtmltopojo.intrf.HtmlField;
-import fr.whimtrip.ext.jwhtscrapper.annotation.Link;
-import fr.whimtrip.ext.jwhtscrapper.annotation.LinkObject;
-import fr.whimtrip.ext.jwhtscrapper.annotation.LinkObjects;
-import fr.whimtrip.ext.jwhtscrapper.annotation.WarningSign;
+import fr.whimtrip.ext.jwhtscrapper.annotation.*;
 import fr.whimtrip.ext.jwhtscrapper.exception.WarningSignException;
 import org.jsoup.nodes.Element;
 
@@ -23,6 +21,41 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static fr.whimtrip.ext.jwhtscrapper.annotation.WarningSign.TriggeredOn.*;
+
+
+/**
+ *
+ *
+ * <p>Part of project jwht-scrapper</p>
+ * <p>Created on 26/07/18</p>
+ *
+ * <p>
+ *     This class extends the {@link DefaultHtmlAdapterImpl} to provide
+ *     a specific implementation of {@link HtmlAdapter} from the htmltopojo
+ *     lib from fr.whimtrip. This allows us to build custom annotation
+ *     processing on top of implementations provided by default
+ *     {@link DefaultHtmlAdapterImpl} adapter. Features added is support
+ *     for link following and warning sign triggering.
+ * </p>
+ * <p>New annotations supported with this implementation are :</p>
+ * <ul>
+ *     <li>{@link Link}</li>
+ *     <li>{@link LinkObject}</li>
+ *     <li>{@link LinkObjects}</li>
+ *     <li>{@link WarningSign}</li>
+ * </ul>
+ * <p>New Annotations that are handled and processed elsewhere :</p>
+ * <ul>
+ *     <li>{@link LinkField}</li>
+ *     <li>{@link LinkListsFromBuilder}</li>
+ * </ul>
+ *
+ *
+ * @author Louis-wht
+ * @since 1.0.0
+ * @param <T> T is the model on which the Html responses will be mapped
+ */
 public class ScrapperHtmlAdapter<T> extends DefaultHtmlAdapterImpl<T> {
 
 
@@ -30,6 +63,20 @@ public class ScrapperHtmlAdapter<T> extends DefaultHtmlAdapterImpl<T> {
         super(htmlToPojoEngine, clazz);
     }
 
+    /**
+     * <p>
+     *     This method features a major difference from the classic
+     *     implementation. Before calling {@link HtmlField#setFieldOrThrow(Object, Object)}
+     *     warning signs are checked. When warning signs are detected
+     *     an {@link WarningSignException} will be triggered and handled
+     *     by the calling stack.
+     * </p>
+     *
+     * @see HtmlAdapter#loadFromNode(Element, Object)})
+     * @param node {@link HtmlAdapter#loadFromNode(Element, Object)})}
+     * @param newInstance {@link HtmlAdapter#loadFromNode(Element, Object)})}
+     * @return {@link HtmlAdapter#loadFromNode(Element, Object)})}
+     */
     @Override
     public T loadFromNode(Element node, T newInstance) {
 
@@ -46,7 +93,7 @@ public class ScrapperHtmlAdapter<T> extends DefaultHtmlAdapterImpl<T> {
 
             if(shouldFieldBeSet)
             {
-                checkWarningSign(htmlField.getField(), fieldValue);
+                checkAndThrowWarningSign(htmlField.getField(), fieldValue);
 
                 htmlField.setFieldOrThrow(newInstance, fieldValue);
             }
@@ -55,6 +102,18 @@ public class ScrapperHtmlAdapter<T> extends DefaultHtmlAdapterImpl<T> {
 
     }
 
+    /**
+     * <p>This implementation adds a new method on standard {@link HtmlAdapter}.</p>
+     * <p>
+     *     This method will help find the field to assign the new POJO
+     *     from the new link to poll. For more details, see {@link Link}
+     *     and {@link LinkObject} / {@link LinkObjects}.
+     * </p>
+     * @param link the link {@link HtmlToPojoAnnotationMap} we need to
+     *             find the field to set the new POJO to for.
+     * @return the field we will set the resulting POJO to out of the
+     *         {@link Link} url scrapped.
+     */
     public Field getLinkObject(HtmlToPojoAnnotationMap<Link> link)
     {
 
@@ -64,8 +123,6 @@ public class ScrapperHtmlAdapter<T> extends DefaultHtmlAdapterImpl<T> {
             if(linkObject.getAnnotation().value().equals(link.getName()))
                 return linkObject.getField();
         }
-
-
 
         List<? extends HtmlToPojoAnnotationMap<LinkObjects>> linkObjectsFields = getFieldList(LinkObjects.class);
         for(HtmlToPojoAnnotationMap<LinkObjects> linkObjects : linkObjectsFields)
@@ -78,58 +135,45 @@ public class ScrapperHtmlAdapter<T> extends DefaultHtmlAdapterImpl<T> {
     }
 
 
-    private void checkWarningSign(Field field, Object value) throws WarningSignException {
-        if(field.getAnnotation(WarningSign.class) != null)
+    /**
+     * <p>
+     *     Simplified method for warning sign checking calling
+     *     {@link #isWarningSignTriggered(Field, Object, WarningSign)}
+     *     internally to detect warning signs.
+     * </p>
+     * @param field the field to analyse warning sign for
+     * @param value the raw value to test wether it is a warning sign or not.
+     * @throws WarningSignException if the value was detected to be a Warning Sign.
+     */
+    private void checkAndThrowWarningSign(Field field, Object value) throws WarningSignException {
+        WarningSign warningSign;
+        if((warningSign = field.getAnnotation(WarningSign.class)) != null)
         {
-            if( isWarningSignTriggered(field, value))
+            if( isWarningSignTriggered(field, value, warningSign))
                 throw new WarningSignException(field);
         }
     }
 
-    private boolean isWarningSignTriggered(Field field, Object value) {
-        boolean retry = false;
+    /**
+     *
+     * <p>Core method to know if a warning sign was detected</p>
+     * @param field the field to analyse warning sign for
+     * @param value the original value to test wether it is a warning sign or not.
+     * @param warningSign {@link WarningSign} annotation found on top of
+     *                    the field to analyse.
+     * @return a boolean indicating wether a warning sign was or wasn't detected.
+     * @throws WarningSignException if the value was detected to be a Warning Sign.
+     */
+    private boolean isWarningSignTriggered(Field field, Object value, WarningSign warningSign) {
 
-        WarningSign warningSign = field.getAnnotation(WarningSign.class);
-
-        if(        warningSign.triggeredOn() != WarningSign.TriggeredOn.ANY_VALUE_MATCHING_REGEX
-                && warningSign.triggeredOn() != WarningSign.TriggeredOn.ANY_VALUE_NOT_MATCHING_REGEX)
+        if(        warningSign.triggeredOn() != ANY_VALUE_MATCHING_REGEX
+                && warningSign.triggeredOn() != ANY_VALUE_NOT_MATCHING_REGEX)
         {
 
-            Selector selector = field.getAnnotation(Selector.class);
-            Object castedDefaultValue = null;
-            try {
-                castedDefaultValue = HtmlToPojoUtils.castValue(
-                        selector.defValue(),
-                        value.getClass(),
-                        "",
-                        selector.locale().equals(Selector.NO_VALUE) ?
-                                Locale.getDefault() : Locale.forLanguageTag(selector.locale())
-                );
-            }catch(IllegalArgumentException e)
-            {
-                throw new ParseException(selector.defValue(), Locale.getDefault(), field);
-            }
-
-            boolean isNullOrEquivalent =
-                    (value == null || (value instanceof String && ((String) value).isEmpty() )
-                            || (value instanceof List && ((List) value).isEmpty()));
-            boolean isEqualAsNumbers =
-                    (value instanceof Number && WhimtripUtils
-                            .compareNumbers(
-                                    (Number) value,
-                                    (Number) castedDefaultValue
-                            ) == 0
-                    );
-            boolean isEqualToDefaultValue = ( isEqualAsNumbers || value == castedDefaultValue || value.equals(castedDefaultValue));
-
-            if(
-                    (warningSign.triggeredOn() == WarningSign.TriggeredOn.NULL_VALUE && isNullOrEquivalent)
-                            || (warningSign.triggeredOn() == WarningSign.TriggeredOn.DEFAULT_VALUE && isEqualToDefaultValue)
-                            || (warningSign.triggeredOn() == WarningSign.TriggeredOn.ANY_CORRECT_VALUE && !isNullOrEquivalent && !isEqualToDefaultValue)
-                    )
-            {
-                retry = true;
-            }
+            return
+                    (warningSign.triggeredOn() == NULL_VALUE && isNullOrEquivalent(value))
+                 || (warningSign.triggeredOn() == DEFAULT_VALUE && isEqualToDefaultValue(field, value))
+                 || (warningSign.triggeredOn() == ANY_CORRECT_VALUE && !isNullOrEquivalent(value) && !isEqualToDefaultValue(field, value));
         }
 
         else if(value instanceof String)
@@ -137,14 +181,68 @@ public class ScrapperHtmlAdapter<T> extends DefaultHtmlAdapterImpl<T> {
             Pattern pattern = Pattern.compile(warningSign.triggeredOnRegex());
             Matcher m = pattern.matcher((String)value);
             boolean match = m.find();
-            if(warningSign.triggeredOn() == WarningSign.TriggeredOn.ANY_VALUE_NOT_MATCHING_REGEX && !match
-                    || warningSign.triggeredOn() == WarningSign.TriggeredOn.ANY_VALUE_MATCHING_REGEX && match)
-            {
-                retry = true;
-            }
+            return
+                    warningSign.triggeredOn() == ANY_VALUE_NOT_MATCHING_REGEX && !match
+                 || warningSign.triggeredOn() == ANY_VALUE_MATCHING_REGEX && match;
         }
 
-        return retry;
+        return false;
+    }
+
+    /**
+     * @param field the field to analyse
+     * @param value the original value retrieved from the field
+     * @return a boolean indicating wether it is a default value or not
+     */
+    private boolean isEqualToDefaultValue(Field field, Object value) {
+        Object castedDefaultValue = buildCastedDefaultValue(field);
+        return    isEqualAsNumbers(value, castedDefaultValue)
+                || value == castedDefaultValue
+                || (value != null && value.equals(castedDefaultValue));
+    }
+
+    /**
+     * @param value the original value retrieved from the field
+     * @param castedDefaultValue the casted default value
+     * @return a boolean indicating if they are equals as numbers
+     */
+    private boolean isEqualAsNumbers(Object value, Object castedDefaultValue) {
+
+        return     value instanceof Number && castedDefaultValue instanceof  Number
+                && WhimtripUtils.compareNumbers((Number) value, (Number) castedDefaultValue) == 0;
+    }
+
+    /**
+     * @param value the value to analyse
+     * @return a boolean indicating wether it is considered as a
+     *         null value or not
+     */
+    private boolean isNullOrEquivalent(Object value) {
+        return value == null || (value instanceof String && ((String) value).isEmpty())
+                || (value instanceof List && ((List) value).isEmpty());
+    }
+
+    /**
+     * @param field the field to build default value from
+     * @return the casted default value
+     */
+    private Object buildCastedDefaultValue(Field field) {
+
+        Selector selector = field.getAnnotation(Selector.class);
+        Object castedDefaultValue = null;
+        try {
+            castedDefaultValue = HtmlToPojoUtils.castValue(
+                    selector.defValue(),
+                    field.getType(),
+                    "",
+                    selector.locale().equals(Selector.NO_VALUE) ?
+                            Locale.getDefault() : Locale.forLanguageTag(selector.locale())
+            );
+        }catch(IllegalArgumentException e)
+        {
+            throw new ParseException(selector.defValue(), Locale.getDefault(), field);
+        }
+        return castedDefaultValue;
     }
 
 }

@@ -24,9 +24,6 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
-/**
- * Created by LOUISSTEIMBERG on 22/11/2017.
- */
 
 /**
  *

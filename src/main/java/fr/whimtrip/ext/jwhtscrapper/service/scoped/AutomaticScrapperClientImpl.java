@@ -122,7 +122,7 @@ public class AutomaticScrapperClientImpl<P, M> implements AutomaticScrapperClien
      */
     public List<M> getResults(Long timeout, TimeUnit timeUnit) throws ScrapFailedException, ScrapNotFinishedException {
 
-        if (!scrapped && timeout != null) throw new ScrapNotFinishedException(getScrapperThreadName());
+        if (!scrapped && timeout == null) throw new ScrapNotFinishedException(getScrapperThreadName());
 
         try {
             return timeout == null ? ft.get() : ft.get(timeout, timeUnit);
