@@ -35,6 +35,7 @@ import fr.whimtrip.ext.jwhtscrapper.exception.WarningSignException;
 import fr.whimtrip.ext.jwhtscrapper.intfr.BasicObjectMapper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.HttpRequestEditor;
 import fr.whimtrip.ext.jwhtscrapper.intfr.LinkListFactory;
+import fr.whimtrip.ext.jwhtscrapper.service.base.HttpManagerClient;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.LinkPreparatorHolder;
 import org.asynchttpclient.BoundRequestBuilder;
 import org.jetbrains.annotations.NotNull;
@@ -59,7 +60,7 @@ public class HtmlAutoScrapper<T> {
 
     private static final Logger log = LoggerFactory.getLogger(HtmlAutoScrapper.class);
 
-    private final ProxyManagerClient proxyManagerClient;
+    private final HttpManagerClient httpManagerClient;
     private final BasicObjectMapper objectMapper;
     private final BoundRequestBuilderProcessor boundRequestBuilderProcessor;
     private final HtmlAdapter<T> htmlAdapter;
@@ -77,7 +78,7 @@ public class HtmlAutoScrapper<T> {
 
 
     public HtmlAutoScrapper(
-            ProxyManagerClient proxyManagerClient,
+            HttpManagerClient httpManagerClient,
             HtmlToPojoEngine htmlToPojoEngine,
             BoundRequestBuilderProcessor boundRequestBuilderProcessor,
             BasicObjectMapper objectMapper,
@@ -87,7 +88,7 @@ public class HtmlAutoScrapper<T> {
             boolean followRedirections,
             int warningSignDelay
     ) {
-        this.proxyManagerClient = proxyManagerClient;
+        this.httpManagerClient = httpManagerClient;
         this.boundRequestBuilderProcessor = boundRequestBuilderProcessor;
         this.objectMapper = objectMapper;
         this.parallelizeLinkListPolling = parallelizeLinkListPolling;
@@ -128,7 +129,7 @@ public class HtmlAutoScrapper<T> {
             throws ExecutionException, InterruptedException, ModelBindingException
     {
         String rawResponse =
-                proxyManagerClient.getResponse(req, followRedirections);
+                httpManagerClient.getResponse(req, followRedirections);
 
         try {
 
@@ -157,7 +158,7 @@ public class HtmlAutoScrapper<T> {
 
             boundRequestBuilderProcessor.printReq(req);
             WhimtripUtils.waitForWithOutputToConsole((long) warningSignDelay, 20);
-            req = boundRequestBuilderProcessor.recreateRequest(req, proxyManagerClient);
+            req = boundRequestBuilderProcessor.recreateRequest(req, httpManagerClient);
             return scrap(req, obj, adapter, followRedirections, mappedClazz);
         }
         catch (IOException e) {
@@ -184,7 +185,7 @@ public class HtmlAutoScrapper<T> {
 
     public BoundRequestBuilder prepareScrapPost(String url, Map<String, Object> fields)
     {
-        BoundRequestBuilder req = proxyManagerClient.post(url);
+        BoundRequestBuilder req = httpManagerClient.preparePost(url);
         for(Map.Entry<String, Object> field : fields.entrySet())
         {
             req.addFormParam(field.getKey(), field.getValue().toString());
@@ -194,7 +195,7 @@ public class HtmlAutoScrapper<T> {
 
     public BoundRequestBuilder prepareScrapGet(String url)
     {
-        return proxyManagerClient.get(url);
+        return httpManagerClient.prepareGet(url);
     }
 
 
@@ -455,11 +456,11 @@ public class HtmlAutoScrapper<T> {
 
             if (container.getMethod() == Link.Method.GET)
             {
-                req = proxyManagerClient.get(container.getUrl());
+                req = httpManagerClient.prepareGet(container.getUrl());
             }
             else
             {
-                req = proxyManagerClient.post(container.getUrl());
+                req = httpManagerClient.preparePost(container.getUrl());
 
                 for(Map.Entry<String, Object> fieldEntr: container.getFields().entrySet())
                 {
@@ -478,12 +479,6 @@ public class HtmlAutoScrapper<T> {
         }
 
         return null;
-    }
-
-
-
-    public ProxyManagerClient getProxyManagerClient() {
-        return proxyManagerClient;
     }
 
     private class LinkListElementCallable<U, P> implements Callable<U>

@@ -47,7 +47,7 @@ public @interface RequestsConfig {
 
     Header[] defaultHeaders() default {};
 
-    LinkField[] defaultPostFields() default {};
+    Field[] defaultPostFields() default {};
 
     boolean followRedirections() default true;
 

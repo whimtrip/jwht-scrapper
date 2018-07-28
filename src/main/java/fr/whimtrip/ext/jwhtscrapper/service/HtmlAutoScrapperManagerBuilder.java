@@ -7,7 +7,7 @@ import fr.whimtrip.ext.jwhtscrapper.intfr.ProxyFinder;
 import fr.whimtrip.ext.jwhtscrapper.service.base.AutomaticScrapperManager;
 import fr.whimtrip.ext.jwhtscrapper.service.scoped.BoundRequestBuilderProcessor;
 import fr.whimtrip.ext.jwhtscrapper.service.scoped.HtmlAutoScrapper;
-import fr.whimtrip.ext.jwhtscrapper.service.scoped.ProxyManagerClient;
+import fr.whimtrip.ext.jwhtscrapper.service.scoped.HttpWithProxyManagerClient;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.DefaultAsyncHttpClient;
 import org.asynchttpclient.DefaultAsyncHttpClientConfig;
@@ -21,7 +21,7 @@ import org.jetbrains.annotations.NotNull;
  * <p>
  *     This builder will help building a custom {@link HtmlAutoScrapperManager}.
  *     With this manager class, you'll be able to instanciate manually your
- *     custom {@link HtmlAutoScrapper} or {@link ProxyManagerClient}.
+ *     custom {@link HtmlAutoScrapper} or {@link HttpWithProxyManagerClient}.
  * </p>
  * <p>
  *     Usually, this class is created automatically through the native

@@ -29,9 +29,14 @@ import fr.whimtrip.ext.jwhtscrapper.annotation.WarningSign;
 import fr.whimtrip.ext.jwhtscrapper.intfr.BasicObjectMapper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ProxyFinder;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrapperHelper;
+import fr.whimtrip.ext.jwhtscrapper.service.base.HttpManagerClient;
+import fr.whimtrip.ext.jwhtscrapper.service.holder.Field;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.RequestsScrappingContext;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.ScrappingContext;
-import fr.whimtrip.ext.jwhtscrapper.service.scoped.*;
+import fr.whimtrip.ext.jwhtscrapper.service.scoped.BoundRequestBuilderProcessor;
+import fr.whimtrip.ext.jwhtscrapper.service.scoped.DefaultHttpManagerClientBuilder;
+import fr.whimtrip.ext.jwhtscrapper.service.scoped.HtmlAutoScrapper;
+import fr.whimtrip.ext.jwhtscrapper.service.scoped.HttpWithProxyManagerClient;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.cookie.Cookie;
@@ -49,7 +54,7 @@ import java.util.List;
  *
  * <p>
  *     This class will be in charge of providing factory method for instanciating
- *     both {@link ProxyManagerClient} and {@link HtmlAutoScrapper} thanks to
+ *     both {@link HttpWithProxyManagerClient} and {@link HtmlAutoScrapper} thanks to
  *     methods input parameters and context services binded using the original
  *     constructor.
  * </p>
@@ -76,7 +81,7 @@ public class HtmlAutoScrapperManager {
      * Package private constructor that is yet only meant to be used through its
      * dedicated builder {@link HtmlAutoScrapperManagerBuilder}.
      * @param exceptionLogger the exception logger that will be used by both the
-     *                        {@link ProxyManagerClient} and the {@link HtmlAutoScrapper}
+     *                        {@link HttpWithProxyManagerClient} and the {@link HtmlAutoScrapper}
      * @param htmlToPojoEngine the core html to pojo engine allowing us to parse
      *                         HTML input to java POJOs.
      * @param objectMapper the object mapper to use for mapping differently formatted
@@ -116,9 +121,9 @@ public class HtmlAutoScrapperManager {
      *                request
      * @param maxRequestRetries maximum number of retries before throwing a
      *                          failure exception
-     * @return built {@link ProxyManagerClient}
+     * @return built {@link HttpWithProxyManagerClient}
      */
-    public ProxyManagerClient createProxyManagerClient(
+    public HttpManagerClient createProxyManagerClient(
             int awaitBetweenRequests,
             int proxyChangeRate,
             int timeout,
@@ -133,7 +138,9 @@ public class HtmlAutoScrapperManager {
                 false,
                 true,
                 false,
+                true,
                 maxRequestRetries,
+                null,
                 null,
                 new Cookie[]{}
         );
@@ -166,15 +173,23 @@ public class HtmlAutoScrapperManager {
      *  let potential (quite common case when scrapping) happens.
      *  <strong>Warning! Only use if you know what you are doing!</strong>
      *
+     * @param followRedirections wether HTTP redirection (301 and 302 HTTP status)
+     * should be accepted or not. If false, no redirection will be followed, even
+     * though {@code allowInfiniteRedirections} is set to true. If set to true with
+     * {@code allowInfiniteRedirections} set to false, redirections will only be
+     * followed once in per single HTTP request but not more.
+     *
      * @param maxRequestRetries maximum number of retries before throwing a
      *                          failure exception<p></p>
      *
+     *
      * @param headers default headers to use in each requests<p></p>
      * @param cookies default cookies to use in each requests<p></p>
+     * @param fields default POST fields to use on each requests.
      *
-     * @return built {@link ProxyManagerClient}
+     * @return built {@link HttpWithProxyManagerClient}
      */
-    public ProxyManagerClient createProxyManagerClient(
+    public HttpManagerClient createProxyManagerClient(
             int awaitBetweenRequests,
             int proxyChangeRate,
             int timeout,
@@ -182,13 +197,15 @@ public class HtmlAutoScrapperManager {
             boolean connectToProxyBeforeRequest,
             boolean rotatingUserAgent,
             boolean allowInfiniteRedirections,
+            boolean followRedirections,
             int maxRequestRetries,
             HttpHeaders headers,
+            List<Field> fields,
             Cookie... cookies
     ){
 
         return
-                new ProxyManagerClientBuilder(asyncHttpClient, objectMapper, exceptionLogger, boundRequestBuilderProcessor)
+                new DefaultHttpManagerClientBuilder(asyncHttpClient, exceptionLogger, boundRequestBuilderProcessor)
                         .setAwaitBetweenRequests(awaitBetweenRequests)
                         .setProxyChangeRate(proxyChangeRate)
                         .setTimeout(timeout)
@@ -196,8 +213,10 @@ public class HtmlAutoScrapperManager {
                         .setConnectToProxyBeforeRequest(connectToProxyBeforeRequest)
                         .setRotatingUserAgent(rotatingUserAgent)
                         .setAllowInfiniteRedirections(allowInfiniteRedirections)
+                        .setFollowRedirections(followRedirections)
                         .setMaxRequestRetries(maxRequestRetries)
                         .setDefaultHeaders(headers)
+                        .setDefaultFields(fields)
                         .setDefaultCookies(cookies)
                         .setProxyFinder(proxyFinder)
                         .build();
@@ -205,7 +224,7 @@ public class HtmlAutoScrapperManager {
 
     /**
      * <p>Manual {@link HtmlAutoScrapper} factory method.</p>
-     * @param client the {@link ProxyManagerClient} that will be used under the
+     * @param client the {@link HttpWithProxyManagerClient} that will be used under the
      *               hood by the {@link HtmlAutoScrapper}.<p></p>
      *
      * @param clazz the class to map resulting outputs to.<p></p>
@@ -228,7 +247,7 @@ public class HtmlAutoScrapperManager {
      * @return built in {@link HtmlAutoScrapper}.
      */
     public <T> HtmlAutoScrapper<T> createHtmlAutoScrapper(
-            final ProxyManagerClient client,
+            final HttpManagerClient client,
             Class<T> clazz,
             boolean throwEx,
             boolean parallelizeLinkListPolling,
@@ -256,9 +275,9 @@ public class HtmlAutoScrapperManager {
      *     implementation.
      * </p>
      * @param requestPreparator context of the scrapping request
-     * @return built in {@link ProxyManagerClient}
+     * @return built in {@link HttpWithProxyManagerClient}
      */
-    public ProxyManagerClient createProxyManagerClient(RequestsScrappingContext requestPreparator) {
+    public HttpManagerClient createProxyManagerClient(RequestsScrappingContext requestPreparator) {
         RequestsConfig config = requestPreparator.getRequestsConfig();
         ProxyConfig proxyConfig = config.proxyConfig();
 
@@ -284,6 +303,12 @@ public class HtmlAutoScrapperManager {
         Cookie[] cookies = new Cookie[cookieList.size()];
         cookieList.toArray(cookies);
 
+        List<Field> fields = new ArrayList<>();
+
+        for(fr.whimtrip.ext.jwhtscrapper.annotation.Field fld : config.defaultPostFields()) {
+            fields.add(new Field(fld.name(), fld.value()));
+        }
+
         return createProxyManagerClient(
                 config.waitBetweenRequests(),
                 proxyConfig.proxyChangeRate(),
@@ -292,8 +317,10 @@ public class HtmlAutoScrapperManager {
                 proxyConfig.connectToProxyBeforeRequest(),
                 config.rotatingUserAgent(),
                 config.allowInfiniteRedirections(),
+                config.followRedirections(),
                 config.maxRequestRetries(),
                 headers,
+                fields,
                 cookies
         );
     }
@@ -303,19 +330,19 @@ public class HtmlAutoScrapperManager {
      *     Automatic factory method using {@link RequestsScrappingContext}
      *     built using annotations gathered on top of {@link ScrapperHelper}
      *     implementation.
-     *     Built {@link ProxyManagerClient} is already required in order
+     *     Built {@link HttpWithProxyManagerClient} is already required in order
      *     for this {@link HtmlAutoScrapper} to have the correct subjacent
      *     processing unit.
      * </p>
      * @param context  context of the scrapping request
-     * @param proxyClient previously built in {@link ProxyManagerClient}
+     * @param httpManagerClient previously built in {@link HttpWithProxyManagerClient}
      *                    using this factory class.
      * @return built in {@link HtmlAutoScrapper}
      */
-    public HtmlAutoScrapper createHtmlAutoScrapper(ProxyManagerClient proxyClient, ScrappingContext context) {
+    public HtmlAutoScrapper createHtmlAutoScrapper(HttpManagerClient httpManagerClient, ScrappingContext context) {
 
         return createHtmlAutoScrapper(
-                proxyClient,
+                httpManagerClient,
                 context.getModelClazz(),
                 context.getRequestsScrappingContext().isThrowExceptions(),
                 context.getRequestsScrappingContext().getRequestsConfig().parallelizeLinkListPolling(),

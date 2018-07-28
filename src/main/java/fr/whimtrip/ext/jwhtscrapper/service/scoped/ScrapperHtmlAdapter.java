@@ -14,7 +14,6 @@ import fr.whimtrip.ext.jwhtscrapper.annotation.*;
 import fr.whimtrip.ext.jwhtscrapper.exception.WarningSignException;
 import org.jsoup.nodes.Element;
 
-import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -47,7 +46,7 @@ import static fr.whimtrip.ext.jwhtscrapper.annotation.WarningSign.TriggeredOn.*;
  * </ul>
  * <p>New Annotations that are handled and processed elsewhere :</p>
  * <ul>
- *     <li>{@link LinkField}</li>
+ *     <li>{@link Field}</li>
  *     <li>{@link LinkListsFromBuilder}</li>
  * </ul>
  *
@@ -67,7 +66,7 @@ public class ScrapperHtmlAdapter<T> extends DefaultHtmlAdapterImpl<T> {
      * <p>
      *     This method features a major difference from the classic
      *     implementation. Before calling {@link HtmlField#setFieldOrThrow(Object, Object)}
-     *     warning signs are checked {@link #checkAndThrowWarningSign(Field, Object)}.
+     *     warning signs are checked {@link #checkAndThrowWarningSign(java.lang.reflect.Field, Object)}.
      *     When warning signs are detected an {@link WarningSignException}
      *     will be triggered and handled by the calling stack.
      * </p>
@@ -114,7 +113,7 @@ public class ScrapperHtmlAdapter<T> extends DefaultHtmlAdapterImpl<T> {
      * @return the field we will set the resulting POJO to out of the
      *         {@link Link} url scrapped.
      */
-    public Field getLinkObject(HtmlToPojoAnnotationMap<Link> link)
+    public java.lang.reflect.Field getLinkObject(HtmlToPojoAnnotationMap<Link> link)
     {
 
         List<? extends HtmlToPojoAnnotationMap<LinkObject>> linkObjectFields = getFieldList(LinkObject.class);
@@ -138,14 +137,14 @@ public class ScrapperHtmlAdapter<T> extends DefaultHtmlAdapterImpl<T> {
     /**
      * <p>
      *     Simplified method for warning sign checking calling
-     *     {@link #isWarningSignTriggered(Field, Object, WarningSign)}
+     *     {@link #isWarningSignTriggered(java.lang.reflect.Field, Object, WarningSign)}
      *     internally to detect warning signs.
      * </p>
      * @param field the field to analyse warning sign for
      * @param value the raw value to test wether it is a warning sign or not.
      * @throws WarningSignException if the value was detected to be a Warning Sign.
      */
-    private void checkAndThrowWarningSign(Field field, Object value) throws WarningSignException {
+    private void checkAndThrowWarningSign(java.lang.reflect.Field field, Object value) throws WarningSignException {
         WarningSign warningSign;
         if((warningSign = field.getAnnotation(WarningSign.class)) != null)
         {
@@ -164,7 +163,7 @@ public class ScrapperHtmlAdapter<T> extends DefaultHtmlAdapterImpl<T> {
      * @return a boolean indicating wether a warning sign was or wasn't detected.
      * @throws WarningSignException if the value was detected to be a Warning Sign.
      */
-    private boolean isWarningSignTriggered(Field field, Object value, WarningSign warningSign) {
+    private boolean isWarningSignTriggered(java.lang.reflect.Field field, Object value, WarningSign warningSign) {
 
         if(        warningSign.triggeredOn() != ANY_VALUE_MATCHING_REGEX
                 && warningSign.triggeredOn() != ANY_VALUE_NOT_MATCHING_REGEX)
@@ -194,7 +193,7 @@ public class ScrapperHtmlAdapter<T> extends DefaultHtmlAdapterImpl<T> {
      * @param value the original value retrieved from the field
      * @return a boolean indicating wether it is a default value or not
      */
-    private boolean isEqualToDefaultValue(Field field, Object value) {
+    private boolean isEqualToDefaultValue(java.lang.reflect.Field field, Object value) {
         Object castedDefaultValue = buildCastedDefaultValue(field);
         return    isEqualAsNumbers(value, castedDefaultValue)
                 || value == castedDefaultValue
@@ -226,7 +225,7 @@ public class ScrapperHtmlAdapter<T> extends DefaultHtmlAdapterImpl<T> {
      * @param field the field to build default value from
      * @return the casted default value
      */
-    private Object buildCastedDefaultValue(Field field) {
+    private Object buildCastedDefaultValue(java.lang.reflect.Field field) {
 
         Selector selector = field.getAnnotation(Selector.class);
         Object castedDefaultValue = null;

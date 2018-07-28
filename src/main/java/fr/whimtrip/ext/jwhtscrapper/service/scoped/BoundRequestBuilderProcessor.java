@@ -12,6 +12,7 @@ import fr.whimtrip.core.util.WhimtripUtils;
 import fr.whimtrip.core.util.intrf.ExceptionLogger;
 import fr.whimtrip.ext.jwhtscrapper.intfr.Proxy;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ProxyFinder;
+import fr.whimtrip.ext.jwhtscrapper.service.base.HttpManagerClient;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.cookie.Cookie;
@@ -79,12 +80,12 @@ public class BoundRequestBuilderProcessor {
         while(iterator.hasNext())
         {
             Map.Entry<String, String> header = iterator.next();
-            log.info("{} : {}", header.getKey(), header.getValue());
+            log.debug("{} : {}", header.getKey(), header.getValue());
         }
     }
 
 
-    public Proxy getProxyServerFormRequestBuilder(BoundRequestBuilder req)
+    public Proxy getProxyServerFromRequestBuilder(BoundRequestBuilder req)
     {
         if(proxyField == null)
         {
@@ -123,7 +124,7 @@ public class BoundRequestBuilderProcessor {
 
     public void printReq(BoundRequestBuilder req)
     {
-        log.info("Outputing request with method " + getMethod(req) + " at url " + getUrlFromRequestBuilder(req));
+        log.debug("Outputing request with method " + getMethod(req) + " at url " + getUrlFromRequestBuilder(req));
         HttpHeaders headers = getHttpHeaders(req);
         if(headers != null)
             printHeaders(headers);
@@ -142,7 +143,7 @@ public class BoundRequestBuilderProcessor {
 
         for(io.netty.handler.codec.http.cookie.Cookie ck : cookies)
         {
-            log.info(ck.name() + "=" + ck.value() + "; path=" + ck.path() + "; domain=" + ck.domain() + "; Expires=" + ck.maxAge());
+            log.debug(ck.name() + "=" + ck.value() + "; path=" + ck.path() + "; domain=" + ck.domain() + "; Expires=" + ck.maxAge());
         }
     }
 
@@ -160,10 +161,10 @@ public class BoundRequestBuilderProcessor {
     }
 
     public void printParams(List<Param> params) {
-        log.info("Fields found on this request are ? ");
+        log.debug("Fields found on this request are ? ");
         for(Param prm : params)
         {
-            log.info(prm.getName() + " : " + prm.getValue() );
+            log.debug(prm.getName() + " : " + prm.getValue() );
         }
     }
 
@@ -223,8 +224,8 @@ public class BoundRequestBuilderProcessor {
             actHeaders.add(name, value);
     }
 
-    public BoundRequestBuilder recreateRequest(BoundRequestBuilder req, ProxyManagerClient proxyClient) {
-        log.info("Recreating request : ");
+    public BoundRequestBuilder recreateRequest(BoundRequestBuilder req, HttpManagerClient httpManagerClient) {
+        log.debug("Recreating request : ");
         printReq(req);
 
         String method = getMethod(req);
@@ -232,10 +233,10 @@ public class BoundRequestBuilderProcessor {
         BoundRequestBuilder newReq = null;
         if("GET".equals(method))
         {
-            newReq = proxyClient.get(url);
+            newReq = httpManagerClient.prepareGet(url);
         }
         else{
-            newReq = proxyClient.post(url);
+            newReq = httpManagerClient.preparePost(url);
         }
 
         HttpHeaders headers = getHttpHeaders(req);

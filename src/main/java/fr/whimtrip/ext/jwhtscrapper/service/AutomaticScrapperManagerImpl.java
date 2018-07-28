@@ -138,7 +138,7 @@ public class AutomaticScrapperManagerImpl implements AutomaticScrapperManager {
     @NotNull
     private AutomaticScrapperClientImpl buildAutomaticScrapperClient(ScrappingContext context) {
 
-        ProxyManagerClient proxyClient =
+        HttpWithProxyManagerClient proxyClient =
                 this.htmlAutoScrapperManager
                         .createProxyManagerClient(context.getRequestsScrappingContext());
         HtmlAutoScrapper autoScrapper =

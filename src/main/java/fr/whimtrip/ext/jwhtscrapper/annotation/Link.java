@@ -37,7 +37,7 @@ public @interface Link {
 
     String regexCondition() default ".+";
 
-    LinkField[] fields() default {};
+    Field[] fields() default {};
 
     boolean followRedirections() default true;
 

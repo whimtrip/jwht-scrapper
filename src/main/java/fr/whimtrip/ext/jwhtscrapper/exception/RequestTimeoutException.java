@@ -1,8 +1,8 @@
 package fr.whimtrip.ext.jwhtscrapper.exception;
 
-public class ProxyRequestTimeoutException extends ScrapperException {
+public class RequestTimeoutException extends ScrapperException {
 
-    public ProxyRequestTimeoutException(Throwable cause)
+    public RequestTimeoutException(Throwable cause)
     {
         super(cause.getMessage());
         setStackTrace(cause.getStackTrace());

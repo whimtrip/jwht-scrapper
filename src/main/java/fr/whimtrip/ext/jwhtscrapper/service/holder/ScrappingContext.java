@@ -12,7 +12,7 @@ package fr.whimtrip.ext.jwhtscrapper.service.holder;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrapperHelper;
 import fr.whimtrip.ext.jwhtscrapper.service.base.AutomaticScrapperClient;
 import fr.whimtrip.ext.jwhtscrapper.service.scoped.HtmlAutoScrapper;
-import fr.whimtrip.ext.jwhtscrapper.service.scoped.ProxyManagerClient;
+import fr.whimtrip.ext.jwhtscrapper.service.scoped.HttpWithProxyManagerClient;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -93,7 +93,7 @@ public class ScrappingContext<P, M,  H extends ScrapperHelper<P, M>> {
     /**
      * @return the scrapping context of this request which holds
      *         information that will be used by the {@link HtmlAutoScrapper}
-     *         and the {@link ProxyManagerClient}.
+     *         and the {@link HttpWithProxyManagerClient}.
      */
     public RequestsScrappingContext getRequestsScrappingContext() {
         return requestsScrappingContext;

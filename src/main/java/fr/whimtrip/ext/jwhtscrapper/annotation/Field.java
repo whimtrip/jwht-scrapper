@@ -20,7 +20,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD })
-public @interface LinkField {
+public @interface Field {
 
     String name();
     String value();
