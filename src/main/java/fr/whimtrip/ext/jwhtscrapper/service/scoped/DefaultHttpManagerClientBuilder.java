@@ -14,7 +14,7 @@ import fr.whimtrip.ext.jwhtscrapper.annotation.RequestsConfig;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ProxyFinder;
 import fr.whimtrip.ext.jwhtscrapper.service.base.HttpManagerClient;
 import fr.whimtrip.ext.jwhtscrapper.service.base.RequestSynchronizer;
-import fr.whimtrip.ext.jwhtscrapper.service.holder.Field;
+import fr.whimtrip.ext.jwhtscrapper.service.holder.PostField;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.HttpManagerConfig;
 import fr.whimtrip.ext.jwhtscrapper.service.scoped.req.RequestSynchronizerImpl;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
@@ -56,7 +56,7 @@ public class DefaultHttpManagerClientBuilder {
     private ProxyFinder proxyFinder;
     private Cookie[] defaultCookies = new Cookie[]{};
     private BoundRequestBuilderProcessor boundRequestBuilderProcessor;
-    private List<Field> defaultFields;
+    private List<PostField> defaultFields;
 
     /**
      *
@@ -221,7 +221,7 @@ public class DefaultHttpManagerClientBuilder {
      * @param defaultFields Default fields to use for the builder.
      * @return the current builder instance.
      */
-    public DefaultHttpManagerClientBuilder setDefaultFields(List<Field> defaultFields) {
+    public DefaultHttpManagerClientBuilder setDefaultFields(List<PostField> defaultFields) {
 
         this.defaultFields = defaultFields;
         return this;

@@ -30,7 +30,7 @@ import fr.whimtrip.ext.jwhtscrapper.intfr.BasicObjectMapper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ProxyFinder;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrapperHelper;
 import fr.whimtrip.ext.jwhtscrapper.service.base.HttpManagerClient;
-import fr.whimtrip.ext.jwhtscrapper.service.holder.Field;
+import fr.whimtrip.ext.jwhtscrapper.service.holder.PostField;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.RequestsScrappingContext;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.ScrappingContext;
 import fr.whimtrip.ext.jwhtscrapper.service.scoped.BoundRequestBuilderProcessor;
@@ -200,7 +200,7 @@ public class HtmlAutoScrapperManager {
             boolean followRedirections,
             int maxRequestRetries,
             HttpHeaders headers,
-            List<Field> fields,
+            List<PostField> fields,
             Cookie... cookies
     ){
 
@@ -232,9 +232,6 @@ public class HtmlAutoScrapperManager {
      * @param throwEx wether exceptions for link lists concurrent scrapping
      *                should be thrown or catched.<p></p>
      *
-     * @param parallelizeLinkListPolling wether link lists should be run
-     *                                  concurrently or synchronously.<p></p>
-     *
      * @param followRediretcions wether HTTP redirections should be followed
      *                           or not (HTTP redirections is valid if status
      *                           code is {@code 301} or {@code 302} and when
@@ -250,7 +247,6 @@ public class HtmlAutoScrapperManager {
             final HttpManagerClient client,
             Class<T> clazz,
             boolean throwEx,
-            boolean parallelizeLinkListPolling,
             boolean followRediretcions,
             int warningSignDelay
     )
@@ -262,7 +258,6 @@ public class HtmlAutoScrapperManager {
                 objectMapper,
                 clazz,
                 throwEx,
-                parallelizeLinkListPolling,
                 followRediretcions,
                 warningSignDelay
         );
@@ -303,10 +298,10 @@ public class HtmlAutoScrapperManager {
         Cookie[] cookies = new Cookie[cookieList.size()];
         cookieList.toArray(cookies);
 
-        List<Field> fields = new ArrayList<>();
+        List<PostField> fields = new ArrayList<>();
 
         for(fr.whimtrip.ext.jwhtscrapper.annotation.Field fld : config.defaultPostFields()) {
-            fields.add(new Field(fld.name(), fld.value()));
+            fields.add(new PostField(fld.name(), fld.value()));
         }
 
         return createProxyManagerClient(
@@ -345,7 +340,6 @@ public class HtmlAutoScrapperManager {
                 httpManagerClient,
                 context.getModelClazz(),
                 context.getRequestsScrappingContext().isThrowExceptions(),
-                context.getRequestsScrappingContext().getRequestsConfig().parallelizeLinkListPolling(),
                 context.getRequestsScrappingContext().getRequestsConfig().followRedirections(),
                 context.getRequestsScrappingContext().getRequestsConfig().warningSignDelay()
         );

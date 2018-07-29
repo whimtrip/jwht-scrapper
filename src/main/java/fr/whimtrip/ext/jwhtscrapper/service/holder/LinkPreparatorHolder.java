@@ -30,9 +30,12 @@ public class LinkPreparatorHolder<P> {
 
     private java.lang.reflect.Field parentField;
 
+    private Class<? extends HttpRequestEditor> requestEditorClazz;
+
     private boolean followRedirections;
 
-    private Class<? extends HttpRequestEditor> requestEditorClazz;
+    private boolean throwExceptions;
+
 
     public P getParent() {
         return parent;
@@ -96,12 +99,22 @@ public class LinkPreparatorHolder<P> {
         return this;
     }
 
-    public boolean isFollowRedirections() {
+    public boolean followRedirections() {
         return followRedirections;
     }
 
     public LinkPreparatorHolder setFollowRedirections(boolean followRedirections) {
         this.followRedirections = followRedirections;
+        return this;
+    }
+
+    public boolean throwExceptions() {
+        return throwExceptions;
+    }
+
+    public LinkPreparatorHolder setThrowExceptions(boolean throwExceptions) {
+
+        this.throwExceptions = throwExceptions;
         return this;
     }
 }

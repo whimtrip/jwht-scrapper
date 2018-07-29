@@ -41,7 +41,7 @@ public class HttpManagerConfig {
     private final boolean rotatingUserAgent;
     private final int maxRequestRetries;
     private final boolean useProxy;
-    private final List<Field> defaultFields;
+    private final List<PostField> defaultFields;
     private final boolean connectToProxyBeforeRequest;
     private final boolean allowInfiniteRedirections;
     private final boolean followRedirections;
@@ -113,7 +113,7 @@ public class HttpManagerConfig {
             boolean followRedirections,
             int maxRequestRetries,
             HttpHeaders defaultHeaders,
-            List<Field> defaultFields,
+            List<PostField> defaultFields,
             Cookie... defaultCookies
     ){
 
@@ -163,7 +163,7 @@ public class HttpManagerConfig {
     /**
      * @return default POST defaultFields to use on each requests.
      */
-    public List<Field> getDefaultFields() {
+    public List<PostField> getDefaultFields() {
 
         return defaultFields;
     }

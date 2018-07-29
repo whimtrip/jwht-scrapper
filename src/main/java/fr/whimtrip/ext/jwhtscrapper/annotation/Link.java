@@ -24,21 +24,26 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD })
 public @interface Link {
 
+    String DEFAULT_REGEX_COND = ".+";
+
+
+
     public enum Method{
         GET,
-        POST
+        POST;
     }
-
     Method method() default Method.GET;
 
     boolean editRequest() default false;
 
     Class<? extends HttpRequestEditor> requestEditor() default HttpRequestEditor.class;
 
-    String regexCondition() default ".+";
+    String regexCondition() default DEFAULT_REGEX_COND;
 
     Field[] fields() default {};
 
     boolean followRedirections() default true;
+
+    boolean throwExceptions() default false;
 
 }

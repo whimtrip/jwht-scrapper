@@ -9,7 +9,7 @@ package fr.whimtrip.ext.jwhtscrapper.service.holder;
  * @author Louis-wht
  * @since 1.0.0
  */
-public class Field {
+public class PostField {
 
 
     private final String name;
@@ -21,7 +21,7 @@ public class Field {
      * @param name the name of the field
      * @param value its value.
      */
-    public Field(String name, String value) {
+    public PostField(String name, String value) {
         this.name = name;
         this.value = value;
     }

@@ -39,8 +39,6 @@ public @interface RequestsConfig {
 
     int warningSignDelay() default DEFAULT_WARNING_SIGN_DELAY;
 
-    boolean parallelizeLinkListPolling() default true;
-
     ProxyConfig proxyConfig();
 
     Cookie[] defaultCookies() default {};

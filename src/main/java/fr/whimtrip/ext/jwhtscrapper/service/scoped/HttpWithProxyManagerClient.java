@@ -26,7 +26,7 @@ import fr.whimtrip.ext.jwhtscrapper.intfr.Proxy;
 import fr.whimtrip.ext.jwhtscrapper.service.RotatingUserAgent;
 import fr.whimtrip.ext.jwhtscrapper.service.base.HttpManagerClient;
 import fr.whimtrip.ext.jwhtscrapper.service.base.RequestSynchronizer;
-import fr.whimtrip.ext.jwhtscrapper.service.holder.Field;
+import fr.whimtrip.ext.jwhtscrapper.service.holder.PostField;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.HttpManagerConfig;
 import fr.whimtrip.ext.jwhtscrapper.service.scoped.req.HttpConnectHandler;
 import fr.whimtrip.ext.jwhtscrapper.service.scoped.req.RequestCoreHandler;
@@ -109,7 +109,7 @@ public class HttpWithProxyManagerClient implements HttpManagerClient{
     {
         BoundRequestBuilder req = prepareRequest(url, asyncHttpClient.preparePost(url));
         if(httpManagerConfig.getDefaultFields() != null) {
-            for (Field fld :  httpManagerConfig.getDefaultFields()) {
+            for (PostField fld :  httpManagerConfig.getDefaultFields()) {
                 req.addFormParam(fld.getName(), fld.getValue());
             }
         }
