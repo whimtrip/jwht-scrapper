@@ -7,14 +7,14 @@ public interface Proxy {
 
     enum Status {
 
-        /** Working Proxy **/
+        /** Working Proxy */
         WORKING,
         /**
          * Shouldn't be used as of now but a process to make a proxy
          * change from Frozen to WORKING might be imagined
-         **/
+         */
         FROZEN,
-        /** Not to be used anymore **/
+        /** Not to be used anymore */
         BANNED;
 
 

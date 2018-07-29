@@ -3,9 +3,13 @@ package fr.whimtrip.ext.jwhtscrapper.service.base;
 import fr.whimtrip.ext.jwhtscrapper.exception.ScrapFailedException;
 import fr.whimtrip.ext.jwhtscrapper.exception.ScrapNotFinishedException;
 import fr.whimtrip.ext.jwhtscrapper.exception.ScrapperAlreadyStartedException;
+import fr.whimtrip.ext.jwhtscrapper.exception.ScrapperUnsupportedException;
+import fr.whimtrip.ext.jwhtscrapper.intfr.HttpMetrics;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrapperHelper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrappingStats;
 import fr.whimtrip.ext.jwhtscrapper.impl.ScrappingStatsImpl;
+import fr.whimtrip.ext.jwhtscrapper.service.scoped.HtmlAutoScrapper;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -88,6 +92,17 @@ public interface AutomaticScrapperClient<P, M> {
     ScrappingStats getScrappingStats();
 
     /**
+     * @return the current Http metrics {@link HttpMetrics} of the current instance of
+     *         the HttpManagerClient.
+     * @throws ScrapperUnsupportedException If your implementation does not support returning
+     *                                      or if underlying classes does not support returning
+     *                                      HttpMetrics. (see {@link HttpManagerClient} and
+     *                                      {@link HtmlAutoScrapper}).
+     */
+    @NotNull
+    HttpMetrics getHttpMetrics() throws ScrapperUnsupportedException;
+
+    /**
      * @return a boolean indicating if the current scrap process has finished
      *         or if it is still running.
      */
@@ -162,5 +177,6 @@ public interface AutomaticScrapperClient<P, M> {
      *             </strong>
      */
     void terminate();
+
 
 }

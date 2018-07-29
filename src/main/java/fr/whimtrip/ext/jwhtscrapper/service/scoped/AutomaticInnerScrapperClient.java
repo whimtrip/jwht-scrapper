@@ -11,7 +11,9 @@ package fr.whimtrip.ext.jwhtscrapper.service.scoped;
 import fr.whimtrip.core.util.WhimtripUtils;
 import fr.whimtrip.core.util.intrf.ExceptionLogger;
 import fr.whimtrip.ext.jwhtscrapper.exception.ScrapperException;
+import fr.whimtrip.ext.jwhtscrapper.exception.ScrapperUnsupportedException;
 import fr.whimtrip.ext.jwhtscrapper.impl.ScrappingStatsImpl;
+import fr.whimtrip.ext.jwhtscrapper.intfr.HttpMetrics;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrapperHelper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrappingStats;
 import fr.whimtrip.ext.jwhtscrapper.service.base.ScrapperThreadCallable;
@@ -116,6 +118,10 @@ public class AutomaticInnerScrapperClient<P, M> {
         }
 
         return results;
+    }
+
+    public HttpMetrics getHttpMetrics() throws ScrapperUnsupportedException {
+        return htmlAutoScrapper.getHttpMetrics();
     }
 
     private ScrappingResult emptyFinishedThreads(List results, RequestsScrappingContext requestsScrappingContext)

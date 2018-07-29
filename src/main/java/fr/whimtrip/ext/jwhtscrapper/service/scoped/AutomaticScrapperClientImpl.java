@@ -4,6 +4,8 @@ import fr.whimtrip.core.util.intrf.ExceptionLogger;
 import fr.whimtrip.ext.jwhtscrapper.exception.ScrapFailedException;
 import fr.whimtrip.ext.jwhtscrapper.exception.ScrapNotFinishedException;
 import fr.whimtrip.ext.jwhtscrapper.exception.ScrapperAlreadyStartedException;
+import fr.whimtrip.ext.jwhtscrapper.exception.ScrapperUnsupportedException;
+import fr.whimtrip.ext.jwhtscrapper.intfr.HttpMetrics;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrappingStats;
 import fr.whimtrip.ext.jwhtscrapper.service.base.AutomaticScrapperClient;
 import org.jetbrains.annotations.NotNull;
@@ -91,6 +93,15 @@ public class AutomaticScrapperClientImpl<P, M> implements AutomaticScrapperClien
      */
     public ScrappingStats getScrappingStats(){
         return scrapperClient.getScrapingStats();
+    }
+
+    /**
+     * @return see {@link AutomaticScrapperClient#getHttpMetrics()}
+     * @throws ScrapperUnsupportedException see {@link AutomaticScrapperClient#getHttpMetrics()}
+     */
+    @NotNull
+    public HttpMetrics getHttpMetrics() throws ScrapperUnsupportedException {
+        return scrapperClient.getHttpMetrics();
     }
 
     /**

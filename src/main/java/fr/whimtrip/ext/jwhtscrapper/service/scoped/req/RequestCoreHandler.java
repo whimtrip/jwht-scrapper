@@ -1,9 +1,11 @@
 package fr.whimtrip.ext.jwhtscrapper.service.scoped.req;
 
-import fr.whimtrip.ext.jwhtscrapper.exception.RequestTimeoutException;
 import fr.whimtrip.ext.jwhtscrapper.exception.RequestFailedException;
+import fr.whimtrip.ext.jwhtscrapper.exception.RequestMaxRetriesReachedException;
+import fr.whimtrip.ext.jwhtscrapper.exception.RequestTimeoutException;
 import fr.whimtrip.ext.jwhtscrapper.intfr.Proxy;
-import fr.whimtrip.ext.jwhtscrapper.service.base.RequestChecker;
+import fr.whimtrip.ext.jwhtscrapper.service.base.HttpManagerClient;
+import fr.whimtrip.ext.jwhtscrapper.service.base.RequestSynchronizer;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.HttpManagerConfig;
 import org.asynchttpclient.BoundRequestBuilder;
 import org.asynchttpclient.Response;
@@ -14,9 +16,22 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 
+import static fr.whimtrip.ext.jwhtscrapper.intfr.Proxy.Status.*;
+import static fr.whimtrip.ext.jwhtscrapper.service.holder.StatusRange.TIMEOUT_STATUS_CODE;
+import static fr.whimtrip.ext.jwhtscrapper.service.holder.StatusRange.UNKNOWN_EXCEPTION_STATUS_CODE;
+
 /**
  * <p>Part of project jwht-scrapper</p>
  * <p>Created on 28/07/18</p>
+ *
+ * <p>
+ *     Core processing unit that will perform all underlying HTTP requests.
+ *     This processing unit will be instanciated once per HTTP request
+ *     (being a lightweight instance, this won't cause any problem), and will
+ *     handle all proper considerations required by {@link HttpManagerConfig}.
+ *     The contract to respect can be found in the documentation of
+ *     {@link HttpManagerClient#getResponse(BoundRequestBuilder, boolean)}.
+ * </p>
  *
  * @author Louis-wht
  * @since 1.0.0
@@ -28,46 +43,94 @@ public class RequestCoreHandler {
 
     private final HttpManagerConfig httpManagerConfig;
 
-    private final RequestChecker requestChecker;
+    private final RequestSynchronizer requestSynchronizer;
 
     private final HttpConnectHandler httpConnectHandler;
 
     private final BoundRequestBuilder req;
 
-    private final boolean followRedirections;
+
+    private boolean followRedirections;
 
     private Proxy actualProxy;
 
     private boolean firstRedirection = true;
 
+    private boolean firstTry = true;
+
     private int tries = 0;
 
+    @Nullable
+    private Proxy proxy;
     private String url;
 
+    private int lastStatusCode = 0;
 
-
-
+    /**
+     * <p>
+     *     This constructor includes request scoped and {@link HttpManagerClient} scoped
+     *     services required to perform correctly the request.
+     *     This include :
+     * </p>
+     * @param httpManagerConfig the requests configurations.<p></p>
+     * @param requestSynchronizer the synchronyzed checker that will help every concurrent
+     *                       access to this class to be synchronyzed on the same
+     *                       object instance to ensure no two requests are performed
+     *                       without the required {@link HttpManagerConfig#getAwaitBetweenRequests()}
+     *                       wait between those two requests.<p></p>
+     * @param httpConnectHandler the connect handler that will handle the connect process is
+     *                           done correctly if required by {@link HttpManagerConfig#connectToProxyBeforeRequest()}.<p></p>
+     * @param req the prepared request builder that will be used to execute the HTTP request.<p></p>
+     * @param url the url to scrap.<p></p>
+     * @param proxy the proxy that will be used to forward the HTTP requests.
+     */
     public RequestCoreHandler(
             @NotNull  final HttpManagerConfig httpManagerConfig,
-            @NotNull  final RequestChecker requestChecker,
+            @NotNull  final RequestSynchronizer requestSynchronizer,
             @Nullable final HttpConnectHandler httpConnectHandler,
             @NotNull  final BoundRequestBuilder req,
-            @NotNull  final String url,
-                      final boolean followRedirections
+            @Nullable final Proxy proxy,
+            @NotNull  final String url
     ){
 
         this.httpManagerConfig = httpManagerConfig;
-        this.requestChecker = requestChecker;
+        this.requestSynchronizer = requestSynchronizer;
         this.httpConnectHandler = httpConnectHandler;
         this.req = req;
-        this.followRedirections = followRedirections;
+        this.proxy = proxy;
         this.url = url;
         this.actualProxy = httpManagerConfig.getBoundRequestBuilderProcessor().getProxyServerFromRequestBuilder(req);
+        this.followRedirections = httpManagerConfig.followRedirections();
     }
 
-    public String getResponse() {
+    /**
+     *
+     * @param followRedirections wether the redirections 301/302 HTTP should be followed
+     *                           or not. By default, we should use {@link HttpManagerConfig#followRedirections()}
+     *                           but when following sublinks from a given POJO, redirection
+     *                           policy can be modified, explaining why this parameter must
+     *                           be supplied.
+     * @return the actual RequestCoreHandler.
+     */
+    public RequestCoreHandler setFollowRedirections(boolean followRedirections) {
+        this.followRedirections = followRedirections;
+        return this;
+    }
 
-        requestChecker.checkAwaitBetweenRequest(url);
+    /**
+     * <p>
+     *     The core and only public method of this class that will retrieve the String
+     *     body of an HTTP request. It should respects all the contracts specified
+     *     here {@link HttpManagerClient#getResponse(BoundRequestBuilder, boolean)}.
+     * </p>
+     * @return the Stringified body of the HTTP response.
+     * @throws RequestMaxRetriesReachedException when the maximum retries count
+     *                                           was reached without successful
+     *                                           HTTP response.
+     */
+    public String getResponse() throws RequestMaxRetriesReachedException {
+
+        requestSynchronizer.checkAwaitBetweenRequest(url);
 
         boolean requestIssued = false;
         String response = "";
@@ -77,24 +140,33 @@ public class RequestCoreHandler {
 
         try {
 
+            // performing the request
             Response resp = req.execute().get(httpManagerConfig.getTimeout(), TimeUnit.MILLISECONDS);
 
-            int statusCode = resp.getStatusCode();
+            lastStatusCode = resp.getStatusCode();
 
-            log.debug("Request status : {} {}", statusCode, resp.getStatusText());
+            requestSynchronizer.logHttpStatus(lastStatusCode, firstTry);
+            firstTry = false;
 
-            if((statusCode == 301 || statusCode == 302) && resp.getHeader("Location") != null)
+            log.debug("Request status : {} {}", lastStatusCode, resp.getStatusText());
+
+            // if this is a redirection.
+            if((lastStatusCode == 301 || lastStatusCode == 302) && resp.getHeader("Location") != null)
                 return handleRedirection(resp);
 
             response = resp.getResponseBody();
-            requestChecker.incrementLastProxyChange();
+            requestSynchronizer.incrementLastProxyChange();
 
             // if the status code is not 2xx successfull
-            if(statusCode / 100 != 2) return handleFailedRequest(resp);
+            if(lastStatusCode / 100 != 2) handleFailedRequest(resp);
 
             requestIssued = true;
         }
-        catch(RequestTimeoutException | RequestFailedException e)
+        catch (RequestTimeoutException e) {
+            actE = e;
+            handleTimeoutException();
+        }
+        catch(RequestFailedException e)
         {
             actE = e;
             handleRequestException();
@@ -102,6 +174,7 @@ public class RequestCoreHandler {
         catch(Exception e)
         {
             actE = e;
+            firstTry = false;
             handleUnknownException();
         }
 
@@ -111,50 +184,85 @@ public class RequestCoreHandler {
         return response;
     }
 
+    /**
+     * <p>
+     *     Will unfreeze a proxy which was marked as {@link Proxy.Status#FROZEN}
+     *     when the requests issued with this proxy was successful.
+     * </p>
+     */
     private void unfreezeProxy() {
 
-        if (actualProxy != null && actualProxy.getStatus() == Proxy.Status.FROZEN)
+        if (actualProxy != null && actualProxy.getStatus() == FROZEN)
         {
-            RequestUtils.setProxyStatus(actualProxy,Proxy.Status.WORKING, httpManagerConfig.getProxyFinder());
+            RequestUtils.setProxyStatus(actualProxy, WORKING, httpManagerConfig.getProxyFinder());
         }
     }
 
-    private String retryRequest(Throwable actE) {
-
-        requestChecker.checkAwaitBetweenRequest(httpManagerConfig.getBoundRequestBuilderProcessor().getUrlFromRequestBuilder(req));
+    /**
+     * <p>
+     *     Method in charge of retrying a request that has been failed. If the
+     *     {@link HttpManagerConfig#getMaxRequestRetries()} has been reached, an
+     *     exception will be thrown instead.
+     * </p>
+     * @param actE the latest failure exception thrown
+     * @return the String body of the HTTP response
+     * @throws RequestMaxRetriesReachedException when the maximum number of retries has
+     *                                           been reached.
+     */
+    private String retryRequest(Throwable actE) throws RequestMaxRetriesReachedException {
 
         if(tries >= httpManagerConfig.getMaxRequestRetries())
-            throw new RequestTimeoutException(actE);
+            throw  new RequestMaxRetriesReachedException(
+                            actE,
+                            url,
+                            httpManagerConfig.getMaxRequestRetries(),
+                            lastStatusCode
+                    );
 
         return retryRequest();
     }
 
-    private void handleRequestException() {
 
+    /**
+     * This method will handle Timeout exceptions in order to properly
+     * log them. Under the hood, it will later call {@link #handleRequestException()}.
+     */
+    private void handleTimeoutException() {
+        requestSynchronizer.logHttpStatus(TIMEOUT_STATUS_CODE, firstTry);
+        firstTry = false;
+        handleRequestException();
+    }
+
+
+
+    /**
+     * This method will handle request exceptions {@link RequestTimeoutException}
+     * and {@link RequestFailedException}.
+     */
+    private void handleRequestException() {
         if(httpManagerConfig.useProxy() && actualProxy != null) {
-            RequestUtils.setProxyStatus(actualProxy, Proxy.Status.BANNED, httpManagerConfig.getProxyFinder());
-            log.info("Proxy {}:{} was banned", actualProxy.getId(), actualProxy.getPort());
+            Proxy.Status newStatus = actualProxy.getStatus() == WORKING ? FROZEN : BANNED;
+
+            RequestUtils.setProxyStatus(actualProxy, newStatus, httpManagerConfig.getProxyFinder());
+            log.info("Proxy {}:{} was {}", actualProxy.getId(), actualProxy.getPort(), newStatus);
         }
     }
 
+    /**
+     * This method will handle all other exceptions that might have occured in the
+     * request execution scope. IO Exceptions for example might be handled here.
+     */
     private void handleUnknownException() {
 
-        requestChecker.incrementLastProxyChange();
-        if(httpManagerConfig.useProxy() && actualProxy != null )
-        {
-            if (actualProxy.getStatus() == Proxy.Status.FROZEN)
-            {
-                RequestUtils.setProxyStatus(actualProxy,Proxy.Status.BANNED, httpManagerConfig.getProxyFinder());
-                log.info("Proxy {}:{} was banned", actualProxy.getId(), actualProxy.getPort());
-            }
-            else
-            {
-                RequestUtils.setProxyStatus(actualProxy,Proxy.Status.FROZEN, httpManagerConfig.getProxyFinder());
-                log.info("Proxy {}:{} was frozen", actualProxy.getId(), actualProxy.getPort());
-            }
-        }
+        requestSynchronizer.incrementLastProxyChange();
+        requestSynchronizer.logHttpStatus(UNKNOWN_EXCEPTION_STATUS_CODE, firstTry);
+        firstTry = false;
+        handleRequestException();
     }
 
+    /**
+     * This method will log the request with a debug logger.
+     */
     private void logRequest() {
 
         if(actualProxy == null) {
@@ -177,24 +285,41 @@ public class RequestCoreHandler {
         }
     }
 
+    /**
+     * <p>
+     *     This method will perform redirection preparation and request retrying
+     *     if redirection is enabled / still enabled (in the case of a n-th redirection.)
+     * </p>
+     * @param resp the response to perform redirection following instructions for.
+     * @return stringified response body for the corresponding redirection if performed
+     *         or of the current HTTP Response otherwise.
+     */
     private String handleRedirection(Response resp) {
 
-        url = resp.getHeader("Location");
-        log.info("Trying to follow redirections to {} with followRedirections to {}.", url, followRedirections);
+        String newUrl = resp.getHeader("Location");
+        log.info("Trying to follow redirections to {} with followRedirections to {}.", newUrl, followRedirections);
         if(followRedirections && (firstRedirection || httpManagerConfig.allowInfiniteRedirections())) {
-            req.setUrl(url);
+            req.setUrl(newUrl);
+            url = newUrl;
             firstRedirection = false;
             return retryRequest();
         }
         else
         {
-            log.info("Get Redirected with body :  {}.", resp.getResponseBody());
+            log.info("Redirection required that cannot be followed with body :  {}.", resp.getResponseBody());
             httpManagerConfig.getBoundRequestBuilderProcessor().printHeaders(resp.getHeaders());
             return resp.getResponseBody();
         }
     }
 
-    private String handleFailedRequest(Response resp) {
+    /**
+     * @param resp will handle failed requests (not 2xx status codes response, except
+     *             301 or 302).
+     * @throws RequestFailedException at the end of this method whatever happens here.
+     *                                This will be catched in the catch blocks of
+     *                                {@link #getResponse()} method.
+     */
+    private void handleFailedRequest(Response resp) throws RequestFailedException {
 
         log.info("Failed Request with status code {} at url {}.", resp.getStatusCode(), url);
         httpManagerConfig.getBoundRequestBuilderProcessor().printReq(req);
@@ -204,14 +329,21 @@ public class RequestCoreHandler {
     }
 
 
+    /**
+     * <p>
+     *     This method will retry the request and eventually perform routine tasks
+     *     to count the number of tries, retry the connection process and reset the proxy.
+     * </p>
+     * @return the Stringified body of the retried request
+     */
     private String retryRequest()
     {
         if(httpManagerConfig.useProxy())
         {
+            actualProxy = RequestUtils.resetProxy(req, httpManagerConfig.getProxyFinder());
             if(httpManagerConfig.connectToProxyBeforeRequest() && httpConnectHandler != null)
-                httpConnectHandler.tryConnect(url);
-            else
-                actualProxy = RequestUtils.resetProxy(req, httpManagerConfig.getProxyFinder());
+                httpConnectHandler.tryConnect(url, actualProxy);
+
         }
         tries ++;
         return getResponse();

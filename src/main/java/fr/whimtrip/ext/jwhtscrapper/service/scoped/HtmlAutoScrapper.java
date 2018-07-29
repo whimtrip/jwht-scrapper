@@ -31,8 +31,10 @@ import fr.whimtrip.ext.jwhtscrapper.annotation.LinkListsFromBuilder;
 import fr.whimtrip.ext.jwhtscrapper.annotation.WarningSign;
 import fr.whimtrip.ext.jwhtscrapper.exception.LinkException;
 import fr.whimtrip.ext.jwhtscrapper.exception.ModelBindingException;
+import fr.whimtrip.ext.jwhtscrapper.exception.ScrapperUnsupportedException;
 import fr.whimtrip.ext.jwhtscrapper.exception.WarningSignException;
 import fr.whimtrip.ext.jwhtscrapper.intfr.BasicObjectMapper;
+import fr.whimtrip.ext.jwhtscrapper.intfr.HttpMetrics;
 import fr.whimtrip.ext.jwhtscrapper.intfr.HttpRequestEditor;
 import fr.whimtrip.ext.jwhtscrapper.intfr.LinkListFactory;
 import fr.whimtrip.ext.jwhtscrapper.service.base.HttpManagerClient;
@@ -196,6 +198,10 @@ public class HtmlAutoScrapper<T> {
     public BoundRequestBuilder prepareScrapGet(String url)
     {
         return httpManagerClient.prepareGet(url);
+    }
+
+    public HttpMetrics getHttpMetrics() throws ScrapperUnsupportedException {
+        return httpManagerClient.getHttpMetrics();
     }
 
 

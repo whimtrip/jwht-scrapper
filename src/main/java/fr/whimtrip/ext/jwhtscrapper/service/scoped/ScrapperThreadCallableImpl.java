@@ -101,7 +101,7 @@ public class ScrapperThreadCallableImpl<P, M> implements ScrapperThreadCallable<
                     req = htmlAutoScrapper.prepareScrapPost(url);
                 }
 
-                req = scrapperHelper.editRequest(req, parentObject);
+                scrapperHelper.editRequest(req, parentObject);
 
                 model = scrapperHelper.instanciateModel(parentObject);
 

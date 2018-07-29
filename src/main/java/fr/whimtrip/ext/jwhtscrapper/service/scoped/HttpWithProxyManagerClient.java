@@ -20,10 +20,12 @@
 
 package fr.whimtrip.ext.jwhtscrapper.service.scoped;
 
-import fr.whimtrip.ext.jwhtscrapper.exception.RequestTimeoutException;
+import fr.whimtrip.ext.jwhtscrapper.exception.RequestMaxRetriesReachedException;
+import fr.whimtrip.ext.jwhtscrapper.intfr.HttpMetrics;
+import fr.whimtrip.ext.jwhtscrapper.intfr.Proxy;
 import fr.whimtrip.ext.jwhtscrapper.service.RotatingUserAgent;
 import fr.whimtrip.ext.jwhtscrapper.service.base.HttpManagerClient;
-import fr.whimtrip.ext.jwhtscrapper.service.base.RequestChecker;
+import fr.whimtrip.ext.jwhtscrapper.service.base.RequestSynchronizer;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.Field;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.HttpManagerConfig;
 import fr.whimtrip.ext.jwhtscrapper.service.scoped.req.HttpConnectHandler;
@@ -33,6 +35,9 @@ import io.netty.handler.codec.http.HttpHeaders;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.BoundRequestBuilder;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * <p>Part of project jwht-scrapper</p>
@@ -51,9 +56,11 @@ public class HttpWithProxyManagerClient implements HttpManagerClient{
 
     private final HttpManagerConfig httpManagerConfig;
 
-    private final RequestChecker requestChecker;
+    private final RequestSynchronizer requestSynchronizer;
 
     private final AsyncHttpClient asyncHttpClient;
+
+    private final Map<BoundRequestBuilder, RequestCoreHandler> contextHolder = new HashMap<>();
 
 
     /**
@@ -63,7 +70,7 @@ public class HttpWithProxyManagerClient implements HttpManagerClient{
      * </p>
      * @param httpManagerConfig the {@link HttpManagerConfig} that will set the rules
      *                          of all HTTP interactions with the urls to scrap.
-     * @param requestChecker the {@link RequestChecker} implementation that will help
+     * @param requestSynchronizer the {@link RequestSynchronizer} implementation that will help
      *                       synchronyzing the wait between each request to ensure it
      *                       doesn't overlap with concurrent access to this manager.
      * @param asyncHttpClient the Http client that will be used to perform all HTTP
@@ -71,11 +78,11 @@ public class HttpWithProxyManagerClient implements HttpManagerClient{
      */
     HttpWithProxyManagerClient(
             @NotNull final HttpManagerConfig httpManagerConfig,
-            @NotNull final RequestChecker requestChecker,
+            @NotNull final RequestSynchronizer requestSynchronizer,
             @NotNull final AsyncHttpClient asyncHttpClient
     ){
         this.httpManagerConfig = httpManagerConfig;
-        this.requestChecker = requestChecker;
+        this.requestSynchronizer = requestSynchronizer;
         this.asyncHttpClient = asyncHttpClient;
     }
 
@@ -101,8 +108,8 @@ public class HttpWithProxyManagerClient implements HttpManagerClient{
     public BoundRequestBuilder preparePost(String url)
     {
         BoundRequestBuilder req = prepareRequest(url, asyncHttpClient.preparePost(url));
-        if(httpManagerConfig.getFields() != null) {
-            for (Field fld :  httpManagerConfig.getFields()) {
+        if(httpManagerConfig.getDefaultFields() != null) {
+            for (Field fld :  httpManagerConfig.getDefaultFields()) {
                 req.addFormParam(fld.getName(), fld.getValue());
             }
         }
@@ -114,10 +121,10 @@ public class HttpWithProxyManagerClient implements HttpManagerClient{
      * @see HttpManagerClient#getResponse(BoundRequestBuilder)
      * @param req the prepared request to get a response for.
      * @return the body of the http Response
-     * @throws RequestTimeoutException see {@link HttpManagerClient#getResponse(BoundRequestBuilder)}
+     * @throws RequestMaxRetriesReachedException see {@link HttpManagerClient#getResponse(BoundRequestBuilder)}
      */
     @Override
-    public String getResponse(BoundRequestBuilder req)  throws RequestTimeoutException {
+    public String getResponse(BoundRequestBuilder req)  throws RequestMaxRetriesReachedException {
         return getResponse( req, httpManagerConfig.followRedirections());
     }
 
@@ -127,26 +134,51 @@ public class HttpWithProxyManagerClient implements HttpManagerClient{
      * @param req the prepared request to get a response for.
      * @param followRedirections to stipulate if HTTP redirections should be followed.
      * @return the body of the http Response
-     * @throws RequestTimeoutException see {@link HttpManagerClient#getResponse(BoundRequestBuilder, boolean)}
+     * @throws RequestMaxRetriesReachedException see {@link HttpManagerClient#getResponse(BoundRequestBuilder, boolean)}
      */
     @Override
-    public String getResponse(BoundRequestBuilder req, boolean followRedirections)  throws RequestTimeoutException {
-        return buildRequestCoreHandler(req, followRedirections).getResponse();
+    public String getResponse(BoundRequestBuilder req, boolean followRedirections)  throws RequestMaxRetriesReachedException {
+
+        RequestCoreHandler requestCoreHandler = null;
+
+        synchronized (contextHolder) {
+            requestCoreHandler = contextHolder.get(req);
+        }
+
+        String response =
+                requestCoreHandler
+                    .setFollowRedirections(followRedirections)
+                    .getResponse();
+
+        synchronized (contextHolder) {
+            contextHolder.remove(req);
+        }
+
+        return response;
     }
 
+
+    /**
+     * @return see {@link HttpManagerClient#getHttpMetrics()}.
+     */
+    @NotNull
+    @Override
+    public HttpMetrics getHttpMetrics(){
+        return requestSynchronizer.getHttpMetrics();
+    }
 
     /**
      * @return the duration in ms since the last request was performed.
      */
     public Long getLastRequest() {
-        return requestChecker.getLastRequest();
+        return requestSynchronizer.getLastRequest();
     }
 
     /**
      * @return the number of requests made since the last proxy change was made.
      */
     public int getLastProxyChange() {
-        return requestChecker.getLastProxyChange();
+        return requestSynchronizer.getLastProxyChange();
     }
 
 
@@ -163,13 +195,22 @@ public class HttpWithProxyManagerClient implements HttpManagerClient{
         req.clearHeaders();
         req.setHeaders(buildDefaultHeaders());
 
+        Proxy proxy = null;
+
         req.setCookies(httpManagerConfig.getDefaultCookies());
+        HttpConnectHandler httpConnectHandler = null;
         if(httpManagerConfig.useProxy())
         {
-            if(httpManagerConfig.connectToProxyBeforeRequest())
-                buildHttpConnectHandler(url, req).tryConnect();
-            else
-                RequestUtils.resetProxy(req, httpManagerConfig.getProxyFinder());
+            proxy = RequestUtils.resetProxy(req, httpManagerConfig.getProxyFinder());
+            if(httpManagerConfig.connectToProxyBeforeRequest()) {
+                httpConnectHandler = buildHttpConnectHandler(url, req, proxy);
+                httpConnectHandler.tryConnect();
+            }
+
+        }
+
+        synchronized (contextHolder) {
+            contextHolder.put(req, buildRequestCoreHandler(url, proxy, req, httpConnectHandler));
         }
         return req;
     }
@@ -194,8 +235,10 @@ public class HttpWithProxyManagerClient implements HttpManagerClient{
 
 
     /**
+     * @param url the url to scrap
+     * @param proxy the proxy used to connect beforehand
      * @param req the prepared {@link BoundRequestBuilder} HTTP request.
-     * @param followRedirections wether redirections should be followed or not.
+     * @param httpConnectHandler the http connect handler if any.
      * @return an {@link RequestCoreHandler} instance to perform the request
      *         properly if. Instanciating the request here allows us to define all
      *         of the requests retrying, proxies dump and reset, wait between requests,
@@ -205,15 +248,13 @@ public class HttpWithProxyManagerClient implements HttpManagerClient{
      *         many problems, mainly with code readability and maintainability.
      */
     @NotNull
-    private RequestCoreHandler buildRequestCoreHandler(BoundRequestBuilder req, boolean followRedirections) {
-        String url = httpManagerConfig.getBoundRequestBuilderProcessor().getUrlFromRequestBuilder(req);
+    private RequestCoreHandler buildRequestCoreHandler(String url, Proxy proxy, BoundRequestBuilder req, HttpConnectHandler httpConnectHandler) {
         return new RequestCoreHandler(
-                    httpManagerConfig,
-                    requestChecker,
-                    buildHttpConnectHandler(url, req),
+                    httpManagerConfig, requestSynchronizer,
+                    httpConnectHandler,
                     req,
-                    url,
-                    followRedirections
+                    proxy,
+                    url
         );
     }
 
@@ -221,13 +262,14 @@ public class HttpWithProxyManagerClient implements HttpManagerClient{
     /**
      * @param url the url to prepare the connection to
      * @param req the prepared {@link BoundRequestBuilder} HTTP request.
+     * @param proxy the proxy used to connect beforehand
      * @return built in request scoped {@link HttpConnectHandler} for TCP Connect
      *         previous step when required by {@link HttpManagerConfig#connectToProxyBeforeRequest()}.
      */
     @NotNull
-    private HttpConnectHandler buildHttpConnectHandler(String url, BoundRequestBuilder req) {
+    private HttpConnectHandler buildHttpConnectHandler(String url, BoundRequestBuilder req, Proxy proxy) {
 
-        return new HttpConnectHandler(httpManagerConfig, asyncHttpClient, req, url);
+        return new HttpConnectHandler(httpManagerConfig, asyncHttpClient, requestSynchronizer, req, url, proxy);
     }
 
 

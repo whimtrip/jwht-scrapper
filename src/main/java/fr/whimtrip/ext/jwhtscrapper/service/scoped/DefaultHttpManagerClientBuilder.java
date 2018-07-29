@@ -13,10 +13,10 @@ import fr.whimtrip.ext.jwhtscrapper.annotation.ProxyConfig;
 import fr.whimtrip.ext.jwhtscrapper.annotation.RequestsConfig;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ProxyFinder;
 import fr.whimtrip.ext.jwhtscrapper.service.base.HttpManagerClient;
-import fr.whimtrip.ext.jwhtscrapper.service.base.RequestChecker;
+import fr.whimtrip.ext.jwhtscrapper.service.base.RequestSynchronizer;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.Field;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.HttpManagerConfig;
-import fr.whimtrip.ext.jwhtscrapper.service.scoped.req.RequestCheckerImpl;
+import fr.whimtrip.ext.jwhtscrapper.service.scoped.req.RequestSynchronizerImpl;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.cookie.Cookie;
@@ -248,14 +248,10 @@ public class DefaultHttpManagerClientBuilder {
                 defaultFields,
                 defaultCookies
         );
-        RequestChecker requestChecker =
-                    new RequestCheckerImpl(
-                            proxyChangeRate,
-                            awaitBetweenRequests,
-                            httpManagerConfig
-                    );
 
-        return new HttpWithProxyManagerClient(httpManagerConfig, requestChecker, asyncHttpClient);
+        RequestSynchronizer requestSynchronizer = new RequestSynchronizerImpl(httpManagerConfig);
+
+        return new HttpWithProxyManagerClient(httpManagerConfig, requestSynchronizer, asyncHttpClient);
     }
 
 }

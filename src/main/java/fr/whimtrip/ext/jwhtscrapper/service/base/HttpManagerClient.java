@@ -1,9 +1,13 @@
 package fr.whimtrip.ext.jwhtscrapper.service.base;
 
+import fr.whimtrip.ext.jwhtscrapper.exception.RequestMaxRetriesReachedException;
 import fr.whimtrip.ext.jwhtscrapper.exception.RequestTimeoutException;
+import fr.whimtrip.ext.jwhtscrapper.exception.ScrapperUnsupportedException;
+import fr.whimtrip.ext.jwhtscrapper.intfr.HttpMetrics;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ProxyFinder;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.HttpManagerConfig;
 import org.asynchttpclient.BoundRequestBuilder;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * <p>Part of project jwht-scrapper</p>
@@ -68,12 +72,12 @@ public interface HttpManagerClient {
      * </p>
      * @param req the prepared request to get a response for.
      * @return a string of the response body.
-     * @throws RequestTimeoutException when the request timed out on every attempts
+     * @throws RequestTimeoutException when the request timed out / failed on every attempts
      *                                 made. ({@link HttpManagerConfig#getMaxRequestRetries()}
      *                                 will give the number of requests attempted
      *                                 before throwing this exception.
      */
-    String getResponse(BoundRequestBuilder req)  throws RequestTimeoutException;
+    String getResponse(BoundRequestBuilder req)  throws RequestMaxRetriesReachedException;
 
 
     /**
@@ -115,11 +119,19 @@ public interface HttpManagerClient {
      * @param req the prepared request to get a response for.
      * @param followRedirections to stipulate if HTTP redirections should be followed.
      * @return a string of the response body.
-     * @throws RequestTimeoutException when the request timed out on every attempts
+     * @throws RequestTimeoutException when the request timed out / failed on every attempts
      *                                 made. ({@link HttpManagerConfig#getMaxRequestRetries()}
      *                                 will give the number of requests attempted
      *                                 before throwing this exception.
      */
-    String getResponse(BoundRequestBuilder req, boolean followRedirections)  throws RequestTimeoutException;
+    String getResponse(BoundRequestBuilder req, boolean followRedirections)  throws RequestMaxRetriesReachedException;
 
+    /**
+     * @return the current Http metrics {@link HttpMetrics} of the current instance of
+     *         the HttpManagerClient.
+     * @throws ScrapperUnsupportedException If your implementation does not support returning
+     *         HttpMetrics.
+     */
+    @NotNull
+    HttpMetrics getHttpMetrics() throws ScrapperUnsupportedException;
 }
