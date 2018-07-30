@@ -9,9 +9,9 @@
 
 package fr.whimtrip.ext.jwhtscrapper.service.holder;
 
+import fr.whimtrip.ext.jwhtscrapper.intfr.HtmlAutoScrapper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrapperHelper;
 import fr.whimtrip.ext.jwhtscrapper.service.base.AutomaticScrapperClient;
-import fr.whimtrip.ext.jwhtscrapper.service.scoped.HtmlAutoScrapper;
 import fr.whimtrip.ext.jwhtscrapper.service.scoped.HttpWithProxyManagerClient;
 import org.jetbrains.annotations.NotNull;
 

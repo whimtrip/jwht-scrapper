@@ -28,7 +28,9 @@ import fr.whimtrip.ext.jwhthtmltopojo.intrf.HtmlAdapter;
 import fr.whimtrip.ext.jwhtscrapper.annotation.WarningSign;
 import fr.whimtrip.ext.jwhtscrapper.exception.*;
 import fr.whimtrip.ext.jwhtscrapper.intfr.BasicObjectMapper;
+import fr.whimtrip.ext.jwhtscrapper.intfr.HtmlAutoScrapper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.HttpMetrics;
+import fr.whimtrip.ext.jwhtscrapper.intfr.LinksFollower;
 import fr.whimtrip.ext.jwhtscrapper.service.base.HttpManagerClient;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.LinkListScrappingContext;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.LinkScrappingContext;
@@ -46,9 +48,9 @@ import java.util.Map;
 /**
  * Created by LOUISSTEIMBERG on 18/11/2017.
  */
-public class HtmlAutoScrapper<T> {
+public class HtmlAutoScrapperImpl<T> implements HtmlAutoScrapper<T> {
 
-    private static final Logger log = LoggerFactory.getLogger(HtmlAutoScrapper.class);
+    private static final Logger log = LoggerFactory.getLogger(HtmlAutoScrapperImpl.class);
 
     private final HttpManagerClient httpManagerClient;
     private final BasicObjectMapper objectMapper;
@@ -62,7 +64,7 @@ public class HtmlAutoScrapper<T> {
     private final boolean followRedirections;
 
 
-    public HtmlAutoScrapper(
+    public HtmlAutoScrapperImpl(
             HttpManagerClient httpManagerClient,
             HtmlToPojoEngine htmlToPojoEngine,
             BoundRequestBuilderProcessor boundRequestBuilderProcessor,
@@ -87,27 +89,39 @@ public class HtmlAutoScrapper<T> {
 
     }
 
+    @NotNull
+    @Override
     public T scrap(@NotNull final BoundRequestBuilder req) throws ModelBindingException, LinkException, WarningSignException {
         return scrap(req, null);
     }
 
+    @NotNull
+    @Override
     public T scrap(@NotNull final BoundRequestBuilder req, @Nullable final T obj) throws ModelBindingException, LinkException, WarningSignException{
         return scrap(req,  obj, htmlAdapter, followRedirections);
     }
 
+    @NotNull
+    @Override
     public T scrapPost(@NotNull final String url, @Nullable final Map<String, Object> fields) throws ModelBindingException, LinkException, WarningSignException {
         return scrap(prepareScrapPost(url, fields));
     }
 
+    @NotNull
+    @Override
     public T scrapGet(@NotNull final String url) throws ModelBindingException, LinkException, WarningSignException {
         return scrap(prepareScrapGet(url));
     }
 
+    @NotNull
+    @Override
     public BoundRequestBuilder prepareScrapPost(@NotNull final String url)
     {
         return prepareScrapPost(url, null);
     }
 
+    @NotNull
+    @Override
     public BoundRequestBuilder prepareScrapPost(@NotNull final String url, @Nullable final Map<String, Object> fields)
     {
         BoundRequestBuilder req = httpManagerClient.preparePost(url);
@@ -120,11 +134,15 @@ public class HtmlAutoScrapper<T> {
         return req;
     }
 
+    @NotNull
+    @Override
     public BoundRequestBuilder prepareScrapGet(@NotNull final String url)
     {
         return httpManagerClient.prepareGet(url);
     }
 
+    @NotNull
+    @Override
     public HttpMetrics getHttpMetrics() throws ScrapperUnsupportedException {
         return httpManagerClient.getHttpMetrics();
     }
@@ -200,7 +218,7 @@ public class HtmlAutoScrapper<T> {
 
     private <U> void resolveLinks(@NotNull final U obj, @NotNull final HtmlAdapter<U> adapter) throws LinkException, ModelBindingException{
 
-        LinksFollower linksFollower = new LinksFollower(httpManagerClient, htmlToPojoEngine, exceptionLogger, obj, adapter);
+        LinksFollower linksFollower = new LinksFollowerImpl(httpManagerClient, htmlToPojoEngine, exceptionLogger, obj, adapter);
         linksFollower.resolveBasicLinks();
 
         scrapAndSetLinkLists(linksFollower);

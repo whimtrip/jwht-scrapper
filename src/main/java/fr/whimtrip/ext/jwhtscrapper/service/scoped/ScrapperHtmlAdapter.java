@@ -15,6 +15,7 @@ import fr.whimtrip.ext.jwhtscrapper.exception.WarningSignException;
 import org.jsoup.nodes.Element;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -126,7 +127,8 @@ public class ScrapperHtmlAdapter<T> extends DefaultHtmlAdapterImpl<T> {
         List<? extends HtmlToPojoAnnotationMap<LinkObjects>> linkObjectsFields = getFieldList(LinkObjects.class);
         for(HtmlToPojoAnnotationMap<LinkObjects> linkObjects : linkObjectsFields)
         {
-            if(Arrays.asList(linkObjects.getAnnotation().value()).contains(link.getName()))
+            if(   Arrays.asList(linkObjects.getAnnotation().value()).contains(link.getName())
+               && Collection.class.isAssignableFrom(linkObjects.getField().getType())   )
                 return linkObjects.getField();
         }
 

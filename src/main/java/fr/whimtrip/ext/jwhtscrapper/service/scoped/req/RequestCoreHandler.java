@@ -72,16 +72,16 @@ public class RequestCoreHandler {
      *     services required to perform correctly the request.
      *     This include :
      * </p>
-     * @param httpManagerConfig the requests configurations.<p></p>
+     * @param httpManagerConfig the requests configurations.<br>
      * @param requestSynchronizer the synchronyzed checker that will help every concurrent
      *                       access to this class to be synchronyzed on the same
      *                       object instance to ensure no two requests are performed
      *                       without the required {@link HttpManagerConfig#getAwaitBetweenRequests()}
-     *                       wait between those two requests.<p></p>
+     *                       wait between those two requests.<br>
      * @param httpConnectHandler the connect handler that will handle the connect process is
-     *                           done correctly if required by {@link HttpManagerConfig#connectToProxyBeforeRequest()}.<p></p>
-     * @param req the prepared request builder that will be used to execute the HTTP request.<p></p>
-     * @param url the url to scrap.<p></p>
+     *                           done correctly if required by {@link HttpManagerConfig#connectToProxyBeforeRequest()}.<br>
+     * @param req the prepared request builder that will be used to execute the HTTP request.<br>
+     * @param url the url to scrap.<br>
      * @param proxy the proxy that will be used to forward the HTTP requests.
      */
     public RequestCoreHandler(

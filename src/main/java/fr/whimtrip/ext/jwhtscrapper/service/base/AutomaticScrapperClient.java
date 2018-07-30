@@ -4,11 +4,11 @@ import fr.whimtrip.ext.jwhtscrapper.exception.ScrapFailedException;
 import fr.whimtrip.ext.jwhtscrapper.exception.ScrapNotFinishedException;
 import fr.whimtrip.ext.jwhtscrapper.exception.ScrapperAlreadyStartedException;
 import fr.whimtrip.ext.jwhtscrapper.exception.ScrapperUnsupportedException;
+import fr.whimtrip.ext.jwhtscrapper.impl.ScrappingStatsImpl;
+import fr.whimtrip.ext.jwhtscrapper.intfr.HtmlAutoScrapper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.HttpMetrics;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrapperHelper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrappingStats;
-import fr.whimtrip.ext.jwhtscrapper.impl.ScrappingStatsImpl;
-import fr.whimtrip.ext.jwhtscrapper.service.scoped.HtmlAutoScrapper;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;

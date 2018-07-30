@@ -13,6 +13,7 @@ import fr.whimtrip.core.util.intrf.ExceptionLogger;
 import fr.whimtrip.ext.jwhtscrapper.exception.ScrapperException;
 import fr.whimtrip.ext.jwhtscrapper.exception.ScrapperUnsupportedException;
 import fr.whimtrip.ext.jwhtscrapper.impl.ScrappingStatsImpl;
+import fr.whimtrip.ext.jwhtscrapper.intfr.HtmlAutoScrapper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.HttpMetrics;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrapperHelper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrappingStats;
@@ -123,6 +124,46 @@ public class AutomaticInnerScrapperClient<P, M> {
     public HttpMetrics getHttpMetrics() throws ScrapperUnsupportedException {
         return htmlAutoScrapper.getHttpMetrics();
     }
+
+
+    public List<FutureTask<Object>> getRunningTasks() {
+        return runningTasks;
+    }
+
+    public ScrappingContext<P, M, ? extends ScrapperHelper<P, M>> getContext() {
+        return context;
+    }
+
+
+
+    public void stopRunningTasks() {
+        stopped = true;
+        for (FutureTask ft : runningTasks) {
+            ft.cancel(true);
+        }
+    }
+
+
+    public ScrappingStats getScrapingStats() {
+        if(!scrapStarted)
+            return new ScrappingStatsImpl(0,0,0,0, 0);
+
+        int runningTasks = startedScrapsCount - finishedTasks;
+
+        return new ScrappingStatsImpl(
+                finishedTasks, runningTasks,
+                validFinishedTasks,
+                failedFinishedTasks,
+                pList.size() + runningTasks
+        );
+    }
+
+    public void addPElements(List<P> newPList){
+        synchronized (pList) {
+            pList.addAll(newPList);
+        }
+    }
+
 
     private ScrappingResult emptyFinishedThreads(List results, RequestsScrappingContext requestsScrappingContext)
             throws ExecutionException, InterruptedException {
@@ -301,45 +342,10 @@ public class AutomaticInnerScrapperClient<P, M> {
         return fts;
     }
 
-    public List<FutureTask<Object>> getRunningTasks() {
-        return runningTasks;
-    }
-
-    public ScrappingContext<P, M, ? extends ScrapperHelper<P, M>> getContext() {
-        return context;
-    }
 
     private static class ScrappingResult {
         int valid = 0;
         int failed = 0;
-    }
-
-    public void stopRunningTasks() {
-        stopped = true;
-        for (FutureTask ft : runningTasks) {
-            ft.cancel(true);
-        }
-    }
-
-
-    public ScrappingStats getScrapingStats() {
-        if(!scrapStarted)
-            return new ScrappingStatsImpl(0,0,0,0, 0);
-
-        int runningTasks = startedScrapsCount - finishedTasks;
-
-        return new ScrappingStatsImpl(
-                finishedTasks, runningTasks,
-                validFinishedTasks,
-                failedFinishedTasks,
-                pList.size() + runningTasks
-        );
-    }
-
-    public void addPElements(List<P> newPList){
-        synchronized (pList) {
-            pList.addAll(newPList);
-        }
     }
 
     public static class ScrapperFutureTask<P, M> extends FutureTask<Object>

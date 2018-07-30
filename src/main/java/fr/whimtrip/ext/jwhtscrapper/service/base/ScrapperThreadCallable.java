@@ -1,7 +1,7 @@
 package fr.whimtrip.ext.jwhtscrapper.service.base;
 
+import fr.whimtrip.ext.jwhtscrapper.intfr.HtmlAutoScrapper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrapperHelper;
-import fr.whimtrip.ext.jwhtscrapper.service.scoped.HtmlAutoScrapper;
 
 import java.util.concurrent.Callable;
 

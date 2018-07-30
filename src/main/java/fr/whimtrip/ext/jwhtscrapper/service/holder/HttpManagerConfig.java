@@ -61,42 +61,42 @@ public class HttpManagerConfig {
      *                    see {@link ProxyFinder}.
      * @param boundRequestBuilderProcessor the request processor instance to use.
      * @param awaitBetweenRequests time to wait between each consecutive http
-     *                             request. <p></p>
+     *                             request. <br>
      *
      * @param proxyChangeRate the rate at which the proxies should be switched
      *
      * @param timeout the timeout in milliseconds before the request will be
-     *                retried <p></p>
+     *                retried <br>
      *
      * @param useProxy wether you should use proxies or not for performing your
-     *                request<p></p>
+     *                request<br>
      *
      * @param connectToProxyBeforeRequest wether a {@code CONNECT} TCP initialization
      * request should be performed before hand.
-     * <strong>Warning! Only use if you know what you are doing!</strong><p></p>
+     * <strong>Warning! Only use if you know what you are doing!</strong><br>
      *
      * @param rotatingUserAgent will auto assign rotating user agent headers to
-     *  each request using {@link RotatingUserAgent#pickRandomUserAgent()}.<p></p>
+     *  each request using {@link RotatingUserAgent#pickRandomUserAgent()}.<br>
      *
      * @param allowInfiniteRedirections will allow infinite redirections.
      *  Redirections with {@code 301} or {@code 302} HTTP Status codes will
      *  be followed as a normal browser would. Redirections are by default
      *  limited to 3 on the same request. Setting this field to true will
      *  let potential (quite common case when scrapping) happens.
-     *  <strong>Warning! Only use if you know what you are doing!</strong><p></p>
+     *  <strong>Warning! Only use if you know what you are doing!</strong><br>
      *
      * @param followRedirections wether HTTP redirection (301 and 302 HTTP status)
      * should be accepted or not. If false, no redirection will be followed, even
      * though {@code allowInfiniteRedirections} is set to true. If set to true with
      * {@code allowInfiniteRedirections} set to false, redirections will only be
-     * followed once in per single HTTP request but not more.<p></p>
+     * followed once in per single HTTP request but not more.<br>
      *
      * @param maxRequestRetries maximum number of retries before throwing a
-     *                          failure exception<p></p>
+     *                          failure exception<br>
      *
      *
-     * @param defaultHeaders default headers to use in each requests<p></p>
-     * @param defaultCookies default cookies to use in each requests<p></p>
+     * @param defaultHeaders default headers to use in each requests<br>
+     * @param defaultCookies default cookies to use in each requests<br>
      * @param defaultFields default POST defaultFields to use on each requests.
      */
     public HttpManagerConfig(
@@ -220,7 +220,7 @@ public class HttpManagerConfig {
     /**
      * @return wether a {@code CONNECT} TCP initialization request should be
      * performed before hand.
-     * <strong>Warning! Only use if you know what you are doing!</strong><p></p>
+     * <strong>Warning! Only use if you know what you are doing!</strong><br>
      */
     public boolean connectToProxyBeforeRequest() {
 
@@ -244,7 +244,7 @@ public class HttpManagerConfig {
      *  be followed as a normal browser would. Redirections are by default
      *  limited to 3 on the same request. Setting this field to true will
      *  let potential (quite common case when scrapping) happens.
-     *  <strong>Warning! Only use if you know what you are doing!</strong><p></p>
+     *  <strong>Warning! Only use if you know what you are doing!</strong><br>
      */
     public boolean allowInfiniteRedirections() {
 

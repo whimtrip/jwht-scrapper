@@ -11,11 +11,14 @@ package fr.whimtrip.ext.jwhtscrapper.service;
 import fr.whimtrip.core.util.intrf.ExceptionLogger;
 import fr.whimtrip.ext.jwhtscrapper.annotation.Scrapper;
 import fr.whimtrip.ext.jwhtscrapper.exception.ScrapperException;
+import fr.whimtrip.ext.jwhtscrapper.intfr.HtmlAutoScrapper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrapperHelper;
-import fr.whimtrip.ext.jwhtscrapper.service.base.AutomaticScrapperManager;
 import fr.whimtrip.ext.jwhtscrapper.service.base.AutomaticScrapperClient;
+import fr.whimtrip.ext.jwhtscrapper.service.base.AutomaticScrapperManager;
+import fr.whimtrip.ext.jwhtscrapper.service.base.HttpManagerClient;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.ScrappingContext;
-import fr.whimtrip.ext.jwhtscrapper.service.scoped.*;
+import fr.whimtrip.ext.jwhtscrapper.service.scoped.AutomaticInnerScrapperClient;
+import fr.whimtrip.ext.jwhtscrapper.service.scoped.AutomaticScrapperClientImpl;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -138,7 +141,7 @@ public class AutomaticScrapperManagerImpl implements AutomaticScrapperManager {
     @NotNull
     private AutomaticScrapperClientImpl buildAutomaticScrapperClient(ScrappingContext context) {
 
-        HttpWithProxyManagerClient proxyClient =
+        HttpManagerClient proxyClient =
                 this.htmlAutoScrapperManager
                         .createProxyManagerClient(context.getRequestsScrappingContext());
         HtmlAutoScrapper autoScrapper =

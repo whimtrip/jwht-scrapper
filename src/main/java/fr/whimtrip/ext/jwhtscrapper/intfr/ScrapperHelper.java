@@ -62,8 +62,6 @@ public interface ScrapperHelper<P, M> {
      * Edit the actual request before it will be sent to network
      * @param req the request to edit
      * @param parent the parent object
-     * @return the edited request. It must be the same request instance provided
-     *         in the input parameter.
      */
     void editRequest(@NotNull final BoundRequestBuilder req, @NotNull final P parent);
 

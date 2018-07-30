@@ -47,7 +47,6 @@ public interface HttpRequestEditor<T,U> {
      * @param req the request to edit.
      * @param preparatorHolder the link preparator holder holding all needed request
      *                         information
-     * @return the edited request. Might not be the same object reference.
      */
-    BoundRequestBuilder editRequest(BoundRequestBuilder req, LinkPreparatorHolder preparatorHolder);
+    void editRequest(BoundRequestBuilder req, LinkPreparatorHolder preparatorHolder);
 }

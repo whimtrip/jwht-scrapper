@@ -27,6 +27,7 @@ import fr.whimtrip.ext.jwhtscrapper.annotation.ProxyConfig;
 import fr.whimtrip.ext.jwhtscrapper.annotation.RequestsConfig;
 import fr.whimtrip.ext.jwhtscrapper.annotation.WarningSign;
 import fr.whimtrip.ext.jwhtscrapper.intfr.BasicObjectMapper;
+import fr.whimtrip.ext.jwhtscrapper.intfr.HtmlAutoScrapper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ProxyFinder;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrapperHelper;
 import fr.whimtrip.ext.jwhtscrapper.service.base.HttpManagerClient;
@@ -35,7 +36,7 @@ import fr.whimtrip.ext.jwhtscrapper.service.holder.RequestsScrappingContext;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.ScrappingContext;
 import fr.whimtrip.ext.jwhtscrapper.service.scoped.BoundRequestBuilderProcessor;
 import fr.whimtrip.ext.jwhtscrapper.service.scoped.DefaultHttpManagerClientBuilder;
-import fr.whimtrip.ext.jwhtscrapper.service.scoped.HtmlAutoScrapper;
+import fr.whimtrip.ext.jwhtscrapper.service.scoped.HtmlAutoScrapperImpl;
 import fr.whimtrip.ext.jwhtscrapper.service.scoped.HttpWithProxyManagerClient;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
@@ -149,22 +150,22 @@ public class HtmlAutoScrapperManager {
     /**
      *
      * @param awaitBetweenRequests time to wait between each consecutive http
-     *                             request. <p></p>
+     *                             request. <br>
      *
      * @param proxyChangeRate the rate at which the proxies should be switched
      *
      * @param timeout the timeout in milliseconds before the request will be
-     *                retried <p></p>
+     *                retried <br>
      *
      * @param useProxy wether you should use proxies or not for performing your
-     *                request<p></p>
+     *                request<br>
      *
      * @param connectToProxyBeforeRequest wether a {@code CONNECT} TCP initialization
      * request should be performed before hand.
-     * <strong>Warning! Only use if you know what you are doing!</strong><p></p>
+     * <strong>Warning! Only use if you know what you are doing!</strong><br>
      *
      * @param rotatingUserAgent will auto assign rotating user agent headers to
-     *  each request using {@link RotatingUserAgent#pickRandomUserAgent()}.<p></p>
+     *  each request using {@link RotatingUserAgent#pickRandomUserAgent()}.<br>
      *
      * @param allowInfiniteRedirections will allow infinite redirections.
      *  Redirections with {@code 301} or {@code 302} HTTP Status codes will
@@ -180,11 +181,11 @@ public class HtmlAutoScrapperManager {
      * followed once in per single HTTP request but not more.
      *
      * @param maxRequestRetries maximum number of retries before throwing a
-     *                          failure exception<p></p>
+     *                          failure exception<br>
      *
      *
-     * @param headers default headers to use in each requests<p></p>
-     * @param cookies default cookies to use in each requests<p></p>
+     * @param headers default headers to use in each requests<br>
+     * @param cookies default cookies to use in each requests<br>
      * @param fields default POST fields to use on each requests.
      *
      * @return built {@link HttpWithProxyManagerClient}
@@ -225,40 +226,37 @@ public class HtmlAutoScrapperManager {
     /**
      * <p>Manual {@link HtmlAutoScrapper} factory method.</p>
      * @param client the {@link HttpWithProxyManagerClient} that will be used under the
-     *               hood by the {@link HtmlAutoScrapper}.<p></p>
+     *               hood by the {@link HtmlAutoScrapper}.<br>
      *
-     * @param clazz the class to map resulting outputs to.<p></p>
+     * @param clazz the class to map resulting outputs to.<br>
      *
-     * @param throwEx wether exceptions for link lists concurrent scrapping
-     *                should be thrown or catched.<p></p>
      *
-     * @param followRediretcions wether HTTP redirections should be followed
+     * @param followRedirections wether HTTP redirections should be followed
      *                           or not (HTTP redirections is valid if status
      *                           code is {@code 301} or {@code 302} and when
-     *                           the {@code Location} header is not empty.<p></p>
+     *                           the {@code Location} header is not empty.<br>
      *
      * @param warningSignDelay delay before retrying any action in the case
      *                         a {@link WarningSign} was triggered and only if it
-     *                         was set to {@link WarningSign.Action#RETRY}.<p></p>
+     *                         was set to {@link WarningSign.Action#RETRY}.<br>
      * @param <T> the type of model this scrapper will cast resulting outputs to.
      * @return built in {@link HtmlAutoScrapper}.
      */
     public <T> HtmlAutoScrapper<T> createHtmlAutoScrapper(
             final HttpManagerClient client,
             Class<T> clazz,
-            boolean throwEx,
-            boolean followRediretcions,
+            boolean followRedirections,
             int warningSignDelay
     )
     {
-        return new HtmlAutoScrapper<>(
+        return new HtmlAutoScrapperImpl<>(
                 client,
                 htmlToPojoEngine,
                 boundRequestBuilderProcessor,
                 objectMapper,
+                exceptionLogger,
                 clazz,
-                throwEx,
-                followRediretcions,
+                followRedirections,
                 warningSignDelay
         );
     }
@@ -339,7 +337,6 @@ public class HtmlAutoScrapperManager {
         return createHtmlAutoScrapper(
                 httpManagerClient,
                 context.getModelClazz(),
-                context.getRequestsScrappingContext().isThrowExceptions(),
                 context.getRequestsScrappingContext().getRequestsConfig().followRedirections(),
                 context.getRequestsScrappingContext().getRequestsConfig().warningSignDelay()
         );
