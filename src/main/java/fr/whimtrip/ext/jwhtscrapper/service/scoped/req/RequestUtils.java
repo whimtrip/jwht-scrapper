@@ -1,10 +1,15 @@
 package fr.whimtrip.ext.jwhtscrapper.service.scoped.req;
 
+import fr.whimtrip.ext.jwhtscrapper.annotation.Field;
 import fr.whimtrip.ext.jwhtscrapper.intfr.Proxy;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ProxyFinder;
+import fr.whimtrip.ext.jwhtscrapper.service.holder.PostField;
 import org.asynchttpclient.BoundRequestBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * <p>Part of project jwht-scrapper</p>
@@ -43,4 +48,24 @@ public class RequestUtils {
             proxyFinder.persistProxy(proxy);
         }
     }
+
+
+    /**
+     * <p>
+     *     Will transform {@link Field} into {@link PostField}.
+     * </p>
+     * @param fields the annotations fields to build.
+     * @return corresponding {@link PostField} list.
+     */
+    public static List<PostField> buildFields(Field[] fields) {
+
+        List<PostField> parsedFields = new ArrayList<>();
+
+        for(Field field : fields)
+        {
+            parsedFields.add(new PostField(field.name(), field.value().toString()));
+        }
+        return parsedFields;
+    }
+
 }

@@ -9,112 +9,134 @@
 package fr.whimtrip.ext.jwhtscrapper.service.holder;
 
 import fr.whimtrip.ext.jwhtscrapper.annotation.Link;
-import fr.whimtrip.ext.jwhtscrapper.annotation.Field;
+import fr.whimtrip.ext.jwhtscrapper.exception.LinkException;
 import fr.whimtrip.ext.jwhtscrapper.intfr.HttpRequestEditor;
+import fr.whimtrip.ext.jwhtscrapper.service.scoped.LinksFollowerImpl;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 /**
- * Created by LOUISSTEIMBERG on 19/11/2017.
+ * <p>Part of project jwht-scrapper</p>
+ * <p>Created on 28/07/18</p>
+ *
+ * <p>
+ *     Inner holder class used by {@link LinksFollowerImpl}. It will hold a partial
+ *     link preparation context so that it can be further sent as a simple object
+ *     wether than a complex parameter agglomeration in corresponding methods.
+ * </p>
+ *
+ * @author Louis-wht
+ * @since 1.0.0
  */
 public class LinkPreparatorHolder<P> {
 
-    private P parent;
+    private final P parent;
 
-    private String url;
+    private final String url;
 
-    private Link.Method method;
+    private final Link.Method method;
 
-    private Map<String, Object> fields = new HashMap<>();
+    private final List<PostField> fields;
 
-    private java.lang.reflect.Field parentField;
+    private final java.lang.reflect.Field parentField;
 
-    private Class<? extends HttpRequestEditor> requestEditorClazz;
+    private final Class<? extends HttpRequestEditor> requestEditorClazz;
 
-    private boolean followRedirections;
+    private final boolean followRedirections;
 
-    private boolean throwExceptions;
+    private final boolean throwExceptions;
 
+    /**
+     * <p>Default constructor of this clas</p>
+     * @param parent see {@link #getParent()}
+     * @param url see {@link #getUrl()}
+     * @param method see {@link #getMethod()}
+     * @param fields see {@link #getFields()}
+     * @param parentField see {@link #getParentField()}
+     * @param requestEditorClazz see {@link #getRequestEditorClazz()}
+     * @param followRedirections see {@link #followRedirections()}
+     * @param throwExceptions see {@link #throwExceptions()}
+     */
+    public LinkPreparatorHolder(
+            @NotNull  final P parent,
+            @NotNull  final String url,
+            @NotNull  final Link.Method method,
+            @Nullable final List<PostField> fields,
+            @NotNull  final java.lang.reflect.Field parentField,
+            @NotNull  final Class<? extends HttpRequestEditor> requestEditorClazz,
+                      final boolean followRedirections,
+                      final boolean throwExceptions
+    ){
 
+        this.parent = parent;
+        this.url = url;
+        this.method = method;
+        this.fields = fields;
+        this.parentField = parentField;
+        this.requestEditorClazz = requestEditorClazz;
+        this.followRedirections = followRedirections;
+        this.throwExceptions = throwExceptions;
+    }
+
+    /**
+     * @return the parent POJO that should contain child POJO or list of
+     *         child POJOs that will be preparated through this holder class.
+     */
     public P getParent() {
         return parent;
     }
 
-    public LinkPreparatorHolder setParent(P parent) {
-        this.parent = parent;
-        return this;
-    }
-
+    /**
+     * @return the url to scrap at.
+     */
     public String getUrl() {
         return url;
     }
 
-    public LinkPreparatorHolder setUrl(String url) {
-        this.url = url;
-        return this;
-    }
-
+    /**
+     * @return the {@link Link.Method} HTTP method to use for the scrapping process.
+     */
     public Link.Method getMethod() {
         return method;
     }
 
-    public LinkPreparatorHolder setMethod(Link.Method method) {
-        this.method = method;
-        return this;
-    }
-
-    public Map<String, Object> getFields() {
+    /**
+     * @return the list of {@link PostField} to add to the HTTP request if POST
+     *         request.
+     */
+    public List<PostField> getFields() {
         return fields;
     }
 
-    public LinkPreparatorHolder setFields(Map<String, Object> fields) {
-        this.fields = fields;
-        return this;
-    }
-
+    /**
+     * @return the {@link HttpRequestEditor} class to use if any to modify and alter the
+     *         request building process with custom processing unit.
+     */
     public Class<? extends HttpRequestEditor> getRequestEditorClazz() {
         return requestEditorClazz;
     }
 
-    public LinkPreparatorHolder setRequestEditorClazz(Class<? extends HttpRequestEditor> requestEditorClazz) {
-        this.requestEditorClazz = requestEditorClazz;
-        return this;
-    }
-
+    /**
+     * @return the parent field to set the resulting scrapped value to.
+     */
     public java.lang.reflect.Field getParentField() {
         return parentField;
     }
 
-    public LinkPreparatorHolder setParentField(java.lang.reflect.Field parentField) {
-        this.parentField = parentField;
-        return this;
-    }
-
-    public LinkPreparatorHolder buildFields(Field[] fields) {
-        for(Field field : fields)
-        {
-            this.fields.put(field.name(), field.value());
-        }
-        return this;
-    }
-
+    /**
+     * @return wether HTTP redirections should be followed or not.
+     */
     public boolean followRedirections() {
         return followRedirections;
     }
 
-    public LinkPreparatorHolder setFollowRedirections(boolean followRedirections) {
-        this.followRedirections = followRedirections;
-        return this;
-    }
-
+    /**
+     * @return wether {@link LinkException} should be catched or thrown.
+     */
     public boolean throwExceptions() {
         return throwExceptions;
     }
 
-    public LinkPreparatorHolder setThrowExceptions(boolean throwExceptions) {
-
-        this.throwExceptions = throwExceptions;
-        return this;
-    }
 }

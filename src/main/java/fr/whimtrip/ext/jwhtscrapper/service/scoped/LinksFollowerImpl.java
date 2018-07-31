@@ -23,6 +23,8 @@ import fr.whimtrip.ext.jwhtscrapper.service.base.HttpManagerClient;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.LinkListScrappingContext;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.LinkPreparatorHolder;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.LinkScrappingContext;
+import fr.whimtrip.ext.jwhtscrapper.service.holder.PostField;
+import fr.whimtrip.ext.jwhtscrapper.service.scoped.req.RequestUtils;
 import org.asynchttpclient.BoundRequestBuilder;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -315,17 +317,17 @@ public final class LinksFollowerImpl implements LinksFollower {
                 HtmlAdapter<U> newFieldAdapter = (HtmlAdapter<U>) htmlToPojoEngine.adapter(objField.getType());
 
                 boolean editRequest = link.getAnnotation().editRequest();
-
                 LinkPreparatorHolder container =
-                        new LinkPreparatorHolder()
-                                .buildFields(link.getAnnotation().fields())
-                                .setFollowRedirections(link.getAnnotation().followRedirections())
-                                .setThrowExceptions(link.getAnnotation().throwExceptions())
-                                .setParentField(objField)
-                                .setParent(model)
-                                .setMethod(link.getAnnotation().method())
-                                .setRequestEditorClazz(link.getAnnotation().requestEditor())
-                                .setUrl(url);
+                        new LinkPreparatorHolder(
+                                model,
+                                url,
+                                link.getAnnotation().method(),
+                                RequestUtils.buildFields(link.getAnnotation().fields()),
+                                objField,
+                                link.getAnnotation().requestEditor(),
+                                link.getAnnotation().followRedirections(),
+                                link.getAnnotation().throwExceptions()
+                        );
 
                 HttpRequestEditor<P, U> requestEditor = null;
                 if (editRequest)
@@ -569,9 +571,9 @@ public final class LinksFollowerImpl implements LinksFollower {
         {
             req = httpManagerClient.preparePost(container.getUrl());
 
-            for(Map.Entry<String, Object> fieldEntr: container.getFields().entrySet())
+            for(PostField field: container.getFields())
             {
-                req.addFormParam(fieldEntr.getKey(), fieldEntr.getValue().toString());
+                req.addFormParam(field.getName(), field.getValue());
             }
         }
 
