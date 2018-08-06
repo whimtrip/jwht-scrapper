@@ -9,7 +9,10 @@ import fr.whimtrip.ext.jwhtscrapper.impl.ScrapperHtmlAdapterFactory;
 import fr.whimtrip.ext.jwhtscrapper.intfr.BasicObjectMapper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ProxyFinder;
 import fr.whimtrip.ext.jwhtscrapper.service.base.AutomaticScrapperManager;
+import fr.whimtrip.ext.jwhtscrapper.service.base.BoundRequestBuilderProcessor;
+import fr.whimtrip.ext.jwhtscrapper.service.scoped.ReflectionBoundRequestBuilderProcessor;
 import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.BoundRequestBuilder;
 import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 
 /**
@@ -19,7 +22,7 @@ import org.asynchttpclient.DefaultAsyncHttpClientConfig;
  *
  * <p>
  *     This builder class will instanciate an {@link AutomaticScrapperManager}
- *     with {@link AutomaticScrapperManagerImpl} implenentation.
+ *     with {@link AutomaticScrapperManagerImpl} implementation.
  * </p>
  *
  * <p>This builder let's you customize several parameters :</p>
@@ -67,6 +70,10 @@ import org.asynchttpclient.DefaultAsyncHttpClientConfig;
  *         {@link ObjectMapper} as an implementation so that JSON messages can be parsed
  *         as well.
  *     </li>
+ *     <li>
+ *         {@code requestProcessor} : The {@link BoundRequestBuilder} processor implementation.
+ *         {@link BoundRequestBuilderProcessor}. Default implementation should fit all requirements.
+ *     </li>
  * </ul>
  *
  * @author Louis-wht
@@ -80,6 +87,7 @@ public class AutomaticScrapperManagerBuilder {
     private AsyncHttpClient asyncHttpClient;
     private ProxyFinder proxyFinder;
     private boolean jsonScrapper = false;
+    private BoundRequestBuilderProcessor requestProcessor;
 
     /**
      * @param exceptionLogger {@link ExceptionLogger} you can provide your own implementations
@@ -177,6 +185,16 @@ public class AutomaticScrapperManagerBuilder {
     }
 
     /**
+     * @param requestProcessor The {@link BoundRequestBuilder} processor implementation.
+     *         {@link BoundRequestBuilderProcessor}.
+     * @return the same instance of {@link AutomaticScrapperManagerBuilder}.
+     */
+    public AutomaticScrapperManagerBuilder setRequestProcessor(BoundRequestBuilderProcessor requestProcessor) {
+        this.requestProcessor = requestProcessor;
+        return this;
+    }
+
+    /**
      * @return the built {@link AutomaticScrapperManagerImpl}
      */
     public AutomaticScrapperManager build() {
@@ -185,13 +203,15 @@ public class AutomaticScrapperManagerBuilder {
         return new AutomaticScrapperManagerImpl(
                     new HtmlAutoScrapperManagerBuilder(
                             getOrBuildHtmlToPojoEngine(),
-                            exceptionLogger
+                            getOrBuildExceptionLogger()
                         )
                         .setAsyncHttpClient(asyncHttpClient)
                         .setObjectMapper(getOrBuildObjectMapper())
                         .setProxyFinder(proxyFinder)
+                        .setBoundRequestBuilderProcessor(getOrBuildRequestProcessor())
                         .build(),
-                    exceptionLogger
+                    getOrBuildExceptionLogger(),
+                    requestProcessor
         );
     }
 
@@ -212,5 +232,26 @@ public class AutomaticScrapperManagerBuilder {
      */
     private BasicObjectMapper getOrBuildObjectMapper() {
         return jsonScrapper && objectMapper == null ? new DefaultBasicObjectMapper() : objectMapper;
+    }
+
+
+    /**
+     * @return submitted {@code requestProcessor} if not null, otherwise will build a
+     *         new default one.
+     */
+    private BoundRequestBuilderProcessor getOrBuildRequestProcessor() {
+        if(requestProcessor == null)
+            requestProcessor = new ReflectionBoundRequestBuilderProcessor(getOrBuildExceptionLogger());
+        return requestProcessor;
+    }
+
+    /**
+     * @return submitted {@code exceptionLoggerService} if not null, otherwise will build a
+     *         new default one.
+     */
+    private ExceptionLogger getOrBuildExceptionLogger() {
+        if(exceptionLogger == null)
+            exceptionLogger = new DefaultExceptionLoggerService();
+        return exceptionLogger;
     }
 }

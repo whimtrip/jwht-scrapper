@@ -60,8 +60,6 @@ public class RequestCoreHandler {
 
     private int tries = 0;
 
-    @Nullable
-    private Proxy proxy;
     private String url;
 
     private int lastStatusCode = 0;
@@ -97,9 +95,8 @@ public class RequestCoreHandler {
         this.requestSynchronizer = requestSynchronizer;
         this.httpConnectHandler = httpConnectHandler;
         this.req = req;
-        this.proxy = proxy;
         this.url = url;
-        this.actualProxy = httpManagerConfig.getBoundRequestBuilderProcessor().getProxyServerFromRequestBuilder(req);
+        this.actualProxy = proxy;
         this.followRedirections = httpManagerConfig.followRedirections();
     }
 
@@ -307,7 +304,6 @@ public class RequestCoreHandler {
         else
         {
             log.info("Redirection required that cannot be followed with body :  {}.", resp.getResponseBody());
-            httpManagerConfig.getBoundRequestBuilderProcessor().printHeaders(resp.getHeaders());
             return resp.getResponseBody();
         }
     }

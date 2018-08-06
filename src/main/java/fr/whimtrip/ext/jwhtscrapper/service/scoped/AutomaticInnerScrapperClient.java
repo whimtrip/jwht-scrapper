@@ -17,6 +17,7 @@ import fr.whimtrip.ext.jwhtscrapper.intfr.HtmlAutoScrapper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.HttpMetrics;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrapperHelper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrappingStats;
+import fr.whimtrip.ext.jwhtscrapper.service.base.BoundRequestBuilderProcessor;
 import fr.whimtrip.ext.jwhtscrapper.service.base.ScrapperThreadCallable;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.RequestsScrappingContext;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.ScrappingContext;
@@ -52,6 +53,7 @@ public class AutomaticInnerScrapperClient<P, M> {
 
     private final List<P> pList = new ArrayList<>();
 
+    private final BoundRequestBuilderProcessor requestProcessor;
 
     private int finishedTasks = 0;
     private int startedScrapsCount = 0;
@@ -65,12 +67,14 @@ public class AutomaticInnerScrapperClient<P, M> {
     public AutomaticInnerScrapperClient(
             ScrappingContext<P, M, ? extends ScrapperHelper<P, M>> context,
             HtmlAutoScrapper<M> htmlAutoScrapper,
-            ExceptionLogger exceptionLoggerService
+            ExceptionLogger exceptionLoggerService,
+            BoundRequestBuilderProcessor requestProcessor
     )
     {
         this.context = context;
         this.htmlAutoScrapper = htmlAutoScrapper;
         this.exceptionLoggerService = exceptionLoggerService;
+        this.requestProcessor = requestProcessor;
     }
 
     public synchronized List<Object> scrap() throws InterruptedException, ExecutionException, ScrapperException
@@ -321,7 +325,7 @@ public class AutomaticInnerScrapperClient<P, M> {
                     break;
 
                 FutureTask<Object> ft = new ScrapperFutureTask<>(
-                        new ScrapperThreadCallableImpl(p, context, htmlAutoScrapper)
+                        new ScrapperThreadCallableImpl(p, context, htmlAutoScrapper, requestProcessor)
                 );
                 fts.add(ft);
                 runningTasks.add(ft);

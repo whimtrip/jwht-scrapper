@@ -6,8 +6,9 @@ import fr.whimtrip.ext.jwhtscrapper.intfr.BasicObjectMapper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.HtmlAutoScrapper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ProxyFinder;
 import fr.whimtrip.ext.jwhtscrapper.service.base.AutomaticScrapperManager;
-import fr.whimtrip.ext.jwhtscrapper.service.scoped.BoundRequestBuilderProcessor;
+import fr.whimtrip.ext.jwhtscrapper.service.base.BoundRequestBuilderProcessor;
 import fr.whimtrip.ext.jwhtscrapper.service.scoped.HttpWithProxyManagerClient;
+import fr.whimtrip.ext.jwhtscrapper.service.scoped.ReflectionBoundRequestBuilderProcessor;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.DefaultAsyncHttpClient;
 import org.asynchttpclient.DefaultAsyncHttpClientConfig;
@@ -116,7 +117,7 @@ public class HtmlAutoScrapperManagerBuilder {
     public HtmlAutoScrapperManager build() {
         this.asyncHttpClient = asyncHttpClient == null ? buildAsyncHttpClient() : asyncHttpClient;
         this.boundRequestBuilderProcessor = boundRequestBuilderProcessor == null ?
-                new BoundRequestBuilderProcessor(proxyFinder, exceptionLogger) :
+                new ReflectionBoundRequestBuilderProcessor(exceptionLogger) :
                 boundRequestBuilderProcessor;
 
         return new HtmlAutoScrapperManager(

@@ -13,6 +13,7 @@ import fr.whimtrip.ext.jwhtscrapper.exception.WarningSignException;
 import fr.whimtrip.ext.jwhtscrapper.intfr.HtmlAutoScrapper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrapperHelper;
 import fr.whimtrip.ext.jwhtscrapper.service.base.AutomaticScrapperClient;
+import fr.whimtrip.ext.jwhtscrapper.service.base.BoundRequestBuilderProcessor;
 import fr.whimtrip.ext.jwhtscrapper.service.base.ScrapperThreadCallable;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.RequestsScrappingContext;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.ScrappingContext;
@@ -53,6 +54,7 @@ public class ScrapperThreadCallableImpl<P, M> implements ScrapperThreadCallable<
     private final RequestsScrappingContext requestsScrappingContext;
     private final ScrapperHelper<P, M> scrapperHelper;
     private final HtmlAutoScrapper<M> htmlAutoScrapper;
+    private final BoundRequestBuilderProcessor requestProcessor;
 
 
     private boolean done = false;
@@ -62,7 +64,8 @@ public class ScrapperThreadCallableImpl<P, M> implements ScrapperThreadCallable<
     public ScrapperThreadCallableImpl(
             final P parentObject,
             final ScrappingContext<P, M, ? extends ScrapperHelper<P, M>> context,
-            final HtmlAutoScrapper<M> htmlAutoScrapper
+            final HtmlAutoScrapper<M> htmlAutoScrapper,
+            final BoundRequestBuilderProcessor requestProcessor
     )
     {
         this.parentObject = parentObject;
@@ -70,6 +73,7 @@ public class ScrapperThreadCallableImpl<P, M> implements ScrapperThreadCallable<
         this.htmlAutoScrapper = htmlAutoScrapper;
         scrapperHelper = context.getHelper();
         requestsScrappingContext = context.getRequestsScrappingContext();
+        this.requestProcessor = requestProcessor;
     }
 
     /**
@@ -102,7 +106,7 @@ public class ScrapperThreadCallableImpl<P, M> implements ScrapperThreadCallable<
                     req = htmlAutoScrapper.prepareScrapPost(url);
                 }
 
-                scrapperHelper.editRequest(req, parentObject);
+                scrapperHelper.editRequest(req, parentObject, requestProcessor);
 
                 model = scrapperHelper.instanciateModel(parentObject);
 

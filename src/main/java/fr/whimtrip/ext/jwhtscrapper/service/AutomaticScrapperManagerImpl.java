@@ -15,6 +15,7 @@ import fr.whimtrip.ext.jwhtscrapper.intfr.HtmlAutoScrapper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrapperHelper;
 import fr.whimtrip.ext.jwhtscrapper.service.base.AutomaticScrapperClient;
 import fr.whimtrip.ext.jwhtscrapper.service.base.AutomaticScrapperManager;
+import fr.whimtrip.ext.jwhtscrapper.service.base.BoundRequestBuilderProcessor;
 import fr.whimtrip.ext.jwhtscrapper.service.base.HttpManagerClient;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.ScrappingContext;
 import fr.whimtrip.ext.jwhtscrapper.service.scoped.AutomaticInnerScrapperClient;
@@ -50,9 +51,9 @@ import java.util.List;
  */
 public class AutomaticScrapperManagerImpl implements AutomaticScrapperManager {
 
-    private HtmlAutoScrapperManager htmlAutoScrapperManager;
-
-    private ExceptionLogger exceptionLogger;
+    private final HtmlAutoScrapperManager htmlAutoScrapperManager;
+    private final ExceptionLogger exceptionLogger;
+    private final BoundRequestBuilderProcessor requestProcessor;
 
     /**
      * <p>
@@ -63,11 +64,14 @@ public class AutomaticScrapperManagerImpl implements AutomaticScrapperManager {
      *                                that will be used during the scrapping process.
      * @param exceptionLogger The exception logger that will be used to log any
      *                        thrown exception during the process.
+     * @param requestProcessor The request processor implementation to process and
+     *                         edit requests.
      */
-    AutomaticScrapperManagerImpl(@NotNull final HtmlAutoScrapperManager htmlAutoScrapperManager, @NotNull final ExceptionLogger exceptionLogger) {
+    AutomaticScrapperManagerImpl(@NotNull final HtmlAutoScrapperManager htmlAutoScrapperManager, @NotNull final ExceptionLogger exceptionLogger, @NotNull final BoundRequestBuilderProcessor requestProcessor) {
 
         this.htmlAutoScrapperManager = htmlAutoScrapperManager;
         this.exceptionLogger = exceptionLogger;
+        this.requestProcessor = requestProcessor;
     }
 
     /**
@@ -148,7 +152,7 @@ public class AutomaticScrapperManagerImpl implements AutomaticScrapperManager {
                 this.htmlAutoScrapperManager
                         .createHtmlAutoScrapper(proxyClient, context);
 
-        AutomaticInnerScrapperClient scrapper = new AutomaticInnerScrapperClient(context, autoScrapper, exceptionLogger);
+        AutomaticInnerScrapperClient scrapper = new AutomaticInnerScrapperClient(context, autoScrapper, exceptionLogger, requestProcessor);
 
         return new AutomaticScrapperClientImpl(scrapper, exceptionLogger);
     }

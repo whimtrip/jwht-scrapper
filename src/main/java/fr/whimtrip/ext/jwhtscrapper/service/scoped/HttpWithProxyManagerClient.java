@@ -31,6 +31,7 @@ import fr.whimtrip.ext.jwhtscrapper.service.holder.HttpManagerConfig;
 import fr.whimtrip.ext.jwhtscrapper.service.scoped.req.HttpConnectHandler;
 import fr.whimtrip.ext.jwhtscrapper.service.scoped.req.RequestCoreHandler;
 import fr.whimtrip.ext.jwhtscrapper.service.scoped.req.RequestUtils;
+import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.BoundRequestBuilder;
@@ -226,9 +227,9 @@ public class HttpWithProxyManagerClient implements HttpManagerClient{
      */
     private HttpHeaders buildDefaultHeaders() {
 
-        HttpHeaders headers = httpManagerConfig
-                .getBoundRequestBuilderProcessor()
-                .newHttpHeaders(httpManagerConfig.getDefaultHeaders());
+        HttpHeaders headers = new DefaultHttpHeaders()
+                                    .add(httpManagerConfig.getDefaultHeaders());
+
         return httpManagerConfig.rotateUserAgent() ?
                 headers : headers.add(USER_AGENT_HEADER_NAME, RotatingUserAgent.pickRandomUserAgent());
     }

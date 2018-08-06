@@ -12,6 +12,7 @@ import fr.whimtrip.core.util.exception.ObjectCreationException;
 import fr.whimtrip.ext.jwhtscrapper.annotation.Scrapper;
 import fr.whimtrip.ext.jwhtscrapper.exception.ModelBindingException;
 import fr.whimtrip.ext.jwhtscrapper.service.base.AutomaticScrapperClient;
+import fr.whimtrip.ext.jwhtscrapper.service.base.BoundRequestBuilderProcessor;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.RequestsScrappingContext;
 import org.asynchttpclient.BoundRequestBuilder;
 import org.jetbrains.annotations.NotNull;
@@ -62,8 +63,9 @@ public interface ScrapperHelper<P, M> {
      * Edit the actual request before it will be sent to network
      * @param req the request to edit
      * @param parent the parent object
+     * @param requestProcessor the request processor class to enable request edition
      */
-    void editRequest(@NotNull final BoundRequestBuilder req, @NotNull final P parent);
+    void editRequest(@NotNull final BoundRequestBuilder req, @NotNull final P parent, @NotNull final BoundRequestBuilderProcessor requestProcessor);
 
 
     /**

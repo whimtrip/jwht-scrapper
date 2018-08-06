@@ -32,6 +32,7 @@ import fr.whimtrip.ext.jwhtscrapper.intfr.BasicObjectMapper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.HtmlAutoScrapper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.HttpMetrics;
 import fr.whimtrip.ext.jwhtscrapper.intfr.LinksFollower;
+import fr.whimtrip.ext.jwhtscrapper.service.base.BoundRequestBuilderProcessor;
 import fr.whimtrip.ext.jwhtscrapper.service.base.HttpManagerClient;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.LinkListScrappingContext;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.LinkScrappingContext;
@@ -300,7 +301,6 @@ public class HtmlAutoScrapperImpl<T> implements HtmlAutoScrapper<T> {
 
             boundRequestBuilderProcessor.printReq(req);
             WhimtripUtils.waitForWithOutputToConsole((long) warningSignDelay, 20);
-            req = boundRequestBuilderProcessor.recreateRequest(req, httpManagerClient);
             return scrap(req, obj, adapter, followRedirections);
         }
         catch (IOException | HtmlToPojoException e)
