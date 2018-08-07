@@ -8,6 +8,8 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
  * <p>Part of project jwht-scrapper</p>
  * <p>Created on 28/07/18</p>
@@ -25,6 +27,7 @@ public final class RequestSynchronizerImpl implements RequestSynchronizer {
     private static final Logger log = LoggerFactory.getLogger(RequestSynchronizerImpl.class);
 
     private final HttpManagerConfig httpManagerConfig;
+    private final AtomicBoolean scrapStopped;
 
     private final DefaultHttpMetrics defaultHttpMetrics;
 
@@ -37,11 +40,12 @@ public final class RequestSynchronizerImpl implements RequestSynchronizer {
      * <p>Default constructor of this class. Features the httpManag</p>
      * @param httpManagerConfig the httpManagerConfig that will rule over this synchronizer.
      */
-    public RequestSynchronizerImpl(@NotNull final HttpManagerConfig httpManagerConfig) {
+    public RequestSynchronizerImpl(@NotNull final HttpManagerConfig httpManagerConfig, @NotNull final AtomicBoolean scrapStopped) {
         this.lastRequest = System.currentTimeMillis() - httpManagerConfig.getAwaitBetweenRequests();
         this.lastProxyChange = httpManagerConfig.getProxyChangeRate();
         this.httpManagerConfig = httpManagerConfig;
         this.defaultHttpMetrics = new DefaultHttpMetrics();
+        this.scrapStopped = scrapStopped;
     }
 
 
@@ -53,6 +57,19 @@ public final class RequestSynchronizerImpl implements RequestSynchronizer {
 
         Long awaitedTime = System.currentTimeMillis() - lastRequest;
         lastRequest = System.currentTimeMillis();
+
+        while(scrapStopped.get()) {
+
+            try
+            {
+                Thread.sleep(1_000);
+            }
+
+            catch(InterruptedException e)
+            {
+                httpManagerConfig.getExceptionLogger().logException(e);
+            }
+        }
 
         if(awaitedTime < httpManagerConfig.getAwaitBetweenRequests())
         {

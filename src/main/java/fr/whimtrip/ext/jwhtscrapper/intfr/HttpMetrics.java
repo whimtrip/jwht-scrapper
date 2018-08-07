@@ -1,7 +1,7 @@
 package fr.whimtrip.ext.jwhtscrapper.intfr;
 
 import fr.whimtrip.ext.jwhtscrapper.service.holder.HttpManagerConfig;
-import fr.whimtrip.ext.jwhtscrapper.service.holder.StatusRange;
+import fr.whimtrip.ext.jwhtscrapper.enm.StatusRange;
 
 import java.util.Map;
 

@@ -1,5 +1,6 @@
 package fr.whimtrip.ext.jwhtscrapper.impl;
 
+import fr.whimtrip.ext.jwhtscrapper.enm.Status;
 import fr.whimtrip.ext.jwhtscrapper.intfr.Proxy;
 
 

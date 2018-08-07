@@ -22,10 +22,8 @@ package fr.whimtrip.ext.jwhtscrapper.service;
 
 import fr.whimtrip.core.util.intrf.ExceptionLogger;
 import fr.whimtrip.ext.jwhthtmltopojo.HtmlToPojoEngine;
-import fr.whimtrip.ext.jwhtscrapper.annotation.Header;
-import fr.whimtrip.ext.jwhtscrapper.annotation.ProxyConfig;
-import fr.whimtrip.ext.jwhtscrapper.annotation.RequestsConfig;
-import fr.whimtrip.ext.jwhtscrapper.annotation.WarningSign;
+import fr.whimtrip.ext.jwhtscrapper.annotation.*;
+import fr.whimtrip.ext.jwhtscrapper.enm.Action;
 import fr.whimtrip.ext.jwhtscrapper.intfr.BasicObjectMapper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.HtmlAutoScrapper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ProxyFinder;
@@ -48,6 +46,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * <p>Part of project jwht-scrapper</p>
@@ -77,6 +76,8 @@ public final class HtmlAutoScrapperManager {
     private final ProxyFinder proxyFinder;
 
     private final BoundRequestBuilderProcessor boundRequestBuilderProcessor;
+
+    private final AtomicBoolean scrapStopped = new AtomicBoolean(false);
 
     /**
      * Package private constructor that is yet only meant to be used through its
@@ -220,6 +221,7 @@ public final class HtmlAutoScrapperManager {
                         .setDefaultFields(fields)
                         .setDefaultCookies(cookies)
                         .setProxyFinder(proxyFinder)
+                        .setScrapStopped(scrapStopped)
                         .build();
     }
 
@@ -238,7 +240,7 @@ public final class HtmlAutoScrapperManager {
      *
      * @param warningSignDelay delay before retrying any action in the case
      *                         a {@link WarningSign} was triggered and only if it
-     *                         was set to {@link WarningSign.Action#RETRY}.<br>
+     *                         was set to {@link Action#RETRY}.<br>
      * @param <T> the type of model this scrapper will cast resulting outputs to.
      * @return built in {@link HtmlAutoScrapper}.
      */
@@ -257,7 +259,8 @@ public final class HtmlAutoScrapperManager {
                 exceptionLogger,
                 clazz,
                 followRedirections,
-                warningSignDelay
+                warningSignDelay,
+                scrapStopped
         );
     }
 
@@ -304,7 +307,7 @@ public final class HtmlAutoScrapperManager {
 
         return createProxyManagerClient(
                 config.waitBetweenRequests(),
-                proxyConfig.proxyChangeRate(),
+                1,
                 config.timeout(),
                 proxyConfig.useProxy(),
                 proxyConfig.connectToProxyBeforeRequest(),

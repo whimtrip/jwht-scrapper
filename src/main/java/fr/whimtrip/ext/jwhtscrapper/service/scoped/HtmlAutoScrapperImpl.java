@@ -25,6 +25,7 @@ import fr.whimtrip.core.util.intrf.ExceptionLogger;
 import fr.whimtrip.ext.jwhthtmltopojo.HtmlToPojoEngine;
 import fr.whimtrip.ext.jwhthtmltopojo.exception.HtmlToPojoException;
 import fr.whimtrip.ext.jwhthtmltopojo.intrf.HtmlAdapter;
+import fr.whimtrip.ext.jwhtscrapper.enm.Action;
 import fr.whimtrip.ext.jwhtscrapper.annotation.WarningSign;
 import fr.whimtrip.ext.jwhtscrapper.exception.*;
 import fr.whimtrip.ext.jwhtscrapper.impl.ScrapperHtmlAdapterFactory;
@@ -47,6 +48,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static fr.whimtrip.ext.jwhtscrapper.enm.PausingBehavior.PAUSE_ALL_THREADS;
+import static fr.whimtrip.ext.jwhtscrapper.enm.PausingBehavior.PAUSE_CURRENT_THREAD_ONLY;
 
 
 /**
@@ -91,6 +96,9 @@ public final class HtmlAutoScrapperImpl<T> implements HtmlAutoScrapper<T> {
 
     private final int warningSignDelay;
     private final boolean followRedirections;
+    private final AtomicBoolean scrapStopped;
+
+    private WarningSignException lastThrownWarningSignException;
 
 
     /**
@@ -118,7 +126,9 @@ public final class HtmlAutoScrapperImpl<T> implements HtmlAutoScrapper<T> {
      *
      * @param warningSignDelay delay before retrying any action in the case
      *                         a {@link WarningSign} was triggered and only if it
-     *                         was set to {@link WarningSign.Action#RETRY}.<br>
+     *                         was set to {@link Action#RETRY}.<br>
+     * @param  scrapStopped shared atomic boolean indicating if the current scrap
+     *                      process is stopped or not.
      */
     public HtmlAutoScrapperImpl(
             HttpManagerClient httpManagerClient,
@@ -128,7 +138,8 @@ public final class HtmlAutoScrapperImpl<T> implements HtmlAutoScrapper<T> {
             ExceptionLogger exceptionLogger,
             Class<T> clazz,
             boolean followRedirections,
-            int warningSignDelay
+            int warningSignDelay,
+            AtomicBoolean scrapStopped
     ) {
         this.httpManagerClient = httpManagerClient;
         this.boundRequestBuilderProcessor = boundRequestBuilderProcessor;
@@ -142,7 +153,7 @@ public final class HtmlAutoScrapperImpl<T> implements HtmlAutoScrapper<T> {
         this.htmlToPojoEngine = htmlToPojoEngine;
         this.warningSignDelay = warningSignDelay;
         this.followRedirections = followRedirections;
-
+        this.scrapStopped = scrapStopped;
     }
 
     /**
@@ -247,8 +258,21 @@ public final class HtmlAutoScrapperImpl<T> implements HtmlAutoScrapper<T> {
     ) throws ModelBindingException, LinkException, WarningSignException
     {
         Class<U> mappedClazz =  obj == null ? (Class<U>) persistentClass :  (Class<U>) obj.getClass();
-        String rawResponse =
-                httpManagerClient.getResponse(req, followRedirections);
+        String rawResponse = null;
+
+        while(scrapStopped.get()){
+
+            try
+            {
+                Thread.sleep(warningSignDelay / 10);
+            }
+            catch (InterruptedException e)
+            {
+                exceptionLogger.logException(e);
+            }
+        }
+
+        rawResponse = httpManagerClient.getResponse(req, followRedirections);
 
         try {
 
@@ -260,23 +284,41 @@ public final class HtmlAutoScrapperImpl<T> implements HtmlAutoScrapper<T> {
         }
         catch(WarningSignException e)
         {
-            log.info("A warning sign was triggered! " + e.getMessage());
+            log.warn("A warning sign was triggered! " + e.getMessage());
+            boundRequestBuilderProcessor.printReq(req);
 
-            if(e.getAction() == WarningSign.Action.THROW_EXCEPTION)
+            if(
+                    e.getPausingBehavior() == PAUSE_ALL_THREADS
+                 || e.getPausingBehavior() == PAUSE_CURRENT_THREAD_ONLY)
             {
-                log.info("This warning sign means actual scrapped handled a fatal error which" +
+
+                if (e.getPausingBehavior() == PAUSE_ALL_THREADS) {
+                    scrapStopped.set(false);
+                    lastThrownWarningSignException = e;
+                }
+
+                WhimtripUtils.waitForWithOutputToConsole((long) warningSignDelay, 20);
+
+                // this is to ensure that the same pausing threads is the one that is
+                // commanding the scrapping to stop.
+                if(e.getPausingBehavior() == PAUSE_ALL_THREADS &&  e == lastThrownWarningSignException)
+                    scrapStopped.set(true);
+            }
+
+
+            if(e.getAction() == Action.THROW_EXCEPTION)
+            {
+                log.warn("Current scrap handled a fatal error which" +
                         " shouldn't lead to further scrapping for that object");
                 throw e;
             }
 
-            if(e.getAction() == WarningSign.Action.STOP_ACTUAL_SCRAP)
+            if(e.getAction() == Action.STOP_ACTUAL_SCRAP)
             {
-                log.info("This warning sign means this object shouldn't be further scrapped");
+                log.warn("Current object shouldn't be further scrapped");
                 return obj;
             }
 
-            boundRequestBuilderProcessor.printReq(req);
-            WhimtripUtils.waitForWithOutputToConsole((long) warningSignDelay, 20);
             return scrap(req, obj, adapter, followRedirections);
         }
         catch (IOException | HtmlToPojoException e)

@@ -1,5 +1,6 @@
 package fr.whimtrip.ext.jwhtscrapper.intfr;
 
+import fr.whimtrip.ext.jwhtscrapper.enm.Status;
 import fr.whimtrip.ext.jwhtscrapper.impl.BasicProxy;
 import org.asynchttpclient.proxy.ProxyServer;
 
@@ -20,36 +21,6 @@ import org.asynchttpclient.proxy.ProxyServer;
  */
 public interface Proxy {
 
-    /**
-     *
-     * <p>Part of project jwht-scrapper</p>
-     * <p>Created on 27/07/18</p>
-     *
-     * <p>
-     *     Status a proxy can have. Statuses are used not to reuse proxies
-     *     that has been flagged as non working. Most proxies don't always
-     *     work properly so that it is recommended to store and update their
-     *     status in order not to reuse non working ones.
-     * </p>
-     *
-     * @author Louis-wht
-     * @since 1.0.0
-     */
-    enum Status {
-
-        /** Working Proxy */
-        WORKING,
-        /**
-         * Shouldn't be used as of now but a process to make a proxy
-         * change from Frozen to WORKING might be imagined
-         */
-        FROZEN,
-        /** Not to be used anymore */
-        BANNED;
-
-
-
-    }
     /**
      * Return the id of the proxy. If you do not want to provide a unique id manually,
      * this method will be defaulted with the {@link Object#hashCode()} method.

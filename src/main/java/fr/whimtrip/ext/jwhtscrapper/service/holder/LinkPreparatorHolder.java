@@ -8,7 +8,7 @@
 
 package fr.whimtrip.ext.jwhtscrapper.service.holder;
 
-import fr.whimtrip.ext.jwhtscrapper.annotation.Link;
+import fr.whimtrip.ext.jwhtscrapper.enm.Method;
 import fr.whimtrip.ext.jwhtscrapper.exception.LinkException;
 import fr.whimtrip.ext.jwhtscrapper.intfr.HttpRequestEditor;
 import fr.whimtrip.ext.jwhtscrapper.service.scoped.LinksFollowerImpl;
@@ -36,7 +36,7 @@ public class LinkPreparatorHolder<P> {
 
     private final String url;
 
-    private final Link.Method method;
+    private final Method method;
 
     private final List<PostField> fields;
 
@@ -62,7 +62,7 @@ public class LinkPreparatorHolder<P> {
     public LinkPreparatorHolder(
             @NotNull  final P parent,
             @NotNull  final String url,
-            @NotNull  final Link.Method method,
+            @NotNull  final Method method,
             @Nullable final List<PostField> fields,
             @NotNull  final java.lang.reflect.Field parentField,
             @NotNull  final Class<? extends HttpRequestEditor> requestEditorClazz,
@@ -96,9 +96,9 @@ public class LinkPreparatorHolder<P> {
     }
 
     /**
-     * @return the {@link Link.Method} HTTP method to use for the scrapping process.
+     * @return the {@link Method} HTTP method to use for the scrapping process.
      */
-    public Link.Method getMethod() {
+    public Method getMethod() {
         return method;
     }
 

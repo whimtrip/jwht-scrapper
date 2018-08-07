@@ -1,6 +1,7 @@
 package fr.whimtrip.ext.jwhtscrapper.service.scoped.req;
 
 import fr.whimtrip.ext.jwhtscrapper.annotation.Field;
+import fr.whimtrip.ext.jwhtscrapper.enm.Status;
 import fr.whimtrip.ext.jwhtscrapper.intfr.Proxy;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ProxyFinder;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.PostField;
@@ -42,7 +43,7 @@ public class RequestUtils {
      *                    (if supported by the current implementation of {@link ProxyFinder},
      *                    see {@link ProxyFinder#persistProxy(Proxy)}).
      */
-    public static void setProxyStatus(@Nullable final Proxy proxy, @NotNull final Proxy.Status status, @Nullable final ProxyFinder proxyFinder) {
+    public static void setProxyStatus(@Nullable final Proxy proxy, @NotNull final Status status, @Nullable final ProxyFinder proxyFinder) {
         if(proxy != null && proxyFinder != null) {
             proxy.setStatus(status);
             proxyFinder.persistProxy(proxy);

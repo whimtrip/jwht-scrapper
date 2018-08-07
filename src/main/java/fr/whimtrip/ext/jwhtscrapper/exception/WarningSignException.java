@@ -9,6 +9,8 @@
 package fr.whimtrip.ext.jwhtscrapper.exception;
 
 import fr.whimtrip.ext.jwhtscrapper.annotation.WarningSign;
+import fr.whimtrip.ext.jwhtscrapper.enm.Action;
+import fr.whimtrip.ext.jwhtscrapper.enm.PausingBehavior;
 
 import java.lang.reflect.Field;
 
@@ -25,16 +27,24 @@ import java.lang.reflect.Field;
  */
 public class WarningSignException extends RequestFailedException {
 
-    private WarningSign.Action action;
+    private Action action;
+
+    private PausingBehavior pausingBehavior;
 
     public WarningSignException(Field field) {
         super("Warning sign triggered while doing setting the value to the field "
                 + field.getDeclaringClass().getName() + "." + field.getName());
 
-        action = field.getAnnotation(WarningSign.class).action();
+        WarningSign ws = field.getAnnotation(WarningSign.class);
+        action = ws.action();
+        pausingBehavior = ws.pausingBehavior();
     }
 
-    public WarningSign.Action getAction() {
+    public Action getAction() {
         return action;
+    }
+
+    public PausingBehavior getPausingBehavior() {
+        return pausingBehavior;
     }
 }

@@ -1,5 +1,6 @@
 package fr.whimtrip.ext.jwhtscrapper.service.holder;
 
+import fr.whimtrip.ext.jwhtscrapper.enm.StatusRange;
 import fr.whimtrip.ext.jwhtscrapper.impl.ScrappingStatsImpl;
 import fr.whimtrip.ext.jwhtscrapper.intfr.HttpMetrics;
 import fr.whimtrip.ext.jwhtscrapper.service.base.RequestSynchronizer;

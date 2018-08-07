@@ -12,9 +12,9 @@
 
 package fr.whimtrip.ext.jwhtscrapper.service.holder;
 
-import fr.whimtrip.ext.jwhtscrapper.annotation.Link;
 import fr.whimtrip.ext.jwhtscrapper.annotation.RequestsConfig;
 import fr.whimtrip.ext.jwhtscrapper.annotation.Scrapper;
+import fr.whimtrip.ext.jwhtscrapper.enm.Method;
 import fr.whimtrip.ext.jwhtscrapper.intfr.HtmlAutoScrapper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrapperHelper;
 import org.jetbrains.annotations.NotNull;
@@ -38,7 +38,7 @@ public class RequestsScrappingContext {
 
     private Integer parrallelThreads, scrapLimit;
 
-    private Link.Method method;
+    private Method method;
 
     private boolean throwExceptions;
 
@@ -80,7 +80,7 @@ public class RequestsScrappingContext {
             @NotNull final RequestsConfig requestsConfig,
             @NotNull final Integer parrallelThreads,
             @NotNull final Integer scrapLimit,
-            @NotNull final Link.Method method,
+            @NotNull final Method method,
                      final boolean throwExceptions,
             @NotNull final Class<?> modelClass
     ){
@@ -118,10 +118,10 @@ public class RequestsScrappingContext {
     }
 
     /**
-     * @see Link.Method
+     * @see Method
      * @return the HTTP method to use.
      */
-    public Link.Method getMethod() {
+    public Method getMethod() {
         return method;
     }
 

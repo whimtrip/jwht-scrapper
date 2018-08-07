@@ -1,4 +1,4 @@
-package fr.whimtrip.ext.jwhtscrapper.service.holder;
+package fr.whimtrip.ext.jwhtscrapper.enm;
 
 
 import fr.whimtrip.ext.jwhtscrapper.annotation.WarningSign;

@@ -8,7 +8,7 @@
 
 package fr.whimtrip.ext.jwhtscrapper.service.scoped;
 
-import fr.whimtrip.ext.jwhtscrapper.annotation.Link;
+import fr.whimtrip.ext.jwhtscrapper.enm.Method;
 import fr.whimtrip.ext.jwhtscrapper.exception.ScrapperException;
 import fr.whimtrip.ext.jwhtscrapper.exception.WarningSignException;
 import fr.whimtrip.ext.jwhtscrapper.intfr.HtmlAutoScrapper;
@@ -101,7 +101,7 @@ public final class ScrapperThreadCallableImpl<P, M> implements ScrapperThreadCal
                 String url = scrapperHelper.createUrl(parentObject);
                 BoundRequestBuilder req;
 
-                if (requestsScrappingContext.getMethod() == Link.Method.GET) {
+                if (requestsScrappingContext.getMethod() == Method.GET) {
                     req = htmlAutoScrapper.prepareScrapGet(url);
                 } else {
                     req = htmlAutoScrapper.prepareScrapPost(url);

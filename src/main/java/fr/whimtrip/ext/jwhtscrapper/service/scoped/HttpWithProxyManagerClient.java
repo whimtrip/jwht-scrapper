@@ -26,8 +26,8 @@ import fr.whimtrip.ext.jwhtscrapper.intfr.Proxy;
 import fr.whimtrip.ext.jwhtscrapper.service.RotatingUserAgent;
 import fr.whimtrip.ext.jwhtscrapper.service.base.HttpManagerClient;
 import fr.whimtrip.ext.jwhtscrapper.service.base.RequestSynchronizer;
-import fr.whimtrip.ext.jwhtscrapper.service.holder.PostField;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.HttpManagerConfig;
+import fr.whimtrip.ext.jwhtscrapper.service.holder.PostField;
 import fr.whimtrip.ext.jwhtscrapper.service.scoped.req.HttpConnectHandler;
 import fr.whimtrip.ext.jwhtscrapper.service.scoped.req.RequestCoreHandler;
 import fr.whimtrip.ext.jwhtscrapper.service.scoped.req.RequestUtils;
@@ -64,6 +64,7 @@ public final class HttpWithProxyManagerClient implements HttpManagerClient{
     private final Map<BoundRequestBuilder, RequestCoreHandler> contextHolder = new HashMap<>();
 
 
+
     /**
      * <p>
      *     Default Package Private constructor that should only be used through its
@@ -75,13 +76,8 @@ public final class HttpWithProxyManagerClient implements HttpManagerClient{
      *                       synchronyzing the wait between each request to ensure it
      *                       doesn't overlap with concurrent access to this manager.
      * @param asyncHttpClient the Http client that will be used to perform all HTTP
-     *                        requests.
      */
-    HttpWithProxyManagerClient(
-            @NotNull final HttpManagerConfig httpManagerConfig,
-            @NotNull final RequestSynchronizer requestSynchronizer,
-            @NotNull final AsyncHttpClient asyncHttpClient
-    ){
+    HttpWithProxyManagerClient(@NotNull final HttpManagerConfig httpManagerConfig, @NotNull final RequestSynchronizer requestSynchronizer, @NotNull final AsyncHttpClient asyncHttpClient){
         this.httpManagerConfig = httpManagerConfig;
         this.requestSynchronizer = requestSynchronizer;
         this.asyncHttpClient = asyncHttpClient;
@@ -240,7 +236,8 @@ public final class HttpWithProxyManagerClient implements HttpManagerClient{
     @NotNull
     private RequestCoreHandler buildRequestCoreHandler(String url, Proxy proxy, BoundRequestBuilder req, HttpConnectHandler httpConnectHandler) {
         return new RequestCoreHandler(
-                    httpManagerConfig, requestSynchronizer,
+                    httpManagerConfig,
+                    requestSynchronizer,
                     httpConnectHandler,
                     req,
                     proxy,

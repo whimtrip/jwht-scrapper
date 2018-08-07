@@ -1,5 +1,6 @@
 package fr.whimtrip.ext.jwhtscrapper.service.scoped.req;
 
+import fr.whimtrip.ext.jwhtscrapper.enm.Status;
 import fr.whimtrip.ext.jwhtscrapper.exception.RequestFailedException;
 import fr.whimtrip.ext.jwhtscrapper.exception.RequestMaxRetriesReachedException;
 import fr.whimtrip.ext.jwhtscrapper.exception.RequestTimeoutException;
@@ -16,9 +17,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 
-import static fr.whimtrip.ext.jwhtscrapper.intfr.Proxy.Status.*;
-import static fr.whimtrip.ext.jwhtscrapper.service.holder.StatusRange.TIMEOUT_STATUS_CODE;
-import static fr.whimtrip.ext.jwhtscrapper.service.holder.StatusRange.UNKNOWN_EXCEPTION_STATUS_CODE;
+import static fr.whimtrip.ext.jwhtscrapper.enm.Status.*;
+import static fr.whimtrip.ext.jwhtscrapper.enm.StatusRange.TIMEOUT_STATUS_CODE;
+import static fr.whimtrip.ext.jwhtscrapper.enm.StatusRange.UNKNOWN_EXCEPTION_STATUS_CODE;
 
 /**
  * <p>Part of project jwht-scrapper</p>
@@ -183,7 +184,7 @@ public final class RequestCoreHandler {
 
     /**
      * <p>
-     *     Will unfreeze a proxy which was marked as {@link Proxy.Status#FROZEN}
+     *     Will unfreeze a proxy which was marked as {@link Status#FROZEN}
      *     when the requests issued with this proxy was successful.
      * </p>
      */
@@ -238,7 +239,7 @@ public final class RequestCoreHandler {
      */
     private void handleRequestException() {
         if(httpManagerConfig.useProxy() && actualProxy != null) {
-            Proxy.Status newStatus = actualProxy.getStatus() == WORKING ? FROZEN : BANNED;
+            Status newStatus = actualProxy.getStatus() == WORKING ? FROZEN : BANNED;
 
             RequestUtils.setProxyStatus(actualProxy, newStatus, httpManagerConfig.getProxyFinder());
             log.info("Proxy {}:{} was {}", actualProxy.getId(), actualProxy.getPort(), newStatus);

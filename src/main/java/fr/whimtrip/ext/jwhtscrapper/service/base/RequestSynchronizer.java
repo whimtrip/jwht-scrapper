@@ -2,7 +2,7 @@ package fr.whimtrip.ext.jwhtscrapper.service.base;
 
 import fr.whimtrip.ext.jwhtscrapper.intfr.HttpMetrics;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.HttpManagerConfig;
-import fr.whimtrip.ext.jwhtscrapper.service.holder.StatusRange;
+import fr.whimtrip.ext.jwhtscrapper.enm.StatusRange;
 
 /**
  * <p>Part of project jwht-scrapper</p>

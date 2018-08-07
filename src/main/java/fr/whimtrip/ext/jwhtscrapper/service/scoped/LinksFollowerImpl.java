@@ -11,6 +11,7 @@ import fr.whimtrip.ext.jwhtscrapper.annotation.Link;
 import fr.whimtrip.ext.jwhtscrapper.annotation.LinkListsFromBuilder;
 import fr.whimtrip.ext.jwhtscrapper.annotation.LinkObject;
 import fr.whimtrip.ext.jwhtscrapper.annotation.LinkObjects;
+import fr.whimtrip.ext.jwhtscrapper.enm.Method;
 import fr.whimtrip.ext.jwhtscrapper.exception.LinkClassCastException;
 import fr.whimtrip.ext.jwhtscrapper.exception.LinkException;
 import fr.whimtrip.ext.jwhtscrapper.exception.LinkListCastException;
@@ -567,7 +568,7 @@ public final class LinksFollowerImpl implements LinksFollower {
 
         BoundRequestBuilder req;
 
-        if (container.getMethod() == Link.Method.GET)
+        if (container.getMethod() == Method.GET)
         {
             req = httpManagerClient.prepareGet(container.getUrl());
         }

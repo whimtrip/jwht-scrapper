@@ -25,6 +25,7 @@ import org.asynchttpclient.AsyncHttpClient;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * <p>Part of project jwht-scrapper</p>
@@ -58,6 +59,7 @@ public final class DefaultHttpManagerClientBuilder {
     private Cookie[] defaultCookies = new Cookie[]{};
     private BoundRequestBuilderProcessor boundRequestBuilderProcessor;
     private List<PostField> defaultFields;
+    private AtomicBoolean scrapStopped;
 
     /**
      *
@@ -229,6 +231,16 @@ public final class DefaultHttpManagerClientBuilder {
     }
 
     /**
+     * @param scrapStopped the atomic boolean to synchronize scrap stops onto so that all requests
+     *                    can stopped all at once.
+     * @return the current builder instance.
+     */
+    public DefaultHttpManagerClientBuilder setScrapStopped(AtomicBoolean scrapStopped) {
+        this.scrapStopped = scrapStopped;
+        return this;
+    }
+
+    /**
      * @return the built {@link HttpManagerClient} from default implementation {@link HttpWithProxyManagerClient}
      *         with the current builder.
      */
@@ -250,9 +262,18 @@ public final class DefaultHttpManagerClientBuilder {
                 defaultCookies
         );
 
-        RequestSynchronizer requestSynchronizer = new RequestSynchronizerImpl(httpManagerConfig);
+        RequestSynchronizer requestSynchronizer =
+                new RequestSynchronizerImpl(
+                    httpManagerConfig,
+                    scrapStopped == null ? new AtomicBoolean(false) : scrapStopped
+                );
 
-        return new HttpWithProxyManagerClient(httpManagerConfig, requestSynchronizer, asyncHttpClient);
+        return new HttpWithProxyManagerClient(
+                httpManagerConfig,
+                requestSynchronizer,
+                asyncHttpClient
+        );
     }
+
 
 }

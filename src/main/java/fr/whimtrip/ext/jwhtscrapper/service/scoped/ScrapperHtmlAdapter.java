@@ -21,7 +21,7 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static fr.whimtrip.ext.jwhtscrapper.annotation.WarningSign.TriggeredOn.*;
+import static fr.whimtrip.ext.jwhtscrapper.enm.TriggeredOn.*;
 
 
 /**

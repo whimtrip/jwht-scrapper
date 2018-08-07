@@ -8,6 +8,7 @@
 
 package fr.whimtrip.ext.jwhtscrapper.annotation;
 
+import fr.whimtrip.ext.jwhtscrapper.enm.Method;
 import fr.whimtrip.ext.jwhtscrapper.intfr.HttpRequestEditor;
 
 import java.lang.annotation.ElementType;
@@ -27,11 +28,6 @@ public @interface Link {
     String DEFAULT_REGEX_COND = ".+";
 
 
-
-    public enum Method{
-        GET,
-        POST;
-    }
     Method method() default Method.GET;
 
     boolean editRequest() default false;
