@@ -9,6 +9,11 @@ import java.util.List;
  * <p>Part of project jwht-scrapper</p>
  * <p>Created on 29/07/18</p>
  *
+ * <p>
+ *     Thrown when {@link LinkListsFromBuilder} annotation is
+ *     used on a non List typed field.
+ * </p>
+ *
  * @author Louis-wht
  * @since 1.0.0
  */

@@ -13,7 +13,15 @@ import fr.whimtrip.ext.jwhtscrapper.annotation.WarningSign;
 import java.lang.reflect.Field;
 
 /**
- * Created by LOUISSTEIMBERG on 28/11/2017.
+ * <p>Part of project jwht-scrapper</p>
+ * <p>Created on 26/07/18</p>
+ *
+ * <p>
+ *     Triggered when a warning sign is detected.
+ * </p>
+ *
+ * @author Louis-wht
+ * @since 1.0.0
  */
 public class WarningSignException extends RequestFailedException {
 

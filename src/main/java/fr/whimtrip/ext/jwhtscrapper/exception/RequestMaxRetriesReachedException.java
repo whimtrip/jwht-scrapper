@@ -1,8 +1,15 @@
 package fr.whimtrip.ext.jwhtscrapper.exception;
 
+import fr.whimtrip.ext.jwhtscrapper.service.base.AutomaticScrapperClient;
+
 /**
  * <p>Part of project jwht-scrapper</p>
  * <p>Created on 29/07/18</p>
+ *
+ * <p>
+ *     Thrown when requests failed too many times in a row for various reasons.
+ *     Usually catch or thrown within {@link AutomaticScrapperClient} scope.
+ * </p>
  *
  * @author Louis-wht
  * @since 1.0.0

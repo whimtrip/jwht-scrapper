@@ -2,6 +2,19 @@ package fr.whimtrip.ext.jwhtscrapper.impl;
 
 import fr.whimtrip.ext.jwhtscrapper.intfr.Proxy;
 
+
+/**
+ *
+ * <p>Part of project jwht-scrapper</p>
+ * <p>Created on 26/07/18</p>
+ *
+ * <p>
+ *     Default POJO-like implementation of {@link Proxy}.
+ * </p>
+ *
+ * @author Louis-wht
+ * @since 1.0.0
+ */
 public class BasicProxy implements Proxy {
 
     private Status status = Status.WORKING;

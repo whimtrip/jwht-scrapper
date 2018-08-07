@@ -6,6 +6,11 @@ import java.lang.reflect.Field;
  * <p>Part of project jwht-scrapper</p>
  * <p>Created on 29/07/18</p>
  *
+ * <p>
+ *     Thrown when the url specified by a link from annotation
+ *     configuration output a null / empty value.
+ * </p>
+ *
  * @author Louis-wht
  * @since 1.0.0
  */

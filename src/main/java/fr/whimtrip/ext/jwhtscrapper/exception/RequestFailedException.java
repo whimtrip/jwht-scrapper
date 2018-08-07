@@ -2,6 +2,18 @@ package fr.whimtrip.ext.jwhtscrapper.exception;
 
 import org.asynchttpclient.Response;
 
+/**
+ * <p>Part of project jwht-scrapper</p>
+ * <p>Created on 29/07/18</p>
+ *
+ * <p>
+ *     Thrown when requests failed for unknown reasons such as client/server
+ *     side HTTP exception.
+ * </p>
+ *
+ * @author Louis-wht
+ * @since 1.0.0
+ */
 public class RequestFailedException extends ScrapperException {
 
     private static final int MAX_BODY_LENGTH = 1000;

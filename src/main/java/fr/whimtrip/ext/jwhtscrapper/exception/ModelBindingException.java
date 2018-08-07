@@ -9,12 +9,19 @@
 package fr.whimtrip.ext.jwhtscrapper.exception;
 
 /**
- * Created by LOUISSTEIMBERG on 25/11/2017.
+ * <p>Part of project jwht-scrapper</p>
+ * <p>Created on 29/07/18</p>
+ *
+ * <p>
+ *     Thrown when any raw HTTP body to POJO mapping exception
+ *     occures.
+ * </p>
+ *
+ * @author Louis-wht
+ * @since 1.0.0
  */
 public class ModelBindingException extends ScrapFailedException {
     public ModelBindingException(Throwable e) {
         super(e);
     }
-
-
 }
