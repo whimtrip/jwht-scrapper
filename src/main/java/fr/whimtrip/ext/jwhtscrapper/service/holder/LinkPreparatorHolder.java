@@ -65,7 +65,7 @@ public class LinkPreparatorHolder<P> {
             @NotNull  final Method method,
             @Nullable final List<PostField> fields,
             @NotNull  final java.lang.reflect.Field parentField,
-            @NotNull  final Class<? extends HttpRequestEditor> requestEditorClazz,
+            @Nullable  final Class<? extends HttpRequestEditor> requestEditorClazz,
                       final boolean followRedirections,
                       final boolean throwExceptions
     ){

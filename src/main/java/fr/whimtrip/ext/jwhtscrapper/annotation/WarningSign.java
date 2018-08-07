@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
  *
  * <p>
  *     This annotation can be applied to any field of a POJO that will be
- *     used to map any HTTP response body to it.
+ *     used to map any HTML response body to it.
  * </p>
  * <p>
  *     This allows to defines some websites areas (such as "Are You A Robot"
