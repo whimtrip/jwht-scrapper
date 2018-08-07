@@ -1,7 +1,7 @@
 # jwht-scrapper
 Fully Featured Java Scrapping Framework, highly pluggable and customizable
 
-
+Proper documentation coming very soon! Expected for 09/10 of August 2k18.
 
 ## Quick Start :
 
