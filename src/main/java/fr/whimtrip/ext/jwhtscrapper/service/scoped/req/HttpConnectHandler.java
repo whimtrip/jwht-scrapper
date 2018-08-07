@@ -27,7 +27,7 @@ import java.util.concurrent.TimeoutException;
  * @author Louis-wht
  * @since 1.0.0
  */
-public class HttpConnectHandler {
+public final class HttpConnectHandler {
 
     private static final Logger log = LoggerFactory.getLogger(HttpConnectHandler.class);
 

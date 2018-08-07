@@ -79,7 +79,7 @@ import org.asynchttpclient.DefaultAsyncHttpClientConfig;
  * @author Louis-wht
  * @since 1.0.0
  */
-public class AutomaticScrapperManagerBuilder {
+public final class AutomaticScrapperManagerBuilder {
 
     private ExceptionLogger exceptionLogger;
     private HtmlToPojoEngine htmlToPojoEngine;

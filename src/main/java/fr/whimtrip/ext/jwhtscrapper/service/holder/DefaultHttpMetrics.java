@@ -44,8 +44,7 @@ public class DefaultHttpMetrics implements HttpMetrics {
     }
 
     /**
-     * @param statusCode see {@link HttpMetrics#getStatusCount(int)}
-     * @return see {@link HttpMetrics#getStatusCount(int)}
+     * {@inheritDoc}
      */
     @Override
     public int getStatusCount(int statusCode) {
@@ -53,8 +52,7 @@ public class DefaultHttpMetrics implements HttpMetrics {
     }
 
     /**
-     * @param statusCode see {@link HttpMetrics#getStatusPercentage(int)}
-     * @return see {@link HttpMetrics#getStatusPercentage(int)}
+     * {@inheritDoc}
      */
     @Override
     public float getStatusPercentage(int statusCode) {
@@ -62,8 +60,7 @@ public class DefaultHttpMetrics implements HttpMetrics {
     }
 
     /**
-     * @param statusRange see {@link HttpMetrics#getStatusRangeCount(StatusRange)}.
-     * @return see {@link HttpMetrics#getStatusRangeCount(StatusRange)}
+     * {@inheritDoc}
      */
     @Override
     public int getStatusRangeCount(StatusRange statusRange) {
@@ -71,8 +68,7 @@ public class DefaultHttpMetrics implements HttpMetrics {
     }
 
     /**
-     * @param statusRange see {@link HttpMetrics#getStatusRangePercentage(StatusRange)}
-     * @return see {@link HttpMetrics#getStatusRangePercentage(StatusRange)}
+     * {@inheritDoc}
      */
     @Override
     public float getStatusRangePercentage(StatusRange statusRange) {
@@ -80,7 +76,7 @@ public class DefaultHttpMetrics implements HttpMetrics {
     }
 
     /**
-     * @return see {@link HttpMetrics#getTotalHttpRequestsMade()}
+     * {@inheritDoc}
      */
     @Override
     public int getTotalHttpRequestsMade() {
@@ -88,7 +84,7 @@ public class DefaultHttpMetrics implements HttpMetrics {
     }
 
     /**
-     * @return see {@link HttpMetrics#getTotalScrapsPerformed()}
+     * {@inheritDoc}
      */
     @Override
     public int getTotalScrapsPerformed() {
@@ -96,7 +92,7 @@ public class DefaultHttpMetrics implements HttpMetrics {
     }
 
     /**
-     * @return see {@link HttpMetrics#getStatusesMap()}
+     * {@inheritDoc}
      */
     @Override
     public Map<Integer, Integer> getStatusesMap() {
@@ -106,7 +102,7 @@ public class DefaultHttpMetrics implements HttpMetrics {
     }
 
     /**
-     * @return see {@link HttpMetrics#getStatusesRangeMap()}
+     * {@inheritDoc}
      */
     @Override
     public Map<StatusRange, Integer> getStatusesRangeMap() {
@@ -118,7 +114,7 @@ public class DefaultHttpMetrics implements HttpMetrics {
 
     /**
      * <p>
-     *     Use in this implementation to delegate
+     *     Used in this implementation to delegate
      *     {@link RequestSynchronizer#logHttpStatus(int, boolean)}
      *     to the metrics holder directly to ensure direct and live
      *     update of the metrics in the same instance for memory and

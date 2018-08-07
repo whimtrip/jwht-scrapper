@@ -45,7 +45,7 @@ import java.util.concurrent.Callable;
  *           in the end will be modified.
  * @param <M> M is the model on which the Html responses will be mapped
  */
-public class ScrapperThreadCallableImpl<P, M> implements ScrapperThreadCallable<P, M> {
+public final class ScrapperThreadCallableImpl<P, M> implements ScrapperThreadCallable<P, M> {
 
     private static final Logger log = LoggerFactory.getLogger(ScrapperThreadCallableImpl.class);
 
@@ -149,8 +149,7 @@ public class ScrapperThreadCallableImpl<P, M> implements ScrapperThreadCallable<
     }
 
     /**
-     * @see ScrapperThreadCallable#isDone()
-     * @return see {@link ScrapperThreadCallable#isDone()}
+     * {@inheritDoc}
      */
     @Override
     public boolean isDone() {
@@ -158,8 +157,7 @@ public class ScrapperThreadCallableImpl<P, M> implements ScrapperThreadCallable<
     }
 
     /**
-     * @see ScrapperThreadCallable#hasScrapped()
-     * @return see {@link ScrapperThreadCallable#hasScrapped()}
+     * {@inheritDoc}
      */
     @Override
     public boolean hasScrapped() {

@@ -33,7 +33,7 @@ import org.jetbrains.annotations.NotNull;
  * @author Louis-wht
  * @since 1.0.0
  */
-public class HtmlAutoScrapperManagerBuilder {
+public final class HtmlAutoScrapperManagerBuilder {
 
     private static final int DEFAULT_CONNECT_TIMEOUT = 1500;
     private static final int DEFAULT_REQUEST_TIMEOUT = 20_000;

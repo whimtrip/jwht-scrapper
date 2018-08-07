@@ -44,7 +44,7 @@ public final class ScrappingStatsImpl implements ScrappingStats {
     }
 
     /**
-     * @return {@link ScrappingStats#getFinishedTasks()}
+     * {@inheritDoc}
      */
     @Override
     public int getFinishedTasks() {
@@ -52,8 +52,9 @@ public final class ScrappingStatsImpl implements ScrappingStats {
         return finishedTasks;
     }
 
+
     /**
-     * @return {@link ScrappingStats#getRunningTasks()}
+     * {@inheritDoc}
      */
     @Override
     public int getRunningTasks() {
@@ -62,7 +63,7 @@ public final class ScrappingStatsImpl implements ScrappingStats {
     }
 
     /**
-     * @return {@link ScrappingStats#getSuccessfullTasks()}
+     * {@inheritDoc}
      */
     @Override
     public int getSuccessfullTasks() {
@@ -71,7 +72,7 @@ public final class ScrappingStatsImpl implements ScrappingStats {
     }
 
     /**
-     * @return {@link ScrappingStats#getFailedTasks()}
+     * {@inheritDoc}
      */
     @Override
     public int getFailedTasks() {
@@ -80,7 +81,7 @@ public final class ScrappingStatsImpl implements ScrappingStats {
     }
 
     /**
-     * @return {@link ScrappingStats#getRemaining()}
+     * {@inheritDoc}
      */
     @Override
     public int getRemaining() {

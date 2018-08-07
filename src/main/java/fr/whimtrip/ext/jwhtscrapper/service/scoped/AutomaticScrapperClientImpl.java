@@ -1,12 +1,10 @@
 package fr.whimtrip.ext.jwhtscrapper.service.scoped;
 
 import fr.whimtrip.core.util.intrf.ExceptionLogger;
-import fr.whimtrip.ext.jwhtscrapper.exception.ScrapFailedException;
-import fr.whimtrip.ext.jwhtscrapper.exception.ScrapNotFinishedException;
-import fr.whimtrip.ext.jwhtscrapper.exception.ScrapperAlreadyStartedException;
-import fr.whimtrip.ext.jwhtscrapper.exception.ScrapperUnsupportedException;
+import fr.whimtrip.ext.jwhtscrapper.exception.*;
 import fr.whimtrip.ext.jwhtscrapper.intfr.HttpMetrics;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrappingStats;
+import fr.whimtrip.ext.jwhtscrapper.service.base.AutomaticInnerScrapperClient;
 import fr.whimtrip.ext.jwhtscrapper.service.base.AutomaticScrapperClient;
 import org.jetbrains.annotations.NotNull;
 
@@ -24,7 +22,7 @@ import java.util.concurrent.TimeoutException;
  * @author Louis-wht
  * @since 26/07/18
  */
-public class AutomaticScrapperClientImpl<P, M> implements AutomaticScrapperClient<P, M> {
+public final class AutomaticScrapperClientImpl<P> implements AutomaticScrapperClient<P> {
 
     private final AutomaticInnerScrapperClient scrapperClient;
     private final ExceptionLogger exceptionLogger;
@@ -32,7 +30,7 @@ public class AutomaticScrapperClientImpl<P, M> implements AutomaticScrapperClien
     private boolean scrapped = false;
     private boolean scrapStarted = false;
 
-    private FutureTask<List<M>> ft;
+    private FutureTask<List> ft;
 
     /**
      * Default Constructor.
@@ -48,26 +46,31 @@ public class AutomaticScrapperClientImpl<P, M> implements AutomaticScrapperClien
     }
 
     /**
-     * @see AutomaticScrapperClient#scrap()
-     * @throws ScrapperAlreadyStartedException see {@link AutomaticScrapperClient#scrap()}
+     * {@inheritDoc}
      */
     public synchronized void scrap() throws ScrapperAlreadyStartedException {
 
         if (!scrapped && !scrapStarted) {
 
             scrapStarted = true;
-            ft = new FutureTask<List<M>>(() -> {
+            ft = new FutureTask<List>(() -> {
 
-                List<M> results = null;
+                List results = null;
+
                 try {
                     results = scrapperClient.scrap();
-                } catch (ExecutionException | InterruptedException e) {
-                    scrapperClient.stopRunningTasks();
+                }
+
+                catch (ExecutionException | InterruptedException e) {
+                    scrapperClient.terminate();
                     exceptionLogger.logException(e.getCause());
                     throw new ScrapFailedException(e.getCause());
                 }
 
-                scrapped = true;
+                finally {
+                    scrapped = true;
+                }
+
 
                 return results;
             });
@@ -79,25 +82,24 @@ public class AutomaticScrapperClientImpl<P, M> implements AutomaticScrapperClien
 
 
     /**
-     * @see AutomaticScrapperClient#addObjectsToScrap(List)
-     * @param l see {@link AutomaticScrapperClient#addObjectsToScrap(List)}
+     * {@inheritDoc}
      */
-    public synchronized void addObjectsToScrap(List<P> l) {
+    public synchronized void addObjectsToScrap(List<P> l)  throws ScrapperAlreadyFinishedException {
         if(!scrapped && scrapStarted)
-            scrapperClient.addPElements(l);
+            scrapperClient.addObjectsToScrap(l);
+        else
+            throw new ScrapperAlreadyFinishedException(getScrapperThreadName());
     }
 
     /**
-     * @see AutomaticScrapperClient#getScrappingStats()
-     * @return see {@link AutomaticScrapperClient#getScrappingStats()}
+     * {@inheritDoc}
      */
     public ScrappingStats getScrappingStats(){
         return scrapperClient.getScrapingStats();
     }
 
     /**
-     * @return see {@link AutomaticScrapperClient#getHttpMetrics()}
-     * @throws ScrapperUnsupportedException see {@link AutomaticScrapperClient#getHttpMetrics()}
+     * {@inheritDoc}
      */
     @NotNull
     public HttpMetrics getHttpMetrics() throws ScrapperUnsupportedException {
@@ -105,33 +107,24 @@ public class AutomaticScrapperClientImpl<P, M> implements AutomaticScrapperClien
     }
 
     /**
-     * @see AutomaticScrapperClient#isScrapped()
-     * @return see {@link AutomaticScrapperClient#isScrapped()}
+     * {@inheritDoc}
      */
     public boolean isScrapped() {
         return scrapped;
     }
 
     /**
-     * @see AutomaticScrapperClient#getResults()
-     * @return see {@link AutomaticScrapperClient#getResults()}
-     * @throws ScrapFailedException see {@link AutomaticScrapperClient#getResults()}
-     * @throws ScrapNotFinishedException see {@link AutomaticScrapperClient#getResults()}
+     * {@inheritDoc}
      */
-    public List<M> getResults() throws ScrapFailedException, ScrapNotFinishedException {
+    public List getResults() throws ScrapFailedException, ScrapNotFinishedException {
 
         return getResults(null, null);
     }
 
     /**
-     * @see AutomaticScrapperClient#getResults(Long, TimeUnit)
-     * @param timeout see {@link AutomaticScrapperClient#getResults(Long, TimeUnit)}
-     * @param timeUnit the {@link TimeUnit} of the {@code timeout}.
-     * @return  see {@link AutomaticScrapperClient#getResults(Long, TimeUnit)}
-     * @throws ScrapFailedException  see {@link AutomaticScrapperClient#getResults(Long, TimeUnit)}
-     * @throws ScrapNotFinishedException  see {@link AutomaticScrapperClient#getResults(Long, TimeUnit)}
+     * {@inheritDoc}
      */
-    public List<M> getResults(Long timeout, TimeUnit timeUnit) throws ScrapFailedException, ScrapNotFinishedException {
+    public List getResults(Long timeout, TimeUnit timeUnit) throws ScrapFailedException, ScrapNotFinishedException {
 
         if (!scrapped && timeout == null) throw new ScrapNotFinishedException(getScrapperThreadName());
 
@@ -149,10 +142,10 @@ public class AutomaticScrapperClientImpl<P, M> implements AutomaticScrapperClien
     }
 
     /**
-     * @see AutomaticScrapperClient#terminate()
+     * {@inheritDoc}
      */
     public void terminate() {
-        scrapperClient.stopRunningTasks();
+        scrapperClient.terminate();
     }
 
     /**

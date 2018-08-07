@@ -17,7 +17,7 @@ import fr.whimtrip.ext.jwhtscrapper.service.base.AutomaticScrapperClient;
 public class ScrapperAlreadyStartedException extends ScrapperException {
 
 
-    public ScrapperAlreadyStartedException(Class<? extends AutomaticScrapperClient> scrapperClazz) {
+    public ScrapperAlreadyStartedException(Class scrapperClazz) {
         super("Scrapping is already running for scrapper of class " + scrapperClazz);
     }
 }

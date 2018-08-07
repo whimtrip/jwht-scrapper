@@ -64,7 +64,7 @@ import java.util.List;
  * @author Louis-wht
  * @since 1.0.0
  */
-public class HtmlAutoScrapperManager {
+public final class HtmlAutoScrapperManager {
 
     private final ExceptionLogger exceptionLogger;
 

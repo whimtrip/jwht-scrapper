@@ -36,7 +36,7 @@ import static fr.whimtrip.ext.jwhtscrapper.service.holder.StatusRange.UNKNOWN_EX
  * @author Louis-wht
  * @since 1.0.0
  */
-public class RequestCoreHandler {
+public final class RequestCoreHandler {
 
 
     private static final Logger log = LoggerFactory.getLogger(RequestCoreHandler.class);

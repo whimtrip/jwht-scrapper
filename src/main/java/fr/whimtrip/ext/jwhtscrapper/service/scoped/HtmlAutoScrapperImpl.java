@@ -77,7 +77,7 @@ import java.util.Map;
  * @author Louis-wht
  * @since 1.0.0
  */
-public class HtmlAutoScrapperImpl<T> implements HtmlAutoScrapper<T> {
+public final class HtmlAutoScrapperImpl<T> implements HtmlAutoScrapper<T> {
 
     private static final Logger log = LoggerFactory.getLogger(HtmlAutoScrapperImpl.class);
 
@@ -146,13 +146,7 @@ public class HtmlAutoScrapperImpl<T> implements HtmlAutoScrapper<T> {
     }
 
     /**
-     * @see HtmlAutoScrapper#scrap(BoundRequestBuilder, Object)
-     * @param req see {@link HtmlAutoScrapper#scrap(BoundRequestBuilder, Object)}
-     * @param obj see {@link HtmlAutoScrapper#scrap(BoundRequestBuilder, Object)}
-     * @return see {@link HtmlAutoScrapper#scrap(BoundRequestBuilder, Object)}
-     * @throws ModelBindingException see {@link HtmlAutoScrapper#scrap(BoundRequestBuilder, Object)}
-     * @throws LinkException see {@link HtmlAutoScrapper#scrap(BoundRequestBuilder, Object)}
-     * @throws WarningSignException see {@link HtmlAutoScrapper#scrap(BoundRequestBuilder, Object)}
+     * {@inheritDoc}
      */
     @NotNull
     @Override
@@ -164,13 +158,7 @@ public class HtmlAutoScrapperImpl<T> implements HtmlAutoScrapper<T> {
 
 
     /**
-     * @see HtmlAutoScrapper#scrapPost(String, Map)
-     * @param url see {@link HtmlAutoScrapper#scrapPost(String, Map)}
-     * @param fields see {@link HtmlAutoScrapper#scrapPost(String, Map)}
-     * @return see {@link HtmlAutoScrapper#scrapPost(String, Map)}
-     * @throws ModelBindingException see {@link HtmlAutoScrapper#scrapPost(String, Map)}
-     * @throws LinkException see {@link HtmlAutoScrapper#scrapPost(String, Map)}
-     * @throws WarningSignException see {@link HtmlAutoScrapper#scrapPost(String, Map)}
+     * {@inheritDoc}
      */
     @NotNull
     @Override
@@ -182,12 +170,7 @@ public class HtmlAutoScrapperImpl<T> implements HtmlAutoScrapper<T> {
 
 
     /**
-     * @see HtmlAutoScrapper#scrapGet(String)
-     * @param url see {@link HtmlAutoScrapper#scrapGet(String)}
-     * @return see {@link HtmlAutoScrapper#scrapGet(String)}
-     * @throws ModelBindingException see {@link HtmlAutoScrapper#scrapGet(String)}
-     * @throws LinkException see {@link HtmlAutoScrapper#scrapGet(String)}
-     * @throws WarningSignException see {@link HtmlAutoScrapper#scrapGet(String)}
+     * {@inheritDoc}
      */
     @NotNull
     @Override
@@ -198,10 +181,7 @@ public class HtmlAutoScrapperImpl<T> implements HtmlAutoScrapper<T> {
     }
 
     /**
-     * @see HtmlAutoScrapper#prepareScrapPost(String, Map) 
-     * @param url see {@link HtmlAutoScrapper#prepareScrapPost(String, Map)}
-     * @param fields see {@link HtmlAutoScrapper#prepareScrapPost(String, Map)}
-     * @return see {@link HtmlAutoScrapper#prepareScrapPost(String, Map)}
+     * {@inheritDoc}
      */
     @NotNull
     @Override
@@ -218,9 +198,7 @@ public class HtmlAutoScrapperImpl<T> implements HtmlAutoScrapper<T> {
     }
 
     /**
-     * @see HtmlAutoScrapper#prepareScrapGet(String)
-     * @param url see {@link HtmlAutoScrapper#prepareScrapGet(String)}
-     * @return see {@link HtmlAutoScrapper#prepareScrapGet(String)}
+     * {@inheritDoc}
      */
     @NotNull
     @Override
@@ -230,9 +208,7 @@ public class HtmlAutoScrapperImpl<T> implements HtmlAutoScrapper<T> {
     }
 
     /**
-     * @see HtmlAutoScrapper#getHttpMetrics()
-     * @return {@link HtmlAutoScrapper#getHttpMetrics()}
-     * @throws ScrapperUnsupportedException see {@link HtmlAutoScrapper#getHttpMetrics()}
+     * {@inheritDoc}
      */
     @NotNull
     @Override

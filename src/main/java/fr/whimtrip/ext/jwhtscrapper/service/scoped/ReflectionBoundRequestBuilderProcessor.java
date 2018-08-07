@@ -71,10 +71,7 @@ public final class ReflectionBoundRequestBuilderProcessor implements BoundReques
 
 
     /**
-     *
-     * @see BoundRequestBuilderProcessor#getMethod(BoundRequestBuilder)
-     * @param req see {@link BoundRequestBuilderProcessor#getMethod(BoundRequestBuilder)}
-     * @return see {@link BoundRequestBuilderProcessor#getMethod(BoundRequestBuilder)}
+     * {@inheritDoc}
      */
     @Override
     public String getMethod(@NotNull BoundRequestBuilder req)
@@ -89,10 +86,7 @@ public final class ReflectionBoundRequestBuilderProcessor implements BoundReques
 
 
     /**
-     * @see BoundRequestBuilderProcessor#setOrReplaceHeader(String, String, BoundRequestBuilder)
-     * @param name the name of the header to set/replace.
-     * @param value the value of the new header.
-     * @param req the request to modify headers for.
+     * {@inheritDoc}
      */
     @Override
     public void setOrReplaceHeader(@NotNull String name, @Nullable String value, @NotNull BoundRequestBuilder req) {
@@ -100,10 +94,7 @@ public final class ReflectionBoundRequestBuilderProcessor implements BoundReques
     }
 
     /**
-     * @see BoundRequestBuilderProcessor#addHeader(String, String, BoundRequestBuilder)
-     * @param name the name of the header to add.
-     * @param value the value of the new header.
-     * @param req the request to modify headers for.
+     * {@inheritDoc}
      */
     @Override
     public void addHeader(@NotNull String name, @Nullable String value, BoundRequestBuilder req)
@@ -119,8 +110,7 @@ public final class ReflectionBoundRequestBuilderProcessor implements BoundReques
 
 
     /**
-     * @see BoundRequestBuilderProcessor#printReq(BoundRequestBuilder)
-     * @param req the request to print.
+     * {@inheritDoc}
      */
     @Override
     public void printReq(@NotNull BoundRequestBuilder req)

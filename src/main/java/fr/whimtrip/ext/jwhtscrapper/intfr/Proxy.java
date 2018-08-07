@@ -1,10 +1,17 @@
 package fr.whimtrip.ext.jwhtscrapper.intfr;
 
+import fr.whimtrip.ext.jwhtscrapper.impl.BasicProxy;
 import org.asynchttpclient.proxy.ProxyServer;
 
+/**
+ * Todo, comment and link to {@link BasicProxy}
+ */
 public interface Proxy {
 
 
+    /**
+     *  TODO comment
+     */
     enum Status {
 
         /** Working Proxy */

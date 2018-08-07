@@ -13,13 +13,10 @@ import fr.whimtrip.ext.jwhtscrapper.annotation.Scrapper;
 import fr.whimtrip.ext.jwhtscrapper.exception.ScrapperException;
 import fr.whimtrip.ext.jwhtscrapper.intfr.HtmlAutoScrapper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrapperHelper;
-import fr.whimtrip.ext.jwhtscrapper.service.base.AutomaticScrapperClient;
-import fr.whimtrip.ext.jwhtscrapper.service.base.AutomaticScrapperManager;
-import fr.whimtrip.ext.jwhtscrapper.service.base.BoundRequestBuilderProcessor;
-import fr.whimtrip.ext.jwhtscrapper.service.base.HttpManagerClient;
+import fr.whimtrip.ext.jwhtscrapper.service.base.*;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.ScrappingContext;
-import fr.whimtrip.ext.jwhtscrapper.service.scoped.AutomaticInnerScrapperClient;
 import fr.whimtrip.ext.jwhtscrapper.service.scoped.AutomaticScrapperClientImpl;
+import fr.whimtrip.ext.jwhtscrapper.service.scoped.DefaultAutomaticInnerScrapperClient;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -49,7 +46,7 @@ import java.util.List;
  * @author Louis-wht
  * @since 1.0.0
  */
-public class AutomaticScrapperManagerImpl implements AutomaticScrapperManager {
+public final class AutomaticScrapperManagerImpl implements AutomaticScrapperManager {
 
     private final HtmlAutoScrapperManager htmlAutoScrapperManager;
     private final ExceptionLogger exceptionLogger;
@@ -75,22 +72,7 @@ public class AutomaticScrapperManagerImpl implements AutomaticScrapperManager {
     }
 
     /**
-     *
-     * <p>
-     *     This method is a simple factory method to instanciate and
-     *     prepare a {@link AutomaticScrapperClient}. It will instanciate an
-     *     {@link AutomaticScrapperClientImpl} out of the given input
-     *     parameters.
-     * </p>
-     *
-     * @param parentObjs the objects that will be used to create the urls
-     *                   to scrap and be reused all along the scrapping
-     *                   process through the correct {@link ScrapperHelper}.
-     * @param helper the helper class that will guide and direct the whole
-     *               scrapping process as well as its configurations.
-     * @param <P> the type of Parent Objects
-     * @param <H> the type of Helper Clazz
-     * @return a {@link AutomaticScrapperClient} built out of the submited input.
+     * {@inheritDoc}
      */
     @Override
     public <P, H extends ScrapperHelper<P, ?>> AutomaticScrapperClientImpl createClient(@NotNull final List<P> parentObjs, @NotNull final H helper)
@@ -152,7 +134,7 @@ public class AutomaticScrapperManagerImpl implements AutomaticScrapperManager {
                 this.htmlAutoScrapperManager
                         .createHtmlAutoScrapper(proxyClient, context);
 
-        AutomaticInnerScrapperClient scrapper = new AutomaticInnerScrapperClient(context, autoScrapper, exceptionLogger, requestProcessor);
+        AutomaticInnerScrapperClient scrapper = new DefaultAutomaticInnerScrapperClient(context, autoScrapper, exceptionLogger, requestProcessor);
 
         return new AutomaticScrapperClientImpl(scrapper, exceptionLogger);
     }

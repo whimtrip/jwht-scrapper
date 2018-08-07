@@ -10,7 +10,7 @@ import fr.whimtrip.core.util.WhimtripUtils;
  * @author Louis-wht
  * @since 1.0.0
  */
-public class RotatingUserAgent {
+public final class RotatingUserAgent {
 
 
     /**

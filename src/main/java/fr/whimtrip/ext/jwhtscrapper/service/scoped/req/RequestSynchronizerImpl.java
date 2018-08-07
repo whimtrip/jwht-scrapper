@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
  * @author Louis-wht
  * @since 1.0.0
  */
-public class RequestSynchronizerImpl implements RequestSynchronizer {
+public final class RequestSynchronizerImpl implements RequestSynchronizer {
 
 
     private static final Logger log = LoggerFactory.getLogger(RequestSynchronizerImpl.class);
@@ -46,7 +46,7 @@ public class RequestSynchronizerImpl implements RequestSynchronizer {
 
 
     /**
-     * @param url see {@link RequestSynchronizer#checkAwaitBetweenRequest(String)}
+     * {@inheritDoc}
      */
     @Override
     public synchronized void checkAwaitBetweenRequest(String url) {
@@ -71,7 +71,7 @@ public class RequestSynchronizerImpl implements RequestSynchronizer {
 
 
     /**
-     * @see RequestSynchronizer#incrementLastProxyChange()
+     * {@inheritDoc}
      */
     @Override
     public synchronized void incrementLastProxyChange() {
@@ -79,7 +79,7 @@ public class RequestSynchronizerImpl implements RequestSynchronizer {
     }
 
     /**
-     * @return see {@link RequestSynchronizer#getLastRequest()}
+     * {@inheritDoc}
      */
     @Override
     public Long getLastRequest() {
@@ -88,7 +88,7 @@ public class RequestSynchronizerImpl implements RequestSynchronizer {
     }
 
     /**
-     * @return see {@link RequestSynchronizer#getLastProxyChange()}
+     * {@inheritDoc}
      */
     @Override
     public int getLastProxyChange() {
@@ -97,9 +97,7 @@ public class RequestSynchronizerImpl implements RequestSynchronizer {
     }
 
     /**
-     * @param httpStatus see {@link RequestSynchronizer#logHttpStatus(int, boolean)}
-     * @param newScrap see {@link RequestSynchronizer#logHttpStatus(int, boolean)}
-     *
+     * {@inheritDoc}
      */
     @Override
     public void logHttpStatus(int httpStatus, boolean newScrap) {
@@ -107,7 +105,7 @@ public class RequestSynchronizerImpl implements RequestSynchronizer {
     }
 
     /**
-     * @return see {@link RequestSynchronizer#getHttpMetrics()}
+     * {@inheritDoc}
      */
     @Override
     public HttpMetrics getHttpMetrics() {

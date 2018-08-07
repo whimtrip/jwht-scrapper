@@ -23,7 +23,7 @@ import java.io.IOException;
  * @author Louis-wht
  * @since 1.0.0
  */
-public class DefaultBasicObjectMapper implements BasicObjectMapper {
+public final class DefaultBasicObjectMapper implements BasicObjectMapper {
 
     private static ObjectMapper staticObjectMapper;
     private final ObjectMapper objectMapper;
@@ -31,7 +31,7 @@ public class DefaultBasicObjectMapper implements BasicObjectMapper {
 
     /**
      * Default constructor that will use default {@link ObjectMapper}
-     * implementation as a application global Object Mapper.
+     * implementation as an application global Object Mapper.
      */
     public DefaultBasicObjectMapper() {
         this(null);
@@ -46,11 +46,18 @@ public class DefaultBasicObjectMapper implements BasicObjectMapper {
     }
 
 
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <U> U readValue(String htmlResponse, Class<U> mappedClazz) throws IOException {
         return getObjectMapper().readValue(htmlResponse, mappedClazz);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <U> U readValue(String htmlResponse, Class<U> mappedClazz, U obj) throws IOException {
         return getObjectMapper().readerForUpdating(obj).readValue(htmlResponse);

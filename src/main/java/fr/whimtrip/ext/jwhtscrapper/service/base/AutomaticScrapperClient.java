@@ -1,9 +1,6 @@
 package fr.whimtrip.ext.jwhtscrapper.service.base;
 
-import fr.whimtrip.ext.jwhtscrapper.exception.ScrapFailedException;
-import fr.whimtrip.ext.jwhtscrapper.exception.ScrapNotFinishedException;
-import fr.whimtrip.ext.jwhtscrapper.exception.ScrapperAlreadyStartedException;
-import fr.whimtrip.ext.jwhtscrapper.exception.ScrapperUnsupportedException;
+import fr.whimtrip.ext.jwhtscrapper.exception.*;
 import fr.whimtrip.ext.jwhtscrapper.impl.ScrappingStatsImpl;
 import fr.whimtrip.ext.jwhtscrapper.intfr.HtmlAutoScrapper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.HttpMetrics;
@@ -48,7 +45,7 @@ import java.util.concurrent.TimeUnit;
  * @author Louis-wht
  * @since 1.0.0
  */
-public interface AutomaticScrapperClient<P, M> {
+public interface AutomaticScrapperClient<P> {
 
 
     /**
@@ -70,8 +67,11 @@ public interface AutomaticScrapperClient<P, M> {
      *          elements in a synchronous way to avoid concurrency problems
      *          occurring when performing multiple read and write operations on
      *          the subjacent master list.
+     * @throws ScrapperAlreadyFinishedException when the scrap is already ternminated
+     *                                          or the queue of scraps to run has been
+     *                                          emptied.
      */
-    void addObjectsToScrap(List<P> l);
+    void addObjectsToScrap(List<P> l) throws ScrapperAlreadyFinishedException;
 
     /**
      * @return <p>
@@ -122,7 +122,7 @@ public interface AutomaticScrapperClient<P, M> {
      * @throws ScrapNotFinishedException If the method was called when {@link #isScrapped()}
      *                                   still returns {@code false}.
      */
-    List<M> getResults() throws ScrapFailedException, ScrapNotFinishedException;
+    List getResults() throws ScrapFailedException, ScrapNotFinishedException;
 
 
     /**
@@ -164,7 +164,7 @@ public interface AutomaticScrapperClient<P, M> {
      *             </strong>
      *         </p>
      */
-    List<M> getResults(Long timeout, TimeUnit timeUnit) throws ScrapFailedException, ScrapNotFinishedException;
+    List getResults(Long timeout, TimeUnit timeUnit) throws ScrapFailedException, ScrapNotFinishedException;
 
     /**
      * This method should close all running thread and keep the Scrapper

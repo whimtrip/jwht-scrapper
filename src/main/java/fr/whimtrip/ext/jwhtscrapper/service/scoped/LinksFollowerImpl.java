@@ -107,8 +107,7 @@ public final class LinksFollowerImpl implements LinksFollower {
     }
 
     /**
-     * @see LinksFollower#resolveBasicLinks()
-     * @throws LinkException see {@link LinksFollower#resolveBasicLinks()}
+     * {@inheritDoc}
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -125,8 +124,7 @@ public final class LinksFollowerImpl implements LinksFollower {
 
 
     /**
-     * @see LinksFollower#getScrappingContexts()
-     * @return see {@link LinksFollower#getScrappingContexts()}
+     * {@inheritDoc}
      */
     @Override
     @NotNull
@@ -136,8 +134,7 @@ public final class LinksFollowerImpl implements LinksFollower {
     }
 
     /**
-     * @see  LinksFollower#getLinkListsScrappingContexts()
-     * @return see {@link LinksFollower#getLinkListsScrappingContexts()}
+     * {@inheritDoc}
      */
     @Override
     @NotNull

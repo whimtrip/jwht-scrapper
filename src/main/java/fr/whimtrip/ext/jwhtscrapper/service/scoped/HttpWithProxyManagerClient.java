@@ -51,7 +51,7 @@ import java.util.Map;
  * @author Louis-wht
  * @since 1.0.0
  */
-public class HttpWithProxyManagerClient implements HttpManagerClient{
+public final class HttpWithProxyManagerClient implements HttpManagerClient{
 
     private static final String USER_AGENT_HEADER_NAME = "User-Agent";
 
@@ -89,9 +89,7 @@ public class HttpWithProxyManagerClient implements HttpManagerClient{
 
 
     /**
-     * @see HttpManagerClient#prepareGet(String) 
-     * @param url the url to prepare
-     * @return see {@link HttpManagerClient#prepareGet(String)}
+     * {@inheritDoc}
      */
     @Override
     public BoundRequestBuilder prepareGet(String url)
@@ -101,9 +99,7 @@ public class HttpWithProxyManagerClient implements HttpManagerClient{
 
 
     /**
-     * @see HttpManagerClient#preparePost(String)
-     * @param url the url to prepare
-     * @return see {@link HttpManagerClient#preparePost(String)}
+     * {@inheritDoc}
      */
     @Override
     public BoundRequestBuilder preparePost(String url)
@@ -119,10 +115,7 @@ public class HttpWithProxyManagerClient implements HttpManagerClient{
     }
 
     /**
-     * @see HttpManagerClient#getResponse(BoundRequestBuilder)
-     * @param req the prepared request to get a response for.
-     * @return the body of the http Response
-     * @throws RequestMaxRetriesReachedException see {@link HttpManagerClient#getResponse(BoundRequestBuilder)}
+     * {@inheritDoc}
      */
     @Override
     public String getResponse(BoundRequestBuilder req)  throws RequestMaxRetriesReachedException {
@@ -131,11 +124,7 @@ public class HttpWithProxyManagerClient implements HttpManagerClient{
 
 
     /**
-     * @see HttpManagerClient#getResponse(BoundRequestBuilder, boolean)
-     * @param req the prepared request to get a response for.
-     * @param followRedirections to stipulate if HTTP redirections should be followed.
-     * @return the body of the http Response
-     * @throws RequestMaxRetriesReachedException see {@link HttpManagerClient#getResponse(BoundRequestBuilder, boolean)}
+     * {@inheritDoc}
      */
     @Override
     public String getResponse(BoundRequestBuilder req, boolean followRedirections)  throws RequestMaxRetriesReachedException {
@@ -160,7 +149,7 @@ public class HttpWithProxyManagerClient implements HttpManagerClient{
 
 
     /**
-     * @return see {@link HttpManagerClient#getHttpMetrics()}.
+     * {@inheritDoc}
      */
     @NotNull
     @Override
@@ -169,14 +158,14 @@ public class HttpWithProxyManagerClient implements HttpManagerClient{
     }
 
     /**
-     * @return the duration in ms since the last request was performed.
+     * {@inheritDoc}
      */
     public Long getLastRequest() {
         return requestSynchronizer.getLastRequest();
     }
 
     /**
-     * @return the number of requests made since the last proxy change was made.
+     * {@inheritDoc}
      */
     public int getLastProxyChange() {
         return requestSynchronizer.getLastProxyChange();

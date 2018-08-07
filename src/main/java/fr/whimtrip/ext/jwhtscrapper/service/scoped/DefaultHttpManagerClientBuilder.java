@@ -38,7 +38,7 @@ import java.util.List;
  * @author Louis-wht
  * @since 1.0.0
  */
-public class DefaultHttpManagerClientBuilder {
+public final class DefaultHttpManagerClientBuilder {
 
 
 
