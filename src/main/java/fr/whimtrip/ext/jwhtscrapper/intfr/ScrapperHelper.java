@@ -11,25 +11,43 @@ package fr.whimtrip.ext.jwhtscrapper.intfr;
 import fr.whimtrip.core.util.exception.ObjectCreationException;
 import fr.whimtrip.ext.jwhtscrapper.annotation.Scrapper;
 import fr.whimtrip.ext.jwhtscrapper.exception.ModelBindingException;
+import fr.whimtrip.ext.jwhtscrapper.exception.UrlCreationException;
 import fr.whimtrip.ext.jwhtscrapper.service.base.AutomaticScrapperClient;
 import fr.whimtrip.ext.jwhtscrapper.service.base.BoundRequestBuilderProcessor;
+import fr.whimtrip.ext.jwhtscrapper.service.base.ScrapperThreadCallable;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.RequestsScrappingContext;
+import fr.whimtrip.ext.jwhtscrapper.service.scoped.ScrapperThreadCallableImpl;
 import org.asynchttpclient.BoundRequestBuilder;
 import org.jetbrains.annotations.NotNull;
-
-import java.net.URISyntaxException;
 
 
 /**
  *
+ * <p>Part of project jwht-scrapper</p>
+ * <p>Created on 27/07/18</p>
+ *
+ * <p>
+ *     A Scrapper Helper is the helper class that will be used to hook
+ *     and rule the lifetime of a single element scrapping. It features
+ *     many methods that are called throughout {@link ScrapperThreadCallable}
+ *     implementations. One good example can be found with the default
+ *     implementation {@link ScrapperThreadCallableImpl}.
+ * </p>
+ *
  * @param <P> Parent class which will hold the modifications
  * @param <M> M contains the model on which the html scrapping will be mapped.
+ * @author Louis-wht
+ * @since 1.0.0
  */
 public interface ScrapperHelper<P, M> {
 
 
     /**
-     * readAndSave method. It can be used to retrieve vars from the builder, etc...
+     * It can be used to retrieve vars from the builder, etc...
+     * And further store them in the scope of your helper. If you want
+     * to add features to your scrapper helper based on annotation
+     * configuration, this might be a good and simple starting point
+     * to do so.
      * @return initialized {@link RequestsScrappingContext}
      */
     default RequestsScrappingContext init() throws ObjectCreationException {
@@ -55,40 +73,42 @@ public interface ScrapperHelper<P, M> {
      * Return the url of the targeted web page
      * @param parent the parent object used to perform the actual scrapping operation
      * @return the created url.
-     * @throws URISyntaxException TODO change that one
+     * @throws UrlCreationException if the url could not be properly created.
      */
-    String createUrl(@NotNull final P parent) throws URISyntaxException;
+    String createUrl(@NotNull final P parent) throws UrlCreationException;
 
     /**
-     * Edit the actual request before it will be sent to network
-     * @param req the request to edit
-     * @param parent the parent object
-     * @param requestProcessor the request processor class to enable request edition
+     * Edit the actual request before it will be sent to the public network.
+     * @param req the request to edit.
+     * @param parent the parent object.
+     * @param requestProcessor the request processor class to enable request edition.
      */
     void editRequest(@NotNull final BoundRequestBuilder req, @NotNull final P parent, @NotNull final BoundRequestBuilderProcessor requestProcessor);
 
 
     /**
-     * Edit and instanciate the model before requests will be done. This will typically be used in order to inject
-     * properties into the model so that it can be further injected into lower levels of the models
-     * to make for example a decision on wether a link should be followed or not
+     * Edit and instanciate the model before requests will be done. This will typically
+     * be used in order to inject properties into the model so that it can be further
+     * injected into lower levels of the models to make for example a decision on wether
+     * a link should be followed or not.
      * @param parent the parent object
      * @return the newly instanciated model.
      */
     M instanciateModel(@NotNull final P parent);
 
     /**
-     * Edit the object using the model mapped out of the scrapper job
-     * @param parent the parent object
-     * @param model the model created by the scrapping operation
+     * Edit the object using the model mapped out of the scrapper job.
+     * @param parent the parent object.
+     * @param model the model created by the scrapping operation.
      */
     void buildModel(@NotNull final P parent, @NotNull final M model) throws ModelBindingException;
 
     /**
-     * Decide wether or not those modifications should be saved
-     * @param parent the parent entity
-     * @param model the resulting model
-     * @return a boolean indicating wether you should save or not the entity
+     * Decide wether or not those modifications should be saved. If true is returned,
+     * {@link #save(Object, Object)} will be called.
+     * @param parent the parent entity.
+     * @param model the resulting model.
+     * @return a boolean indicating wether you should save or not the entity.
      */
     boolean shouldBeSaved(@NotNull final P parent, final M model);
 
@@ -102,7 +122,8 @@ public interface ScrapperHelper<P, M> {
     void save(@NotNull final P parentObject, final M model);
 
     /**
-     * Return an object to the origin service so that it could be eventually forwarded right up to the view
+     * Return an object to the origin service so that it could be eventually forwarded as the output of
+     * the scrapping.
      * @param parent the parent object
      * @param model the resulting model
      * @return the output object. Usually the resulting model or the parent object.

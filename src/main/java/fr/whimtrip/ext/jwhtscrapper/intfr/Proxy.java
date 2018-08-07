@@ -3,14 +3,37 @@ package fr.whimtrip.ext.jwhtscrapper.intfr;
 import fr.whimtrip.ext.jwhtscrapper.impl.BasicProxy;
 import org.asynchttpclient.proxy.ProxyServer;
 
+
 /**
- * Todo, comment and link to {@link BasicProxy}
+ *
+ * <p>Part of project jwht-scrapper</p>
+ * <p>Created on 27/07/18</p>
+ *
+ * <p>
+ *     This interface defines all methods a proxy should have in order
+ *     to be usable for our {@link ProxyFinder}.
+ * </p>
+ *
+ * @see BasicProxy Default implementation of this interface.
+ * @author Louis-wht
+ * @since 1.0.0
  */
 public interface Proxy {
 
-
     /**
-     *  TODO comment
+     *
+     * <p>Part of project jwht-scrapper</p>
+     * <p>Created on 27/07/18</p>
+     *
+     * <p>
+     *     Status a proxy can have. Statuses are used not to reuse proxies
+     *     that has been flagged as non working. Most proxies don't always
+     *     work properly so that it is recommended to store and update their
+     *     status in order not to reuse non working ones.
+     * </p>
+     *
+     * @author Louis-wht
+     * @since 1.0.0
      */
     enum Status {
 
@@ -36,6 +59,15 @@ public interface Proxy {
         return (long) hashCode();
     }
 
+
+    /**
+     *
+     * @return the asynchttp lib {@link ProxyServer } object corresponding to this Proxy
+     */
+    default ProxyServer getProxyServer() {
+        return new ProxyServer.Builder(getIpAdress(), getPort()).build();
+    }
+
     /**
      *
      * @return the status of the current proxy.
@@ -54,11 +86,6 @@ public interface Proxy {
      */
     int getPort();
 
-    /**
-     *
-     * @return the asynchttp lib {@link ProxyServer } object corresponding to this Proxy
-     */
-    ProxyServer getProxyServer();
 
 
     /**

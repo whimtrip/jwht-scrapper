@@ -55,7 +55,7 @@ import java.util.Map;
  *
  * <p>
  *     Default implementation of {@link HtmlAutoScrapper}. As stated in the interface
- *     javadoc, we implemented it will all given recommendations including :
+ *     javadoc, we implemented it with all given recommendations including :
  * </p>
  *
  * <ul>

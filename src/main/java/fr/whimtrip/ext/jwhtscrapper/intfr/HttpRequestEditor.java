@@ -8,13 +8,24 @@
 
 package fr.whimtrip.ext.jwhtscrapper.intfr;
 
+import fr.whimtrip.ext.jwhtscrapper.annotation.Link;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.LinkPreparatorHolder;
 import org.asynchttpclient.BoundRequestBuilder;
 
 import java.lang.reflect.Field;
 
 /**
- * Created by LOUISSTEIMBERG on 19/11/2017.
+ * <p>Part of project jwht-scrapper</p>
+ * <p>Created on 30/07/18</p>
+ *
+ * <p>
+ *     This interface can be used with {@link Link} annotation
+ *     and will help defines hooks to intercept and customize the
+ *     request before it will be sent.
+ * </p>
+ *
+ * @author Louis-wht
+ * @since 1.0.0
  */
 public interface HttpRequestEditor<T,U> {
 
@@ -31,7 +42,7 @@ public interface HttpRequestEditor<T,U> {
      * @return a boolean indicating wether the request should be performed
      *         or not.
      */
-    boolean doRequest(T parentContainer);
+    boolean shouldDoRequest(T parentContainer);
 
     /**
      * Called with the newly instanciated object in order to prepare this object

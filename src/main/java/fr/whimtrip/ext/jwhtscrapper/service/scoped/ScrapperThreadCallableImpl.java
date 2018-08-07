@@ -9,6 +9,7 @@
 package fr.whimtrip.ext.jwhtscrapper.service.scoped;
 
 import fr.whimtrip.ext.jwhtscrapper.annotation.Link;
+import fr.whimtrip.ext.jwhtscrapper.exception.ScrapperException;
 import fr.whimtrip.ext.jwhtscrapper.exception.WarningSignException;
 import fr.whimtrip.ext.jwhtscrapper.intfr.HtmlAutoScrapper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrapperHelper;
@@ -89,11 +90,11 @@ public final class ScrapperThreadCallableImpl<P, M> implements ScrapperThreadCal
      * </p>
      * @return the result of this scrapping returned by
      *         {@link ScrapperHelper#returnResult(Object, Object)}
-     * @throws Exception if any of the steps involved in
-     *                   the scrapping throw an exception.
+     * @throws ScrapperException if any of the steps involved in
+     *                   the scrapping throws an exception.
      */
     @Override
-    public Object call() throws Exception {
+    public Object call() throws ScrapperException {
         M model = null;
         try {
             if (scrapperHelper.shouldBeScrapped(parentObject)) {

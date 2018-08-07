@@ -1,7 +1,6 @@
 package fr.whimtrip.ext.jwhtscrapper.impl;
 
 import fr.whimtrip.ext.jwhtscrapper.intfr.Proxy;
-import org.asynchttpclient.proxy.ProxyServer;
 
 public class BasicProxy implements Proxy {
 
@@ -72,12 +71,5 @@ public class BasicProxy implements Proxy {
         this.port = port;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ProxyServer getProxyServer() {
-        return new ProxyServer.Builder(ipAdress, port).build();
-    }
 
 }

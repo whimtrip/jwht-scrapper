@@ -2,6 +2,7 @@ package fr.whimtrip.ext.jwhtscrapper.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.BasicObjectMapper;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 
@@ -23,7 +24,7 @@ import java.io.IOException;
  * @author Louis-wht
  * @since 1.0.0
  */
-public final class DefaultBasicObjectMapper implements BasicObjectMapper {
+public final class JacksonBasicObjectMapper implements BasicObjectMapper {
 
     private static ObjectMapper staticObjectMapper;
     private final ObjectMapper objectMapper;
@@ -33,7 +34,7 @@ public final class DefaultBasicObjectMapper implements BasicObjectMapper {
      * Default constructor that will use default {@link ObjectMapper}
      * implementation as an application global Object Mapper.
      */
-    public DefaultBasicObjectMapper() {
+    public JacksonBasicObjectMapper() {
         this(null);
     }
 
@@ -41,7 +42,7 @@ public final class DefaultBasicObjectMapper implements BasicObjectMapper {
      * Secondary Constructor to provide your own Object Mapper.
      * @param objectMapper your own parametizered {@link ObjectMapper}
      */
-    public DefaultBasicObjectMapper(ObjectMapper objectMapper) {
+    public JacksonBasicObjectMapper(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
@@ -51,16 +52,16 @@ public final class DefaultBasicObjectMapper implements BasicObjectMapper {
      * {@inheritDoc}
      */
     @Override
-    public <U> U readValue(String htmlResponse, Class<U> mappedClazz) throws IOException {
-        return getObjectMapper().readValue(htmlResponse, mappedClazz);
+    public <U> U readValue(@NotNull String rawBody, @NotNull Class<U> mappedClazz) throws IOException {
+        return getObjectMapper().readValue(rawBody, mappedClazz);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public <U> U readValue(String htmlResponse, Class<U> mappedClazz, U obj) throws IOException {
-        return getObjectMapper().readerForUpdating(obj).readValue(htmlResponse);
+    public <U> U readValue(@NotNull String rawBody, @NotNull Class<U> mappedClazz, @NotNull U obj) throws IOException {
+        return getObjectMapper().readerForUpdating(obj).readValue(rawBody);
     }
 
     /**

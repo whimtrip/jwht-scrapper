@@ -47,7 +47,7 @@ import org.asynchttpclient.DefaultAsyncHttpClientConfig;
  *         {@link BasicObjectMapper} can let you map resulting String from another kind of
  *         input than HTML If not null, Html To Pojo Engine won't convert the strings to
  *         POJO so be careful with this. If {@code jsonScrapper} is set to true, a default
- *         Jackson Wraper implementation of this Object Mapper {@link DefaultBasicObjectMapper}
+ *         Jackson Wraper implementation of this Object Mapper {@link JacksonBasicObjectMapper}
  *         will be provided in order to accept Json strings instead of HTML strings. The
  *         POJOs you'll use in this case must have valid Jackson Annotations.
  *
@@ -128,7 +128,7 @@ public final class AutomaticScrapperManagerBuilder {
      *         {@link BasicObjectMapper} can let you map resulting String from another kind of
      *         input than HTML If not null, Html To Pojo Engine won't convert the strings to
      *         POJO so be careful with this. If {@code jsonScrapper} is set to true, a default
-     *         Jackson Wraper implementation of this Object Mapper {@link DefaultBasicObjectMapper}
+     *         Jackson Wraper implementation of this Object Mapper {@link JacksonBasicObjectMapper}
      *         will be provided in order to accept Json strings instead of HTML strings. The
      *         POJOs you'll use in this case must have valid Jackson Annotations.
      *
@@ -226,12 +226,12 @@ public final class AutomaticScrapperManagerBuilder {
     }
 
     /**
-     * @return submitted {@code jsonScrapper} if not null, otherwise, either a {@link DefaultBasicObjectMapper}
+     * @return submitted {@code jsonScrapper} if not null, otherwise, either a {@link JacksonBasicObjectMapper}
      *         wrapping a Jackson {@link ObjectMapper} to convert JSON strings to POJOs if {@code jsonScrapper}
      *         is set to true or a null value otherwise (default behavior).
      */
     private BasicObjectMapper getOrBuildObjectMapper() {
-        return jsonScrapper && objectMapper == null ? new DefaultBasicObjectMapper() : objectMapper;
+        return jsonScrapper && objectMapper == null ? new JacksonBasicObjectMapper() : objectMapper;
     }
 
 

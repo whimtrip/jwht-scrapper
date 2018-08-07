@@ -310,8 +310,14 @@ public final class LinksFollowerImpl implements LinksFollower {
 
             if(checkRegexCondition(link, url))
             {
+                boolean isListField = objField.getAnnotation(LinkObject.class) == null;
 
-                HtmlAdapter<U> newFieldAdapter = (HtmlAdapter<U>) htmlToPojoEngine.adapter(objField.getType());
+                HtmlAdapter<U> newFieldAdapter =
+                        (HtmlAdapter<U>)
+                                htmlToPojoEngine.adapter(
+                                        isListField ? WhimtripUtils.getClassFromListField(objField)
+                                        : objField.getType()
+                                );
 
                 boolean editRequest = link.getAnnotation().editRequest();
                 LinkPreparatorHolder container =
@@ -340,7 +346,8 @@ public final class LinksFollowerImpl implements LinksFollower {
 
 
                 LinkScrappingContext<P, U> lsc = buildContext(container, newFieldAdapter, requestEditor, editRequest);
-                if(objField.getAnnotation(LinkObject.class) != null)
+
+                if(!isListField)
                         scrappingContexts.add(lsc);
                 else
                 {
@@ -506,7 +513,7 @@ public final class LinksFollowerImpl implements LinksFollower {
                                       final boolean editRequest
     ){
 
-        if (!editRequest || (requestEditor != null && requestEditor.doRequest(container.getParent())))
+        if (!editRequest || (requestEditor != null && requestEditor.shouldDoRequest(container.getParent())))
         {
             U newObj = adapter.createNewInstance(container.getParent());
 

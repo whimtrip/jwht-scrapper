@@ -3,11 +3,20 @@ package fr.whimtrip.ext.jwhtscrapper.intfr;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Any class implementing this one should be able to retrieve and
- * edit a Proxy list, ideally from some persisting memory technology
- * such as an SQL database. In the case of using a classical ORM such
- * as Hibernate, the ProxyFinder implementation might be a service wrapping
- * the real Proxy Repository for example.
+ *
+ * <p>Part of project jwht-scrapper</p>
+ * <p>Created on 27/07/18</p>
+ *
+ * <p>
+ *   Any class implementing this one should be able to retrieve and
+ *   edit a Proxy list, ideally from some persisting memory technology
+ *   such as an SQL database. In the case of using a classical ORM such
+ *   as Hibernate, the ProxyFinder implementation might be a service wrapping
+ *   the real Proxy Repository for example.
+ * </p>
+ *
+ * @author Louis-wht
+ * @since 1.0.0
  */
 public interface ProxyFinder {
 
