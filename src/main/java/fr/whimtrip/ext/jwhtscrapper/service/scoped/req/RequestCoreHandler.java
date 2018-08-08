@@ -146,7 +146,8 @@ public final class RequestCoreHandler {
             requestSynchronizer.logHttpStatus(lastStatusCode, firstTry);
             firstTry = false;
 
-            log.debug("Request status : {} {}", lastStatusCode, resp.getStatusText());
+            if(log.isDebugEnabled())
+                log.debug("Request status : {} {}", lastStatusCode, resp.getStatusText());
 
             // if this is a redirection.
             if((lastStatusCode == 301 || lastStatusCode == 302) && resp.getHeader("Location") != null)
@@ -242,7 +243,8 @@ public final class RequestCoreHandler {
             Status newStatus = actualProxy.getStatus() == WORKING ? FROZEN : BANNED;
 
             RequestUtils.setProxyStatus(actualProxy, newStatus, httpManagerConfig.getProxyFinder());
-            log.info("Proxy {}:{} was {}", actualProxy.getId(), actualProxy.getPort(), newStatus);
+            if(log.isInfoEnabled())
+                log.info("Proxy {}:{} was {}", actualProxy.getId(), actualProxy.getPort(), newStatus);
         }
     }
 
@@ -295,8 +297,13 @@ public final class RequestCoreHandler {
     private String handleRedirection(Response resp) {
 
         String newUrl = resp.getHeader("Location");
-        log.info("Trying to follow redirections to {} with followRedirections to {}.", newUrl, followRedirections);
+
+
+        if(log.isInfoEnabled())
+            log.info("Trying to follow redirections to {}", newUrl, followRedirections);
+
         if(followRedirections && (firstRedirection || httpManagerConfig.allowInfiniteRedirections())) {
+
             req.setUrl(newUrl);
             url = newUrl;
             firstRedirection = false;
@@ -304,7 +311,9 @@ public final class RequestCoreHandler {
         }
         else
         {
-            log.info("Redirection required that cannot be followed with body :  {}.", resp.getResponseBody());
+            if (log.isInfoEnabled())
+                log.info("Redirection required that cannot be followed with body :  {}.", resp.getResponseBody());
+
             return resp.getResponseBody();
         }
     }
@@ -318,7 +327,9 @@ public final class RequestCoreHandler {
      */
     private void handleFailedRequest(Response resp) throws RequestFailedException {
 
-        log.info("Failed Request with status code {} at url {}.", resp.getStatusCode(), url);
+        if(log.isInfoEnabled())
+            log.info("Failed Request with status code {} at url {}.", resp.getStatusCode(), url);
+
         httpManagerConfig.getBoundRequestBuilderProcessor().printReq(req);
         RequestFailedException e = new RequestFailedException(resp);
         httpManagerConfig.getExceptionLogger().logException(e, log.isTraceEnabled());

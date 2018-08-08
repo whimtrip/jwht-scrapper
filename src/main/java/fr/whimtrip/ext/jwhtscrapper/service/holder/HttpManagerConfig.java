@@ -1,6 +1,7 @@
 package fr.whimtrip.ext.jwhtscrapper.service.holder;
 
 import fr.whimtrip.core.util.intrf.ExceptionLogger;
+import fr.whimtrip.ext.jwhtscrapper.exception.NoProxyFinderProvidedException;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ProxyFinder;
 import fr.whimtrip.ext.jwhtscrapper.service.RotatingUserAgent;
 import fr.whimtrip.ext.jwhtscrapper.service.base.BoundRequestBuilderProcessor;
@@ -98,6 +99,8 @@ public class HttpManagerConfig {
      * @param defaultHeaders default headers to use in each requests<br>
      * @param defaultCookies default cookies to use in each requests<br>
      * @param defaultFields default POST defaultFields to use on each requests.
+     * @throws NoProxyFinderProvidedException when {@code proxyFinder} is null and
+     *                                        {@code useProxy} is true.
      */
     public HttpManagerConfig(
             ExceptionLogger exceptionLogger,
@@ -139,6 +142,9 @@ public class HttpManagerConfig {
 
         if(defaultHeaders != null)
             this.defaultHeaders.add(defaultHeaders);
+
+        if(proxyFinder == null && useProxy)
+            throw new NoProxyFinderProvidedException();
 
     }
 

@@ -73,17 +73,21 @@ public final class RequestSynchronizerImpl implements RequestSynchronizer {
 
         if(awaitedTime < httpManagerConfig.getAwaitBetweenRequests())
         {
-            log.info("Awaiting " + (httpManagerConfig.getAwaitBetweenRequests() - awaitedTime) + " ms");
+            if(log.isTraceEnabled())
+                log.trace("Awaiting {} ms.", (httpManagerConfig.getAwaitBetweenRequests() - awaitedTime));
+
             try{
                 Thread.sleep(httpManagerConfig.getAwaitBetweenRequests() - awaitedTime);
-                log.info("Awaited the  " + (httpManagerConfig.getAwaitBetweenRequests() - awaitedTime) + " ms");
+                if(log.isTraceEnabled())
+                    log.trace("Awaited the  {} ms.", (httpManagerConfig.getAwaitBetweenRequests() - awaitedTime));
             }
             catch(InterruptedException e){
                 httpManagerConfig.getExceptionLogger().logException(e);
             }
         }
 
-        log.info("Scrapping data at url " + url);
+        if(log.isDebugEnabled())
+            log.debug("Scrapping data at url {}.", url);
     }
 
 

@@ -284,7 +284,7 @@ public final class HtmlAutoScrapperImpl<T> implements HtmlAutoScrapper<T> {
         }
         catch(WarningSignException e)
         {
-            log.warn("A warning sign was triggered! " + e.getMessage());
+            log.warn("A warning sign was triggered! {}", e.getMessage());
             boundRequestBuilderProcessor.printReq(req);
 
             if(
@@ -308,8 +308,7 @@ public final class HtmlAutoScrapperImpl<T> implements HtmlAutoScrapper<T> {
 
             if(e.getAction() == Action.THROW_EXCEPTION)
             {
-                log.warn("Current scrap handled a fatal error which" +
-                        " shouldn't lead to further scrapping for that object");
+                log.warn("Current scrap handled a fatal error which shouldn't lead to further scrapping for that object");
                 throw e;
             }
 

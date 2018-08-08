@@ -229,7 +229,13 @@ public final class DefaultAutomaticInnerScrapperClient<P, M> implements Automati
             startedScrapsCount += pSublist.size();
 
             ScrappingResult scrappingResult = waitAndRemoveFinishedThreads();
-            log.info("nonScrappedThreads= {}, valids = {}.", scrappingResult.failed, scrappingResult.valid);
+            if(log.isTraceEnabled())
+                log.trace(
+                        "failed = {}, valids = {}.",
+                        scrappingResult.failed,
+                        scrappingResult.valid
+                );
+
 
             validFinishedTasks += scrappingResult.valid;
             failedFinishedTasks += scrappingResult.valid;
@@ -304,13 +310,21 @@ public final class DefaultAutomaticInnerScrapperClient<P, M> implements Automati
                     if(!((ScrapperFutureTask) ft).hasScrapped())
                     {
                         result.failed++;
-                        log.info(String.format("Thread n°%s is terminated and wasn't scrapped", copiedTasks.indexOf(ft)));
+                        if(log.isInfoEnabled())
+                            log.info(
+                                    "Thread n°{} is terminated and wasn't scrapped",
+                                    copiedTasks.indexOf(ft)
+                            );
                     }
 
                     else {
                         result.valid ++;
                         results.add(ft.get());
-                        log.info(String.format("Thread n°%s is terminated and was correctly scrapped", copiedTasks.indexOf(ft)));
+                        if(log.isInfoEnabled())
+                            log.info(
+                                    "Thread n°{} is terminated and was correctly scrapped",
+                                    copiedTasks.indexOf(ft)
+                            );
                     }
 
 
@@ -322,7 +336,10 @@ public final class DefaultAutomaticInnerScrapperClient<P, M> implements Automati
             catch (InterruptedException | ExecutionException e) {
                 finishedTasks ++;
                 exceptionLogger.logException(e);
-                log.info(String.format("Thread n°%s is terminated", copiedTasks.indexOf(ft)));
+
+                if(log.isInfoEnabled())
+                    log.info("Thread n°{} terminated with an uncaught exception.", copiedTasks.indexOf(ft));
+
                 runningTasks.remove(actFt);
                 if (requestsScrappingContext.isThrowExceptions()) {
                     terminate();
@@ -434,7 +451,9 @@ public final class DefaultAutomaticInnerScrapperClient<P, M> implements Automati
             runningThreads = runningTasks.size();
         }
 
-        log.debug("There are actually " + runningThreads + " running threads");
+        if(log.isDebugEnabled())
+            log.debug("There are actually {} running threads.", runningThreads);
+
         List<P> copiedPList;
 
         synchronized (pList) {
@@ -484,7 +503,11 @@ public final class DefaultAutomaticInnerScrapperClient<P, M> implements Automati
             fts.add(ft);
             runningTasks.add(ft);
 
-            log.info(String.format("Starting thread n°%s", (startedScrapsCount + numberOfThreadsStarted) ));
+            if(log.isInfoEnabled())
+                log.info(
+                        "Starting thread n°{}",
+                        (startedScrapsCount + numberOfThreadsStarted)
+                );
 
             numberOfThreadsStarted++;
         }

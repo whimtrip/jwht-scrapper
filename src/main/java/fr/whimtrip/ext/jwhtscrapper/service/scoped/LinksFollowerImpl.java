@@ -174,7 +174,8 @@ public final class LinksFollowerImpl implements LinksFollower {
     ) throws LinkException
     {
 
-        log.info("Resolving basic links for model type " + model.getClass());
+        if(log.isInfoEnabled())
+            log.info("Resolving basic links for model type {}.",model.getClass());
 
         List<HtmlToPojoAnnotationMap<Link>> links = adapter.getFieldList(Link.class);
         List<HtmlToPojoAnnotationMap<HasLink>> hasLinks = adapter.getFieldList(HasLink.class);

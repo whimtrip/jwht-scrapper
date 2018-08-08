@@ -103,14 +103,15 @@ public final class HttpConnectHandler {
             requestSynchronizer.checkAwaitBetweenRequest(url);
             BoundRequestBuilder connect = asyncHttpClient.prepareConnect(url);
 
-            log.info(
-                    String.format(
-                            "Connecting to %s:%s in %s with method %s at url %s",
-                            proxy.getIpAdress(),
-                            proxy.getPort(),
-                            proxy.getCountryName(),
-                            httpManagerConfig.getBoundRequestBuilderProcessor().getMethod(req), url )
-            );
+            if(log.isDebugEnabled())
+                log.debug(
+                        String.format(
+                                "Connecting to %s:%s in %s with method %s at url %s",
+                                proxy.getIpAdress(),
+                                proxy.getPort(),
+                                proxy.getCountryName(),
+                                httpManagerConfig.getBoundRequestBuilderProcessor().getMethod(req), url )
+                );
 
             connect .execute()
                     .get(httpManagerConfig.getTimeout(), TimeUnit.MILLISECONDS);
