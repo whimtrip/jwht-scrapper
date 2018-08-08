@@ -52,8 +52,8 @@ public class RequestsScrappingContext {
      */
     public RequestsScrappingContext(Scrapper scrapper) {
         this(
-                scrapper.requestConfig(),
-                scrapper.requestConfig().parallelThreads(),
+                scrapper.requestsConfig(),
+                scrapper.requestsConfig().parallelThreads(),
                 scrapper.scrapLimit(),
                 scrapper.method(),
                 scrapper.throwExceptions(),

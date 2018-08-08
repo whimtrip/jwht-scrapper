@@ -56,7 +56,7 @@ public @interface Scrapper {
      * @return the request configuration.
      * @see RequestsConfig
      */
-    RequestsConfig requestConfig();
+    RequestsConfig requestsConfig();
 
     /**
      * @return wether scrapping exceptions should be ignored {@code false}

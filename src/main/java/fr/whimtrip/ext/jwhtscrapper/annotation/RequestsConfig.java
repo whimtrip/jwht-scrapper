@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
  * <p>Created on 29/07/18</p>
  *
  * <p>
- *     This annotation should be added to {@link Scrapper#requestConfig()}
+ *     This annotation should be added to {@link Scrapper#requestsConfig()}
  *     and will define how HTTP requests should be performed to ensure
  *     the scrap is done properly and handles all possible edge cases which
  *     proves to be very very common when doing web scrapping on correctly

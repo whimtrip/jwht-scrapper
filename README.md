@@ -91,7 +91,7 @@ a compulsory`@Scrapper` annotation to define your [configurations](#configuratio
         scrapModel = Restaurant.class,
         // Scrap no more than 100 pages
         scrapLimit = 100,
-        requestConfig =
+        requestsConfig =
             @RequestsConfig(
                     // de
                     defaultCookies = {
@@ -232,4 +232,122 @@ scrapperClient.scrap();
 // statistics about the scrapping...
 
 ```
+
+
+# Full Documentation
+
+## Configurations
+
+### Scrapper Helper Annotations
+
+The Scrapper Helper class usage is showcased [here](#buildyourscrapperhelper)
+and detailed javadoc can be found [here](https://github.com/whimtrip/jwht-scrapper/blob/master/src/main/java/fr/whimtrip/ext/jwhtscrapper/intfr/ScrapperHelper.java).
+
+Annotation configuration works with three main annotations :
+
+#### @Scrapper
+
+#### @RequestsConfig
+
+#### @ProxyConfig
+
+### Scrapper Client Configurations
+
+#### Exception Logger
+
+#### HtmlToPojoEngine
+
+#### Custom Object Mapper
+
+#### Custom Async Http Client
+
+#### Proxy Finder
+
+#### JSON scrapper
+
+#### Request Processor
+
+## Links
+
+### General Knowledge
+
+### @Link
+
+#### @LinkObject
+
+#### @LinkObjects
+
+### @LinkListsFromBuilder
+
+### @HasLink
+
+## Warning Signs
+
+### General Knowledge
+
+### Triggered On
+
+### Action
+
+### Pausing Behavior
+
+## Scraper Client
+
+### Queuing Elements
+
+### Terminate
+
+### Get Results
+
+### Get Metrics
+
+#### Where to retrieve it
+
+#### Scrapping Stats
+
+#### Http Metrics
+
+## Logging
+
+## Other Features
+
+### Pojo Injection
+
+## Overriding / Extending Standard API
+
+Overriding the Standard API can be made in several ways.
+The most easy one is to ... TODO
+
+# Upcoming Additions
+
+At the moment I am writing those lines, the main thing that
+needs to be added to this project is correct Unit Tests. Because
+of a lack of time, we couldn't provide real Unit Tests. This 
+is the first thing we want to add to this library.
+
+Please feel free to submit your suggestions.
+
+
+# How to contribute
+
+If you find a bug, an error in the documentation or any other 
+related problem, you can submit an issue or even propose a 
+patch. 
+
+Your pull requests will be evaluated properly but please submit
+decent commented code we won't have to correct and rewrite from
+scratch.
+
+We are open to suggestions, code rewriting for optimization, 
+etc...
+
+If anyone wants to help, we'd really appreciate if related Unit
+tests could be written first and before all to avoid further 
+problem.
+
+Thanks for using jwht-scrapper! Hope to hear from you!
+
+
+
+        
     
