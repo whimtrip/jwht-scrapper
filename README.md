@@ -125,7 +125,7 @@ a compulsory`@Scrapper` annotation to define your [configurations](#configuratio
                     proxyConfig = @ProxyConfig(useProxy = true)
             )
 )
-public class CoolRestaurantScrapperHelper implements ScrapperHelper<UncompletedRestaurant, Restaurant>{
+public class CoolRestaurantsScrapperHelper implements ScrapperHelper<UncompletedRestaurant, Restaurant>{
 
     // If you're using both Spring + Hibernate, this might be useful.
     @Autowired
@@ -207,8 +207,11 @@ be an application scope global var you could retrieve with for example
 
 ```java
 
+List<UncompletedRestaurants> uncompletedRestaurantsToScrap = uncompletedRestaurantsRepository.findAll();
+
 AutomaticScrapperManager scrapperManager = 
         new AutomaticScrapperManagerBuilder()
+              
             // if you're scrapping an API instead of HTML pages, 
             // you could use the following config :
             //.setJsonScrapper(true)
@@ -216,8 +219,8 @@ AutomaticScrapperManager scrapperManager =
 
 AutomaticScrapperClient scrapperClient = 
         scrapperManager.createClient(
-            myPojosToInstanciateScrapping,
-            new MyCustomHelperClass()
+            uncompletedRestaurants,
+            new CoolRestaurantsScrapperHelper()
         );
 
 // Start the scrapping in a separate thread
