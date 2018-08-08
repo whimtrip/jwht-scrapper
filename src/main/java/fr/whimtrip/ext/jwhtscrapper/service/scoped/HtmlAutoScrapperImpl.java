@@ -297,7 +297,7 @@ public final class HtmlAutoScrapperImpl<T> implements HtmlAutoScrapper<T> {
                     lastThrownWarningSignException = e;
                 }
 
-                WhimtripUtils.waitForWithOutputToConsole((long) warningSignDelay, 20);
+                WhimtripUtils.waitFor((long) warningSignDelay, log, 20);
 
                 // this is to ensure that the same pausing threads is the one that is
                 // commanding the scrapping to stop.

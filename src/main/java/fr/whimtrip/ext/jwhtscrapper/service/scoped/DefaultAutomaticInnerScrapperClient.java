@@ -243,7 +243,7 @@ public final class DefaultAutomaticInnerScrapperClient<P, M> implements Automati
             int delay = context.getRequestsScrappingContext().getRequestsConfig().periodicDelay();
 
             if(delay > 0 && scrappingResult.valid >= 1) {
-                WhimtripUtils.waitForWithOutputToConsole((long)delay, 20);
+                WhimtripUtils.waitFor((long)delay, log, 20);
             }
 
         } while(startedScrapsCount < requestsScrappingContext.getScrapLimit() && iterator.hasNext() && !stopped);

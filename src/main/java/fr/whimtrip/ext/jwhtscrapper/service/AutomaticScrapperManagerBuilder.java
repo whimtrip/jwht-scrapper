@@ -1,10 +1,10 @@
 package fr.whimtrip.ext.jwhtscrapper.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.whimtrip.core.util.DefaultExceptionLoggerService;
 import fr.whimtrip.core.util.intrf.ExceptionLogger;
 import fr.whimtrip.ext.jwhthtmltopojo.HtmlToPojoEngine;
 import fr.whimtrip.ext.jwhthtmltopojo.intrf.HtmlAdapterFactory;
-import fr.whimtrip.ext.jwhtscrapper.impl.DefaultExceptionLoggerService;
 import fr.whimtrip.ext.jwhtscrapper.impl.ScrapperHtmlAdapterFactory;
 import fr.whimtrip.ext.jwhtscrapper.intfr.BasicObjectMapper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ProxyFinder;
