@@ -31,9 +31,9 @@ This library was originally built to support real world scrapping
 use cases. Most features were implemented because we felt a need 
 for them to be part of this framework.
 
-- [Proxy support](#usingproxies)
-- [Warning Sign Support to detect captchas and more](#warningsigns)
-- [Multithreading](#configurations)
+- [Proxy support](#proxy-finder)
+- [Warning Sign Support to detect captchas and more](#warning-signs)
+- [Multithreading](#parameter-parallelthreads)
 - [Various scrapping delays when required](#configurations)
 - [Rotating User-Agent](#configurations)
 - [Request auto retry and HTTP redirections supports](#configurations) 
