@@ -238,18 +238,162 @@ scrapperClient.scrap();
 
 ## Configurations
 
-### Scrapper Helper Annotations
+This library features some basic configurations you can play with easily
+using the default API of this framework. We'll try to showcase them here.
 
-The Scrapper Helper class usage is showcased [here](#buildyourscrapperhelper)
+### Scrapper Helper Class
+
+The Scrapper Helper class usage is showcased [here](#build-your-scrapper-helper)
 and detailed javadoc can be found [here](https://github.com/whimtrip/jwht-scrapper/blob/master/src/main/java/fr/whimtrip/ext/jwhtscrapper/intfr/ScrapperHelper.java).
+
+### Scrapper Helper Annotations
 
 Annotation configuration works with three main annotations :
 
 #### @Scrapper
 
+This is the annotation that **must appear** on top of your ScrapperHelper
+implementation. It will contain all other configuration annotations.
+
+###### Parameter `scrapModel` :
+
+The POJO on which the Raw HTTP Body will be mapped. In our above example :
+ `Restaurant.class`
+
+###### Parameter `method` :
+
+The HTTP method to use. Currently, only `GET` and `POST` method are supported.
+Default value is `GET`.
+
+###### Parameter `throwExceptions` :
+
+`false` if scrapping exceptions should be ignored and `true` if they should be 
+thrown to stop the current item scrap (not the whole scrapper client). Default
+value is true.
+
+###### Parameter `scrapLimit` :
+
+The scrapping limit which defines the maximum number of starting pages to scrap.
+This can prove to be very useful when testing your scrapper configurations and
+POJOs. Default value is 100.
+
+###### Parameter `requestsConfig` :
+
+Defines here your HTTP configuration. You must provide an `@RequestsConfig` 
+annotation as the value of this parameter. See below for a description of its
+parameters.
+
 #### @RequestsConfig
 
+
+##### General Purpose Parameters
+###### Parameter `parallelThreads` :
+
+The max number of parrallel threads to run at the same time. You should start
+by testing it with quite low values and progressively increase it if no ban 
+or errors comes out of your first tests.
+
+
+###### Parameter `maxRequestRetries` :
+
+The maximum number of times a single request can be retried before a
+RequestMaxRetriesReachedException will be thrown. If using proxies, it is 
+strongly advised to set this parameter to 20-100 as most commonly used 
+proxies tends to work once every 10-20 times and once this exception is 
+thrown, the current scrap cannot be retried.
+
+##### Delay and Waits Parameters
+###### Parameter `waitBetweenRequests` :
+
+The minimum delay in milliseconds that must be waited between two requests. 
+This parameter will be taken into account even though requests are made
+asynchronously and from several threads at a time.
+
+###### Parameter `timeout` : 
+
+The request timeout in milliseconds. If you use proxies or if you poll slow 
+websites/webpages, it is recommended to set it quite high altough you should
+test many setups, especially with proxies to find the best compromise between
+performances and request efficiency.
+
+
+###### Parameter `periodicDelay` :
+
+The delay in milliseconds on successful thread removal. This means that each
+time the scrapper client gather properly finished threads, it will pause for
+the given delay. 0 means it won't wait.
+
+###### Parameter `warningSignDelay` :
+
+The delay to wait for when a `@WarningSign` is triggered. It will only work if 
+`WarningSign.pausingBehavior()` set to `PausingBehavior.PAUSE_ALL_THREADS` or
+`PausingBehavior.PAUSE_CURRENT_THREAD_ONLY`. See [here](#warning-signs) for 
+more information.
+
+
+##### HTTP Parameters
+###### Parameter `defaultCookies` : 
+
+The default cookies to use on each requests if any. Very useful for selecting
+a default currency and language that does not depends on the current proxy 
+used which most of the times ends up quite poorly with regex for example.
+Most websites uses cookies for preferences.
+
+###### Parameter `defaultHeaders` :
+
+The default headers to use on each request. Usually helpful for `Host` header
+for example.
+
+###### Parameter `defaultPostFields` :
+
+The default POST fields to use on POST requests only.
+
+###### Parameter `followRedirections` : 
+
+A boolean defining wether HTTP 301 and 302 redirections should or shouldn't 
+be followed.
+
+###### Parameter `allowInfiniteRedirections` :
+
+A boolean defining wether redirections should or shouldn't be followed indefinitely.
+Sometimes, HTTP infinite redirections loops can happen and that's why the default 
+value of this parameter is `false`. Will only be used if `followRedirections` is 
+set to true. Otherwise, it won't have any effect.
+
+
+##### Special Features :
+
+###### Parameter `rotatingUserAgent` :
+
+A boolean indicating wether rotating user agent should be used or not. If set to true,
+the header `User-Agent` header will rotate at each request. Using rotating user agent
+will discard any `User-Agent` header set as default using `defaultHeaders`.
+
+###### Parameter `proxyConfig` :
+
+Defines here your Proxy configuration. You must provide an `@ProxyConfig` 
+annotation as the value of this parameter. See below for a description of its
+parameters.
+
 #### @ProxyConfig
+
+###### Parameter `useProxy` :
+
+A boolean indicating if proxies should be used or not. If it returns `true`, you 
+**MUST** provide your custom [ProxyFinder](#proxy-finder) implementation using
+`AutomaticScrapperManagerBuilder.setProxyFinder(proxyFinder)` method  when creating
+your `AutomaticScrapperManager`.
+
+###### Parameter `connectToProxyBeforeRequest` :
+
+Wether TCP Connect should be used before making the actual HTTP request. This feature
+will be deprecated in a near future because it proved to be useless.
+
+###### Parameter `proxyChangeRate` :
+
+The number of requests to perform before changing the Proxy. Currently not supported 
+because proxies change at almost every request try as they tend to be very unstable. 
+Currrently deprecated.
 
 ### Scrapper Client Configurations
 

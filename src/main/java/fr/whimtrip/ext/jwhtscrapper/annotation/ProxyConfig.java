@@ -62,7 +62,7 @@ public @interface ProxyConfig {
      * @deprecated not supported by default implementation {@link HttpWithProxyManagerClient}.
      * @return the number of requests to perform before changing the Proxy.
      *         currently not supported by {@link HttpWithProxyManagerClient}
-     *         because proxies changes at almost every request try as they
+     *         because proxies change at almost every request try as they
      *         tend to be very unstable.
      */
     @Deprecated

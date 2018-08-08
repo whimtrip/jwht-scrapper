@@ -134,7 +134,7 @@ public @interface RequestsConfig {
     /**
      * @return a boolean defining wether redirections should or shouldn't
      *         be followed indefinitely. Sometimes, HTTP infinite redirections
-     *         loops can happend and that's why the default value of this
+     *         loops can happen and that's why the default value of this
      *         parameter is false. Will only be used if {@link #followRedirections()}
      *         returns true. Otherwise, it won't have any effect.
      */
