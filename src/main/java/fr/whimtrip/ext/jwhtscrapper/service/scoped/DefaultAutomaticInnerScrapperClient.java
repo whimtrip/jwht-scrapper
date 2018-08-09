@@ -42,8 +42,8 @@ import java.util.concurrent.FutureTask;
  *     Default and standard implementation of {@link AutomaticInnerScrapperClient}.
  * </p>
  *
- * @param <P> {@inheritDoc}
- * @param <M> {@inheritDoc}
+ * @param <P> Parent Type
+ * @param <M> Model on which response body will be mapped
  * @author Louis-wht
  * @since 1.0.0
  */
@@ -88,7 +88,7 @@ public final class DefaultAutomaticInnerScrapperClient<P, M> implements Automati
      *                         the scraps.
      * @param exceptionLogger the {@link ExceptionLogger} to use to perform exception
      *                               logging.
-     * @param requestProcessor the request processor {@see BoundRequestBuilderProcessor}.
+     * @param requestProcessor the request processor {@link BoundRequestBuilderProcessor}.
      */
     public DefaultAutomaticInnerScrapperClient(
             ScrappingContext<P, M, ? extends ScrapperHelper<P, M>> context,
