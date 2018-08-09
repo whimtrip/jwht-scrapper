@@ -148,7 +148,6 @@ public class CoolRestaurantsScrapperHelper implements ScrapperHelper<Uncompleted
         // Just an example of what you can do
         if(parent.isPopular())
             processor.addHeader("Some-Header-That-Does-Some-Magic", "Some-Secret-Value", req);
-        return req;
     }
 
     @Override
@@ -911,7 +910,7 @@ itself matches our regex `^Are you a ROBOT\?\?$`! Yup when the captcha appears,
 our warning sign will be triggered! 
 
 Now the question you have in mind is probably : "Awesome but what will it do now?".
-That's up to you! Will get into the details of it right below.
+That's up to you! We'll get into the details of it right below.
 
 ### Action
 
