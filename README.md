@@ -1,7 +1,7 @@
-# jwht-scrapper - Fully Featured Java Scrapping Framework, highly pluggable and customizable
+# jwht-scrapper - Fully Featured Java Scrapping highly pluggable and customizable framework 
 
 # Introduction
-This lib provides a lightweight, fully featured, highly pluggable 
+This lib provides a fully featured, highly pluggable 
 and customizable Java Scrapping framework. It was mainly designed 
 to scrap web pages as HTML but other mapping types are supported
 thanks to custom user-defined Object mapper implementation possibilities.
@@ -397,11 +397,11 @@ Currrently deprecated.
 
 ### Scrapper Client Configurations
 
-Your scrapper client configuration can also be tuned and customised altought it is
+Your scrapper client configuration can also be tuned and customised altough it is
 a much more complex task. To do so, you need to input below described implementations
 through the `AutomaticScrapperManagerBuilder` class. 
 
-This describe all of the setters you can use as shown below :
+Here is a short example on how to register your custom implementations :
 
 ```java
 AutomaticScrapperManager scrapperManager = 
@@ -414,9 +414,9 @@ AutomaticScrapperManager scrapperManager =
 
 #### Exception Logger
 
-You can submit your own `ExceptionLogger` implementation here. this provides
+You can submit your own `ExceptionLogger` implementation here. This will provide
 a way to use a custom processing for exception handling. For our own implementation,
-we used to saved the exceptions in the database, trigger an alarm so that the uncaught 
+we save the exceptions in the database, trigger an alarm so that the uncaught 
 exception can be corrected as soon as possible, and finally log the stacktrace. This
 is just an example of what you can do with such exception logger service.
 
@@ -433,9 +433,11 @@ POJOs.
 #### Custom Object Mapper
 
 If you do not plan to receive HTML body responses from the scraps to perform, then 
-you can use a custom object mapper implementation `public MyObMapper implements BasicObjectMapper`
-to map other input formats to POJOs (Link annotations are still supported but not 
-warning signs so you can annotate your POJOs with [links annotations](#links)).
+you can use a custom object mapper implementation using for example
+`public MyObMapper implements BasicObjectMapper` to map other input formats to POJOs
+(Link annotations are still supported but not warning signs so you can annotate your
+POJOs with [links annotations](#links)).
+
 If you do :
 
 ```java
@@ -446,8 +448,8 @@ If you do :
             .build();
 ```
 
-Then a Jackson object mapper will be used to turn proper Jackson annotated POJOs 
-from JSON string.
+Then a Jackson object mapper will be used to turn JSON strings to proper Jackson 
+annotated POJOs.
 
 #### Custom Async Http Client
 
@@ -459,7 +461,7 @@ can submit your own instance.
 If you want to use proxies, you have to set here your own proxy finder implementation.
 This is a class instance that can retrieve proxies from a given source (usually a database)
 modify their status to mark them as frozen or banned proxies for example, and finally
-persisting them to the database when necessary. When implementing `ProxyFinder` with 
+persist them to the database when necessary. When implementing `ProxyFinder` with 
 your own proxy finder class, you'll be able to discover our javadoc for both `ProxyFinder`
 class and `Proxy` interface.
 
@@ -484,11 +486,191 @@ javadoc instructions but it not very recommended for basic configurations needs.
 
 ### General Knowledge
 
+In many cases, scrapping will start with a search query providing several results, 
+once you have those results, you want to match the correct result given the 
+information you already have on your initial search query. Once you have the correct
+result you would probably want to go to the result detailed page. And maybe from
+this page you'll want to scrap another one, and another one... 
+
+This is why Link support was built for in this framework. The idea is that it can 
+handle a complete scrap whatever steps are involved into it with one single 
+`ScrapperHelper` implementation and all your POJOs properly annotated.
+
+The basic idea is that you annotate a String typed field with an `@Link`,
+this field will contain the url to "click/follow", and the field to assign
+the result to  with an `@LinkObject`. 
+
+From a coding perspective, this might look like that :
+
+```java
+
+public class MyPojoExample {
+    
+    
+    @Selector(
+            value = "some-css-attribute",
+            attr = "href"
+            // eventually some more stuff here for the 
+            // url to be gathered properly
+    )
+    @Link
+    private String someUrlInAnHref;
+    
+    @LinkObject(
+            // name of the url field it is linked to
+            value = "someUrlInAnHref"
+    )
+    private MyChildPojoExample childPojoExample;
+    
+    
+    // getters and setters
+}
+
+```
+
+
+There is a little more theory and we'll try to explain it below.
+
 ### @Link
+
+The very first annotation we need to explain here is `@Link`.
+As stated earlier, this must appear on a String typed field.
+
+There are some parameters you could tune for your link such as :
+
+
+- `method` : The HTTP method to use.
+- `requestEditor` : specify an [HttpRequestEditor](#httprequesteditor)
+custom implementation that will process and check your request before 
+it will be sent to the network.
+- `editRequest` : wether the request should be edited or not and
+if set to true, a custom [HttpRequestEditor](#httprequesteditor)
+implementation has to be provided as well so that the request 
+can be edited.
+- `regexCondition` : specify a regex condition to 
+validate the link before following it.
+- `fields` : add `POST` fields to your request. Will only work
+for `POST` requests.
+- `followRedirections` : tune the [HTTP redirection behavior](#parameter-followredirections-)
+of this link.
+- `throwExceptions` : tune the [exception handling behavior](#parameter-throwexceptions-)
+of this link.
+
+Once you've parametizered your `@Link` annotation on your String typed
+field, there is one more step : where will this link scrapped result 
+will be added to and to what POJO will it be mapped to ? This will 
+be specified by one of the two below mentionned annotations : `@LinkObject`
+and `@LinkObjects`.
+
 
 #### @LinkObject
 
+In the same POJO class as the one with your `@Link` annotation, you can 
+provide an `@LinkObject` annotation on top of a child POJO typed field.
+The `value` param of this annotation must be set to the `@Link` annotated
+field name so that the processing units can understand which `@Link` must
+be assigned to which `@LinkObject`.
+
 #### @LinkObjects
+
+Alternatively, you can provide an `@LinkObjects` instead of an `@LinkObject`
+annotation. This annotation can only be set on a list of child POJO typed
+field and will receive a list of all scrapped results from several `@Link`
+annotated fields of this class, all of which will be mapped to the same
+child POJO which will be the one specified in the `List<ChildPojo>` of
+your `@LinkObjects` annotated field. The `value` parameter of this 
+annotation should contain all the `@Link` annotated fields names you
+want to put into this list.
+
+We put together some code example to make it clearer :
+
+```java
+public class MyParentPojoClass {
+    
+    /* Our four different links */
+    
+    @Selector(/*Some stuffs in here to select the url*/)
+    @Link
+    private String firstLink;
+    
+    @Selector(/*Some stuffs in here to select the url*/)
+    @Link
+    private String secondLink;
+    
+    @Selector(/*Some stuffs in here to select the url*/)
+    @Link
+    private String thirdLink;
+    
+    @Selector(/*Some stuffs in here to select the url*/)
+    @Link
+    private String fourthLink;
+    
+    // This one will only contain the third link value
+    // mapped as MyFurstChildPOJO
+    @LinkObject(value = "thirdLink")
+    private MyFirstChildPOJO thirdLinkValue;
+    
+    
+    // This one will contain first, second and fourth values
+    // mapped as MySeconChildPOJO instances and put together
+    // in a List.
+    @LinkObjects(
+            value = {
+                    "firstLink",
+                    "secondLink",
+                    "fourthLink"
+            }
+    )
+    private List<MySecondChildPOJO> otherLinksValues;
+    
+    // getters and setters
+    
+}
+```
+
+#### HttpRequestEditor
+
+The `HttpRequestEditor` interface can be implemented and provided
+in `@Link` annotations for example (there are some other use cases
+we will talk about later on) to edit the request and control its
+behavior with more fine grained tools.
+
+Implementing the `HttpRequestEditor` interface is as simple as :
+
+```java
+
+public class HttpRequestEditorExample implements HttpRequestEditor<ParentPojoClass, ChildrenPojoClass> {
+    
+    @Override
+    public void init(Field field) {
+        // If you want to pick up annotations on the field annotated with `@LinkObject` or
+        // `@LinkObjects` to create a generic HttpRequestEditor for example.
+    }
+
+    @Override
+    public boolean shouldDoRequest(ParentPojoClass parentContainer) {
+        // decide wether the request should be performed or not
+        return parentContainer.isLinkScrapWorthIt();
+    }
+
+    @Override
+    public void prepareObject(ChildrenPojoClass obj, ParentPojoClass parentContainer, LinkPreparatorHolder linkPreparatorHolder) {
+        // Called with the newly instanciated object in order to prepare this object
+        // If you want to perform some code injections you can do this here altough 
+        // in most cases, this method will be useless.
+    }
+
+    @Override
+    public void editRequest(BoundRequestBuilder req, LinkPreparatorHolder preparatorHolder, BoundRequestBuilderProcessor requestProcessor) {
+        // You can modify your HTTP request here. for example by adding some more headers : 
+        requestProcessor.addHeader(
+                "Some-Header", 
+                preparatorHolder.getParent().getCustomHeaderValue(), 
+                req
+        );
+    }
+
+```
 
 ### @LinkListsFromBuilder
 

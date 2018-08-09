@@ -418,7 +418,7 @@ public final class HtmlAutoScrapperImpl<T> implements HtmlAutoScrapper<T> {
      */
     private <U> void resolveLinks(@NotNull final U obj, @NotNull final HtmlAdapter<U> adapter) throws LinkException, ModelBindingException{
 
-        LinksFollower linksFollower = new LinksFollowerImpl(httpManagerClient, htmlToPojoEngine, exceptionLogger, obj, adapter);
+        LinksFollower linksFollower = new LinksFollowerImpl(httpManagerClient, htmlToPojoEngine, exceptionLogger, boundRequestBuilderProcessor, obj, adapter);
         linksFollower.resolveBasicLinks();
 
         scrapAndSetLinkLists(linksFollower);

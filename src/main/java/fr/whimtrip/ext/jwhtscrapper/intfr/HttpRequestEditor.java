@@ -9,6 +9,7 @@
 package fr.whimtrip.ext.jwhtscrapper.intfr;
 
 import fr.whimtrip.ext.jwhtscrapper.annotation.Link;
+import fr.whimtrip.ext.jwhtscrapper.service.base.BoundRequestBuilderProcessor;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.LinkPreparatorHolder;
 import org.asynchttpclient.BoundRequestBuilder;
 
@@ -24,6 +25,8 @@ import java.lang.reflect.Field;
  *     request before it will be sent.
  * </p>
  *
+ * @param <T> the parent POJO type
+ * @param <U> the resulting child POJO from the scrap to come.
  * @author Louis-wht
  * @since 1.0.0
  */
@@ -58,6 +61,8 @@ public interface HttpRequestEditor<T,U> {
      * @param req the request to edit.
      * @param preparatorHolder the link preparator holder holding all needed request
      *                         information
+     * @param  requestProcessor the request processor unit that will be used to manipulate
+     *                          the request.
      */
-    void editRequest(BoundRequestBuilder req, LinkPreparatorHolder preparatorHolder);
+    void editRequest(BoundRequestBuilder req, LinkPreparatorHolder preparatorHolder, BoundRequestBuilderProcessor requestProcessor);
 }

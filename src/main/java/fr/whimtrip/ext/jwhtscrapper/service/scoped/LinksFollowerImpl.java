@@ -20,6 +20,7 @@ import fr.whimtrip.ext.jwhtscrapper.intfr.HtmlAutoScrapper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.HttpRequestEditor;
 import fr.whimtrip.ext.jwhtscrapper.intfr.LinkListFactory;
 import fr.whimtrip.ext.jwhtscrapper.intfr.LinksFollower;
+import fr.whimtrip.ext.jwhtscrapper.service.base.BoundRequestBuilderProcessor;
 import fr.whimtrip.ext.jwhtscrapper.service.base.HttpManagerClient;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.LinkListScrappingContext;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.LinkPreparatorHolder;
@@ -61,6 +62,7 @@ public final class LinksFollowerImpl implements LinksFollower {
 
     private final HttpManagerClient httpManagerClient;
     private final HtmlToPojoEngine htmlToPojoEngine;
+    private final BoundRequestBuilderProcessor requestProcessor;
     private final Object model;
     private final HtmlAdapter adapter;
     private final ExceptionLogger exceptionLogger;
@@ -87,6 +89,8 @@ public final class LinksFollowerImpl implements LinksFollower {
      *                         implementation for other input formats conversion.<br>
      * @param exceptionLogger the {@link ExceptionLogger} to use to log potentially thrown
      *                        and catched exceptions if any.<br>
+     * @param requestProcessor the {@link BoundRequestBuilderProcessor} to be used with
+     *                         {@link HttpRequestEditor#editRequest(BoundRequestBuilder, LinkPreparatorHolder, BoundRequestBuilderProcessor)}
      * @param model the original parent model to assign fields to.<br>
      * @param adapter the parent POJO adapter that will also be used to retrieve
      *                child POJO adapters.<br>
@@ -96,6 +100,7 @@ public final class LinksFollowerImpl implements LinksFollower {
             @NotNull final HttpManagerClient httpManagerClient,
             @NotNull final HtmlToPojoEngine htmlToPojoEngine,
             @NotNull final ExceptionLogger exceptionLogger,
+            @NotNull final BoundRequestBuilderProcessor requestProcessor,
             @NotNull final P model,
             @NotNull final HtmlAdapter<P> adapter
     ){
@@ -103,6 +108,7 @@ public final class LinksFollowerImpl implements LinksFollower {
         this.httpManagerClient = httpManagerClient;
         this.htmlToPojoEngine = htmlToPojoEngine;
         this.exceptionLogger = exceptionLogger;
+        this.requestProcessor = requestProcessor;
         this.model = model;
         this.adapter = adapter;
     }
@@ -584,7 +590,7 @@ public final class LinksFollowerImpl implements LinksFollower {
         }
 
         if (editRequest && requestEditor != null)
-            requestEditor.editRequest(req, container);
+            requestEditor.editRequest(req, container, requestProcessor);
         return req;
     }
 
