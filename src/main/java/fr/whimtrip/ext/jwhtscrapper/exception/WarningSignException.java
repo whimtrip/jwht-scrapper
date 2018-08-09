@@ -27,9 +27,12 @@ import java.lang.reflect.Field;
  */
 public class WarningSignException extends RequestFailedException {
 
-    private Action action;
+    private final Field field;
 
-    private PausingBehavior pausingBehavior;
+    protected Action action;
+
+    protected PausingBehavior pausingBehavior;
+
 
     public WarningSignException(Field field) {
         super("Warning sign triggered while doing setting the value to the field "
@@ -38,6 +41,7 @@ public class WarningSignException extends RequestFailedException {
         WarningSign ws = field.getAnnotation(WarningSign.class);
         action = ws.action();
         pausingBehavior = ws.pausingBehavior();
+        this.field = field;
     }
 
     public Action getAction() {
@@ -46,5 +50,10 @@ public class WarningSignException extends RequestFailedException {
 
     public PausingBehavior getPausingBehavior() {
         return pausingBehavior;
+    }
+
+    public Field getField() {
+
+        return field;
     }
 }

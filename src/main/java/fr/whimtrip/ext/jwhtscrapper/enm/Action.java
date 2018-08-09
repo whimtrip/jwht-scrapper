@@ -35,5 +35,14 @@ public enum Action {
      * Stop the actual scrap without further links explored
      * and returned the current model in its actual state.
      */
-    STOP_ACTUAL_SCRAP
+    STOP_ACTUAL_SCRAP,
+
+    /**
+     * Won't do anything : the scrap will pursue where it was
+     * without our current POJO being further analyzed. It will
+     * act almost as with {@link #STOP_ACTUAL_SCRAP} expect that
+     * if the current scrapped POJO was itself a link followed,
+     * the parent POJO scrap will continue.
+     */
+    NONE
 }

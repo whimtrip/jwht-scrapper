@@ -164,7 +164,7 @@ public final class HtmlAutoScrapperImpl<T> implements HtmlAutoScrapper<T> {
     public T scrap(@NotNull final BoundRequestBuilder req, @Nullable final T obj)
             throws ModelBindingException, LinkException, WarningSignException
     {
-        return scrap(req,  obj, htmlAdapter, followRedirections);
+        return scrap(req, obj, htmlAdapter, followRedirections, true);
     }
 
 
@@ -227,6 +227,39 @@ public final class HtmlAutoScrapperImpl<T> implements HtmlAutoScrapper<T> {
         return httpManagerClient.getHttpMetrics();
     }
 
+
+    /**
+     * <p>
+     *     This provide the core private method that will perform scrapping
+     *     related tasks. It conforms to all recommandations and contracts
+     *     stipulated in {@link HtmlAutoScrapper#scrap(BoundRequestBuilder, Object)}.
+     * </p>
+     * @see HtmlAutoScrapper#scrap(BoundRequestBuilder, Object)
+     * @param req the prepared {@link BoundRequestBuilder}
+     * @param obj the object to map the resulting scrap to.
+     * @param adapter the {@link HtmlAdapter} to use to map the resulting
+     *                HTML body to a POJO. if the {@link BasicObjectMapper}
+     *                is used instead, the adapter will still be used to perform
+     *                field injection, links following and warning sign triggering.
+     * @param followRedirections wether HTTP redirections should be followed or not.
+     * @param <U> the type of the POJO to map it to. This inner method can be called
+     *            recursively for links scrapping with other POJOs type. this explain
+     *           why {@code T} is not used here.
+     * @return the scrapped and ready to use POJO instance.
+     * @throws ModelBindingException see {@link HtmlAutoScrapper#scrap(BoundRequestBuilder, Object)}.
+     * @throws LinkException see {@link HtmlAutoScrapper#scrap(BoundRequestBuilder, Object)}.
+     * @throws WarningSignException see {@link HtmlAutoScrapper#scrap(BoundRequestBuilder, Object)}.
+     */
+    private <U> U scrap(
+            @NotNull        BoundRequestBuilder req,
+            @Nullable       U obj,
+            @NotNull  final HtmlAdapter<U> adapter,
+            final boolean followRedirections
+    ) throws ModelBindingException, LinkException, WarningSignException
+    {
+        return scrap(req, obj, adapter, followRedirections, false);
+    }
+
     /**
      * <p>
      *     This provide the core private method that will perform scrapping
@@ -254,7 +287,8 @@ public final class HtmlAutoScrapperImpl<T> implements HtmlAutoScrapper<T> {
             @NotNull        BoundRequestBuilder req,
             @Nullable       U obj,
             @NotNull  final HtmlAdapter<U> adapter,
-                      final boolean followRedirections
+                      final boolean followRedirections,
+                      final boolean parentCall
     ) throws ModelBindingException, LinkException, WarningSignException
     {
         Class<U> mappedClazz =  obj == null ? (Class<U>) persistentClass :  (Class<U>) obj.getClass();
@@ -277,10 +311,21 @@ public final class HtmlAutoScrapperImpl<T> implements HtmlAutoScrapper<T> {
         try {
 
             obj = buildObject(obj, adapter, mappedClazz, rawResponse);
+
             resolveLinks(obj, adapter);
+
 
             return obj;
 
+        }
+        catch (WarningSignActualScrapStoppedException e)
+        {
+
+            // this will propagate up to the parent scrap call which will return
+            // untouched object
+            if(!parentCall)
+                throw e;
+            return obj;
         }
         catch(WarningSignException e)
         {
@@ -315,10 +360,20 @@ public final class HtmlAutoScrapperImpl<T> implements HtmlAutoScrapper<T> {
             if(e.getAction() == Action.STOP_ACTUAL_SCRAP)
             {
                 log.warn("Current object shouldn't be further scrapped");
-                return obj;
+                // this will propagate up to the parent scrap call which will return
+                // untouched object
+                throw new WarningSignActualScrapStoppedException(e);
             }
 
-            return scrap(req, obj, adapter, followRedirections);
+            if(e.getAction() == Action.RETRY)
+            {
+                return scrap(req, obj, adapter, followRedirections, parentCall);
+            }
+
+            // Action.NONE -> Won't do nothing, scrap will continue but not on the current
+            // POJO branching.
+            return obj;
+
         }
         catch (IOException | HtmlToPojoException e)
         {
@@ -342,7 +397,7 @@ public final class HtmlAutoScrapperImpl<T> implements HtmlAutoScrapper<T> {
     private <U> U scrap(LinkScrappingContext<?, U> lsc)
             throws ModelBindingException, LinkException, WarningSignException
     {
-        return scrap(lsc.getBoundRequestBuilder(), lsc.getNewObj(), lsc.getAdapter(), lsc.followRedirections());
+         return scrap(lsc.getBoundRequestBuilder(), lsc.getNewObj(), lsc.getAdapter(), lsc.followRedirections());
     }
 
 

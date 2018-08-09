@@ -33,6 +33,7 @@ for them to be part of this framework.
 
 - [Proxy support](#proxy-finder)
 - [Warning Sign Support to detect captchas and more](#warning-signs)
+- [Complex link following features](#links)
 - [Multithreading](#parameter-parallelthreads-)
 - [Various scrapping delays when required](#delay-and-waits-parameters)
 - [Rotating User-Agent](#parameter-rotatinguseragent-)
@@ -46,7 +47,6 @@ for them to be part of this framework.
 - [Custom Input Format handling and built in JSON -> POJO mapping](#custom-object-mapper)
 - [Full Exception Handling Control](#exception-logger)
 - [Detailed Logging with log4j](#logging)
-- [Complex link following features](#links)
 - [POJO injection](https://github.com/whimtrip/jwht-htmltopojo#injection)
 - Custom processing hooks
 - Easy to use and well documented API
@@ -430,6 +430,15 @@ If you are just providing your own `HtmlToPojoEngine` instance using the standar
 API, then this won't cause any problem and could be useful to reuse previously analysed
 POJOs.
 
+`HtmlToPojoEngine` has a built in cache so it might be useful to reuse the same
+instance throughout the application scope. To instanciate a correct `HtmlToPojoEngine`
+compatible with all of this API feature, you should use the following piece of 
+code :
+
+```java
+HtmlToPojoEngine.create(new ScrapperHtmlAdapterFactory());
+```
+
 #### Custom Object Mapper
 
 If you do not plan to receive HTML body responses from the scraps to perform, then 
@@ -687,7 +696,7 @@ Now you must provide a `LinkListFactory` implementation in the `@LinkListsFromBu
 annotation.
 
 Such factory will need to return a list of `LinkPreparatorHolder` which is just a standard
-POJO containing the basically the same informations as the [`@Link` annotation](#@link).
+POJO containing basically the same informations as the [`@Link` annotation](#link).
 All features available in `@Link` are made available through the constructor of your
 `LinkPreparatorHolder` except one : `editRequest` which can only be modified from
 the `@LinkListsFromBuilder` annotation itself.
@@ -777,17 +786,204 @@ public class MyLinkParentPOJO2 {
 
 ```
 
-
-
 ## Warning Signs
 
 ### General Knowledge
 
+One common thing happening when scrapping is hitting false positive or security
+barrier such as captchas. The idea behing Warning Sign is that we had to provide
+a standard API to spot those signs and to choose the correct decision to handle
+it properly.
+
+The warning sign API works with a simple `@WarningSign` annotation to put on
+top of one of your POJO's field. Now you have three more things to define on this
+annotation :
+
+- What is the warning sign exactly ? How and when will be triggered ? [see 
+Triggered On](#triggered-on).
+- What is the [action to take](#action) when triggered ?
+- Should we also pause the current scrap ? Pause all of our current scraps ?
+You can customize this following the instructions [here](#pausing-behavior).
+
+
+**Warning!** It only works properly when using HtmlToPojoEngine provided by
+the `AutomaticScrapperManagerBuilder` or when creating an instance using :
+
+```java
+HtmlToPojoEngine.create(new ScrapperHtmlAdapterFactory());
+```
+ 
+Otherwise, it won't work and will result in a class cast exception because
+the scrapper API waits for a `ScrapperHtmlAdapterFactory` instead of the
+default implementation of an `HtmlAdapterFactory` provided by jwht-htmltopojo
+library. 
+
 ### Triggered On
+
+There is yet five main triggers defined by `TriggeredOn` enum :
+
+```java
+public enum TriggeredOn {
+
+    /**
+     * When the field had a null or equivalent value. Null or Equivalent values
+     * are : null, empty string or empty list.
+     */
+    NULL_VALUE,
+
+    /**
+     * When the field has the default value defined by {@link Selector#defValue()}.
+     * Essentially, this means that the corresponding HTML element wasn't found and
+     * that the default value was picked or that the element was found and had the 
+     * default value.
+     */
+    DEFAULT_VALUE,
+
+    /**
+     * When the value is neither {@link #NULL_VALUE},
+     * nor {@link #DEFAULT_VALUE}
+     */
+    ANY_CORRECT_VALUE,
+
+    /**
+     * When the value matches the regex given with {@link WarningSign#triggeredOnRegex()}.
+     */
+    ANY_VALUE_MATCHING_REGEX,
+
+
+    /**
+     * When the value doesn't match the regex given with {@link WarningSign#triggeredOnRegex()}.
+     */
+    ANY_VALUE_NOT_MATCHING_REGEX
+}
+
+```
+
+Essentially, `TriggeredOn` works with `Selector` annotation from jwht-htmltopojo lib.
+Let's give a practical exemple of how to use it :
+
+We'll assume normal web page looks like this :
+
+```html
+<h1>This is a normal POJO page</h1>
+<p class="name">The POJO is called <span>Paul</span></p>
+```
+
+And this is the same web page when a captcha was found :
+
+```html
+<h1>This is not a normal POJO page with some surprise captcha</h1>
+<div class="captcha">
+    <p>Are you a ROBOT??</p>
+</div>
+```
+
+```java
+
+public class MyPOJO {
+    
+    // We want to have "Paul" as the Pojo name
+    @Selector(value = "p.name > span")
+    private String pojoName;
+    
+    // If there is no captcha, then, it means that the selector resulting
+    // value will be the default "NO_VALUE", otherwise, it will be 
+    // "Are you a ROBOT??" and will match the warning sign regex.
+    @Selector(value = "div.captcha > p")
+    @WarningSign(
+            triggeredOn = TriggeredOn.ANY_VALUE_MATCHING_REGEX,
+            triggeredOnRegex = "^Are you a ROBOT\\?\\?$"
+            // some other values below
+    )
+    private String warningCaptcha;
+    
+    // some other stuffs
+}
+
+```
+
+How does this work ? When the page is the normal page, `div.captcha > p` css 
+selector returns an empty element which is then resolved to the default value
+`"NO_VALUE"`. This string obviously doesn't match our regex `^Are you a ROBOT\?\?$`
+so no warning sign is triggered when the page is normal. But when the captcha
+appears, `div.captcha > p` css selector is resolved to `Are you a ROBOT??` which
+itself matches our regex `^Are you a ROBOT\?\?$`! Yup when the captcha appears, 
+our warning sign will be triggered! 
+
+Now the question you have in mind is probably : "Awesome but what will it do now?".
+That's up to you! Will get into the details of it right below.
 
 ### Action
 
+The second thing to define with your warning sign is the action to take when it 
+happends. The Action enum describe the following actions :
+
+```java
+public enum Action {
+
+    /**
+     * Retry the request.
+     */
+    RETRY,
+
+    /**
+     * Throw an exception. This will have the same impact
+     * as {@link #STOP_ACTUAL_SCRAP} except that the scrap
+     * will be accounted as a failure, and if {@link Scrapper#throwExceptions()}
+     * is set to true, it will completely stop the whole
+     * scrapping operation.
+     */
+    THROW_EXCEPTION,
+
+    /**
+     * Stop the actual scrap without further links explored
+     * and returned the current model in its actual state.
+     */
+    STOP_ACTUAL_SCRAP,
+
+    /**
+     * Won't do anything : the scrap will pursue where it was
+     * without our current POJO being further analyzed. It will
+     * act almost as with {@link #STOP_ACTUAL_SCRAP} expect that
+     * if the current scrapped POJO was itself a link followed,
+     * the parent POJO scrap will continue.
+     */
+    NONE
+}
+```
+
+Now you can just choose the action to perform depending on your needs.
+
 ### Pausing Behavior
+
+Last parameter you can set is the `PausingBehavior`. Different pausing
+behaviors can be choosen and are defined within the `PausingBehavior` 
+enum :
+
+```java
+public enum PausingBehavior {
+
+    /**
+     * Won't wait at all.
+     */
+    DONT_WAIT,
+
+    /**
+     * Will pause current failed scrap for a time delay
+     * specified by {@link RequestsConfig#warningSignDelay()}.
+     *
+     */
+    PAUSE_CURRENT_THREAD_ONLY,
+
+    /**
+     * Will pause all current running scraps for a time delay
+     * specified by {@link RequestsConfig#warningSignDelay()}.
+     * Once the delay is over, the scraps will progressively
+     * start back.
+     */
+    PAUSE_ALL_THREADS
+}
+```
 
 ## Scraper Client
 
