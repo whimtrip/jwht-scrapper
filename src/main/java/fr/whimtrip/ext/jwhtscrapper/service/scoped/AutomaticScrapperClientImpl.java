@@ -113,14 +113,6 @@ public final class AutomaticScrapperClientImpl<P> implements AutomaticScrapperCl
      * {@inheritDoc}
      */
     @Override
-    public boolean isScrapped() {
-        return scrapped;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public List getResults() throws ScrapFailedException, ScrapNotFinishedException {
 
         return getResults(null, null);

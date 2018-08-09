@@ -1,6 +1,10 @@
 package fr.whimtrip.ext.jwhtscrapper.intfr;
 
-import fr.whimtrip.ext.jwhtscrapper.exception.*;
+import fr.whimtrip.ext.jwhtscrapper.exception.ScrapFailedException;
+import fr.whimtrip.ext.jwhtscrapper.exception.ScrapNotFinishedException;
+import fr.whimtrip.ext.jwhtscrapper.exception.ScrapperAlreadyFinishedException;
+import fr.whimtrip.ext.jwhtscrapper.exception.ScrapperAlreadyStartedException;
+import fr.whimtrip.ext.jwhtscrapper.exception.ScrapperUnsupportedException;
 import fr.whimtrip.ext.jwhtscrapper.impl.ScrappingStatsImpl;
 import fr.whimtrip.ext.jwhtscrapper.service.base.HttpManagerClient;
 import org.jetbrains.annotations.NotNull;
@@ -70,41 +74,6 @@ public interface AutomaticScrapperClient<P> {
      */
     void add(List<P> l) throws ScrapperAlreadyFinishedException;
 
-    /**
-     * @return <p>
-     *              current stats of the {@link AutomaticScrapperClient}.
-     *              Default implementation will return an {@link ScrappingStatsImpl}
-     *              which is an immutable implementation of {@link ScrappingStats}.
-     *              Therefore, it won't be updated when the scrapping stats
-     *              will be modified. Rather than this, you should reuse this
-     *              method once again.
-     *         </p>
-     *         <p>
-     *             If your implementation features mutable implementation of
-     *             {@link ScrappingStats} and if this method returns always the
-     *             same object reference, you can implement this method much in
-     *             a getter style way.
-     *         </p>
-     */
-    ScrappingStats getScrappingStats();
-
-    /**
-     * @return the current Http metrics {@link HttpMetrics} of the current instance of
-     *         the HttpManagerClient.
-     * @throws ScrapperUnsupportedException If your implementation does not support returning
-     *                                      or if underlying classes does not support returning
-     *                                      HttpMetrics. (see {@link HttpManagerClient} and
-     *                                      {@link HtmlAutoScrapper}).
-     */
-    @NotNull
-    HttpMetrics getHttpMetrics() throws ScrapperUnsupportedException;
-
-    /**
-     * @return a boolean indicating if the current scrap process has finished
-     *         or if it is still running.
-     */
-    boolean isScrapped();
-
 
     /**
      * @return <p>
@@ -116,7 +85,7 @@ public interface AutomaticScrapperClient<P> {
      *                              an exception, or if the thread execution was
      *                              interrupted.
      *
-     * @throws ScrapNotFinishedException If the method was called when {@link #isScrapped()}
+     * @throws ScrapNotFinishedException If the method was called when {@link #isCompleted()}
      *                                   still returns {@code false}.
      */
     List getResults() throws ScrapFailedException, ScrapNotFinishedException;
@@ -148,7 +117,7 @@ public interface AutomaticScrapperClient<P> {
      *                <p>
      *                  If a null value is provided then,
      *                  it's equivalent to the the timeout being equal to 0. Therefore
-     *                  {@link ScrapNotFinishedException} will be thrown if {@link #isScrapped()}
+     *                  {@link ScrapNotFinishedException} will be thrown if {@link #isCompleted()}
      *                  returns {@code false}.
      *                </p>
      * @param timeUnit the {@link TimeUnit} of the {@code timeout}.
@@ -199,5 +168,33 @@ public interface AutomaticScrapperClient<P> {
      */
     boolean isCompleted();
 
+    /**
+     * @return <p>
+     *              current stats of the {@link AutomaticScrapperClient}.
+     *              Default implementation will return an {@link ScrappingStatsImpl}
+     *              which is an immutable implementation of {@link ScrappingStats}.
+     *              Therefore, it won't be updated when the scrapping stats
+     *              will be modified. Rather than this, you should reuse this
+     *              method once again.
+     *         </p>
+     *         <p>
+     *             If your implementation features mutable implementation of
+     *             {@link ScrappingStats} and if this method returns always the
+     *             same object reference, you can implement this method much in
+     *             a getter style way.
+     *         </p>
+     */
+    ScrappingStats getScrappingStats();
+
+    /**
+     * @return the current Http metrics {@link HttpMetrics} of the current instance of
+     *         the HttpManagerClient.
+     * @throws ScrapperUnsupportedException If your implementation does not support returning
+     *                                      or if underlying classes does not support returning
+     *                                      HttpMetrics. (see {@link HttpManagerClient} and
+     *                                      {@link HtmlAutoScrapper}).
+     */
+    @NotNull
+    HttpMetrics getHttpMetrics() throws ScrapperUnsupportedException;
 
 }
