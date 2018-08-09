@@ -380,7 +380,7 @@ parameters.
 ###### Parameter `useProxy` :
 
 A boolean indicating if proxies should be used or not. If it returns `true`, you 
-**MUST** provide your custom [ProxyFinder](#proxy-finder) implementation using
+**must** provide your custom [ProxyFinder](#proxy-finder) implementation using
 `AutomaticScrapperManagerBuilder.setProxyFinder(proxyFinder)` method  when creating
 your `AutomaticScrapperManager`.
 
@@ -397,19 +397,88 @@ Currrently deprecated.
 
 ### Scrapper Client Configurations
 
+Your scrapper client configuration can also be tuned and customised altought it is
+a much more complex task. To do so, you need to input below described implementations
+through the `AutomaticScrapperManagerBuilder` class. 
+
+This describe all of the setters you can use as shown below :
+
+```java
+AutomaticScrapperManager scrapperManager = 
+        new AutomaticScrapperManagerBuilder()
+             //.setExceptionLogger(...)
+             //.setCustomObjectMapper(...)
+             //...
+            .build();
+```
+
 #### Exception Logger
+
+You can submit your own `ExceptionLogger` implementation here. this provides
+a way to use a custom processing for exception handling. For our own implementation,
+we used to saved the exceptions in the database, trigger an alarm so that the uncaught 
+exception can be corrected as soon as possible, and finally log the stacktrace. This
+is just an example of what you can do with such exception logger service.
 
 #### HtmlToPojoEngine
 
+You can provide your own `HtmlToPojoEngine` implementation altough it is really
+one of the hardest and most dangerous customisation operation as it might clash 
+with current implementations contracts.
+
+If you are just providing your own `HtmlToPojoEngine` instance using the standard 
+API, then this won't cause any problem and could be useful to reuse previously analysed
+POJOs.
+
 #### Custom Object Mapper
+
+If you do not plan to receive HTML body responses from the scraps to perform, then 
+you can use a custom object mapper implementation `public MyObMapper implements BasicObjectMapper`
+to map other input formats to POJOs (Link annotations are still supported but not 
+warning signs so you can annotate your POJOs with [links annotations](#links)).
+If you do :
+
+```java
+
+        new AutomaticScrapperManagerBuilder()
+            .setJsonScraper(true)
+            // ...
+            .build();
+```
+
+Then a Jackson object mapper will be used to turn proper Jackson annotated POJOs 
+from JSON string.
 
 #### Custom Async Http Client
 
+If you want to set special default properties for your `AsyncHttpClient`, you
+can submit your own instance.
+
 #### Proxy Finder
+
+If you want to use proxies, you have to set here your own proxy finder implementation.
+This is a class instance that can retrieve proxies from a given source (usually a database)
+modify their status to mark them as frozen or banned proxies for example, and finally
+persisting them to the database when necessary. When implementing `ProxyFinder` with 
+your own proxy finder class, you'll be able to discover our javadoc for both `ProxyFinder`
+class and `Proxy` interface.
 
 #### JSON scrapper
 
+If set to `true`, it will instanciate a default `BasicObjectMapper` as explained 
+[above](#custom-object-mapper) so that a jackson default `ObjectMapper` wrapper
+will be used to implement `BasicObjectMapper`, therefore being able to convert
+JSON strings to POJOs.
+
+
 #### Request Processor
+
+Because we use a request builder and because most builder patterns in java does
+not feature getters, some basic tasks to modify the request were made impossible
+(such as adding an header as it require to retrieve the `HttpHeaders` instance
+first.). Default implementation provided allows this. Please [see more](https://github.com/whimtrip/jwht-scrapper/blob/master/src/main/java/fr/whimtrip/ext/jwhtscrapper/service/base/BoundRequestBuilderProcessor.java)
+to watch a request processor contract. You can provide your own given those
+javadoc instructions but it not very recommended for basic configurations needs.
 
 ## Links
 
