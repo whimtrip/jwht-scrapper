@@ -1099,8 +1099,8 @@ leads to bad results. When your scrapper will be ready for production, using
 `INFO` logging is advised because `TRACE` and `DEBUG` both costs quite a few 
 in terms of CPU usage.
 
-All classes of this project belongs to `fr.whimtrip.ext.jwhtscrapper` so can add for
-example to your `logback.xml` :
+All classes of this project belongs to `fr.whimtrip.ext.jwhtscrapper` so you can add
+for example to your `logback.xml` :
 
 ```xml
 <logger name="fr.whimtrip.ext.jwhtscrapper" level="DEBUG"/>
