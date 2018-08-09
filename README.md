@@ -674,7 +674,110 @@ public class HttpRequestEditorExample implements HttpRequestEditor<ParentPojoCla
 
 ### @LinkListsFromBuilder
 
+This one is a little bit more trickier but allows to perform some really interesting 
+tasks. The idea is that you will put this on top of a List of Child POJOs typed field 
+like this one :
+
+```java
+@LinkListsFromBuilder(/* Some stuff in here */)
+private List<MySecondChildPOJO> otherLinksValues;
+```
+
+Now you must provide a `LinkListFactory` implementation in the `@LinkListsFromBuilder`
+annotation.
+
+Such factory will need to return a list of `LinkPreparatorHolder` which is just a standard
+POJO containing the basically the same informations as the [`@Link` annotation](#@link).
+All features available in `@Link` are made available through the constructor of your
+`LinkPreparatorHolder` except one : `editRequest` which can only be modified from
+the `@LinkListsFromBuilder` annotation itself.
+
 ### @HasLink
+
+In complex scrapping situations, which is often the case when you need to use links, 
+you have nested POJOs everywhere. Link scanning does, by default only happen in parent
+POJO level following the last scrap to preserve CPU and memory consumption. If your link
+is nested in a child POJO, you'll have to annotate the parent POJO field containing your
+nested POJO with an `@HasLink` annotation.
+
+Let's give some code example of what will and won't work :
+
+```java
+public class MyParentPOJO {
+    
+    // required for my child POJO's links to be followed.
+    @HasLink
+    private MyChildPOJO myChildPOJO;
+    
+    
+    /* Automatically followed links -> They are at the parent level scope */
+    @Link
+    private String link;
+    
+    @LinkObject("link")
+    private MyLinkParentPOJO myLinkParentPOJO;
+    
+    // some other stuffs here
+}
+
+public class MyChildPOJO {
+    
+    
+    /* Followed links -> Parent POJO has a @HasLink annotation on its MyChildPOJO field */
+    @Link
+    private String link;
+    
+    @LinkObject("link")
+    private MyLinkParentPOJO myLinkParentPOJO;
+    
+    // some other stuffs here
+    
+}
+
+public class MyLinkParentPOJO {
+    
+
+    // MyLinkChildPojo links won't be followed : no `@HasLink` annotation.
+    private MyLinkChildPOJO myLinkChildPOJO;
+                                  
+                                  
+    /* 
+        Automatically followed links -> They are at the parent level scope 
+        In fact following a link is considered as a new scrap so that the 
+        mapped POJO type becomes a parent pojo scope has well. All of its
+        links will be followed as default
+    */
+    @Link
+    private String link;
+                                  
+    @LinkObject("link")
+    private MyLinkParentPOJO2 myLinkParentPOJO2;
+                                  
+    // some other stuffs here                                  
+                                  
+}
+
+public class MyLinkChildPOJO {
+    
+    // Won't be followed because MyLinkParentPOJO does not have @HasLink 
+    // annotation on top of its MyLinkChildPOJO field...
+    @Link
+    private String link;
+                                  
+    @LinkObject("link")
+    private MyLinkParentPOJO2 myLinkParentPOJO2;
+    
+    // some other stuffs here
+    
+}
+
+public class MyLinkParentPOJO2 {
+    // some stuffs in here
+}
+
+```
+
+
 
 ## Warning Signs
 
