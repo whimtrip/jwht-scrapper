@@ -40,7 +40,7 @@ public enum Action {
     /**
      * Won't do anything : the scrap will pursue where it was
      * without our current POJO being further analyzed. It will
-     * act almost as with {@link #STOP_ACTUAL_SCRAP} expect that
+     * act almost as with {@link #STOP_ACTUAL_SCRAP} except that
      * if the current scrapped POJO was itself a link followed,
      * the parent POJO scrap will continue.
      */

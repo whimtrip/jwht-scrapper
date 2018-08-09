@@ -944,7 +944,7 @@ public enum Action {
     /**
      * Won't do anything : the scrap will pursue where it was
      * without our current POJO being further analyzed. It will
-     * act almost as with {@link #STOP_ACTUAL_SCRAP} expect that
+     * act almost as with {@link #STOP_ACTUAL_SCRAP} except that
      * if the current scrapped POJO was itself a link followed,
      * the parent POJO scrap will continue.
      */
@@ -987,30 +987,139 @@ public enum PausingBehavior {
 
 ## Scraper Client
 
+### Introduction
+
+The scrapper client is the client you will interact with to start
+your scrapping, queue new objects to scrap, terminate, see metrics...
+
+It can be created, as explained in the [Let's Scrap section](#lets-scrap) :
+
+```java
+AutomaticScrapperManager scrapperManager = new AutomaticScrapperManagerBuilder().build();
+
+AutomaticScrapperClient scrapperClient = 
+        scrapperManager.createClient(
+            uncompletedRestaurants,
+            new CoolRestaurantsScrapperHelper()
+        );
+```
+
+One single scrapper can only be started once otherwise it will throw an exception.
+It is not advised to run several scrapper for the same scrapping purpose concurrently
+as you can choose your parrallel threads count from your [configurations](#parameter-parallelthreads-).
+
+To start your scrapper client, use :
+
+```java
+scrapperManager.scrap();
+```
+
 ### Queuing Elements
+
+While the scrapper client is still running and while there are still objects to 
+scrap in its queue, you can populate safely the queue with new elements. If the 
+queue is already empty, you will receive an exception.
+
+To fill the queue, use :
+
+```java
+scrapperManager.add( myAdditionalUncompletedRestaurants );
+```
 
 ### Terminate
 
+If you want to manually stop the current scrap and all of its subsequent currently
+running threads while emptying the queue, you can terminate the scrapper this way :
+
+```java
+scrapperManager.terminate();
+```
+
 ### Get Results
+
+There are three different ways to get the results of the scrap and one way to 
+know when the scrapping client has finished its work.
+
+```java
+scrapperManager.isCompleted();
+```
+
+Will tell you when the scrapping process is completed.
+
+```java
+scrapperManager.getResults();
+```
+
+Will either return the results of the scrap if the scrapping client has finished its work,
+or throw a `ScrapperNotFinishedException` otherwise.
+
+```java
+scrapperManager.getResults(10, TimeUnit.MINUTES);
+```
+
+Will either return the results or throw a `ScrapperNotFinishedException` if the task
+is not completed after the timeout is expired. **Warning!** If you use this method and
+the timeout is reached, the scrapping client will terminate and close all remaining 
+running scraps!
+
+```java
+scrapperManager.waitAndGetResults();
+```
+
+Will synchronously wait for the current scrapper client to end its task and return
+its results.
 
 ### Get Metrics
 
-#### Where to retrieve it
+The scrapper client is able to retrieve two metrics :
 
 #### Scrapping Stats
 
+- `ScrappingStats` which provides metrics about the current completion rates of
+the scrapper client, failed and successful scraps count, running tasks, remaining
+tasks.... [see documentation](https://github.com/whimtrip/jwht-scrapper/blob/master/src/main/java/fr/whimtrip/ext/jwhtscrapper/intfr/ScrappingStats.java).
+
 #### Http Metrics
+
+- `HttpMetrics` provides a more granular point of view with metrics about failed 
+requests (which is different from failed scraps because the requests can be retried),
+successful requests, http status... [see documentation](https://github.com/whimtrip/jwht-scrapper/blob/master/src/main/java/fr/whimtrip/ext/jwhtscrapper/intfr/HttpMetrics.java).
+
+
+Both of those metrics can be retrieved at anytime whatever is the current status of the
+scrapper client.
 
 ## Logging
 
+The framework is completely logged using sl4j. We used four levels of logging :
+`TRACE`, `DEBUG`, `INFO` and `WARNING`. When testing your scrapper for the first
+time, we advise to use `TRACE` so that you can check clearly what happens under
+the hood and which part of your scrapper implementation could be improved /
+leads to bad results. When your scrapper will be ready for production, using
+`INFO` logging is advised because `TRACE` and `DEBUG` both costs quite a few 
+in terms of CPU usage.
+
+All classes of this project belongs to `fr.whimtrip.ext.jwhtscrapper` so can add for
+example to your `logback.xml` :
+
+```xml
+<logger name="fr.whimtrip.ext.jwhtscrapper" level="DEBUG"/>
+```
+
 ## Other Features
 
-### Pojo Injection
+There are some more features we did not showcased here, especially within the scope
+of [jwht-htmltopojo](https://www.github.com/whimtrip/jwht-htmltopojo) library. We
+recommend to explore its features, especially those about [Field injection](https://github.com/whimtrip/jwht-htmltopojo#injection)
+which proves to be useful when using jwht-scrapper library for complex scrapping
+purposes.
 
 ## Overriding / Extending Standard API
 
-Overriding the Standard API can be made in several ways.
-The most easy one is to ... TODO
+The standard API of this library was fully interfaced so you can easily interact
+with it. The best place to start with is the Builders provided throughout this 
+library to build the different complex processing units of this library that you
+could extends, rewrite...
 
 # Upcoming Additions
 

@@ -71,7 +71,7 @@ public interface AutomaticScrapperClient<P> {
      *                                          or the queue of scraps to run has been
      *                                          emptied.
      */
-    void addObjectsToScrap(List<P> l) throws ScrapperAlreadyFinishedException;
+    void add(List<P> l) throws ScrapperAlreadyFinishedException;
 
     /**
      * @return <p>
@@ -125,6 +125,24 @@ public interface AutomaticScrapperClient<P> {
     List getResults() throws ScrapFailedException, ScrapNotFinishedException;
 
 
+
+    /**
+     * @return <p>
+     *             Return the results of the scrapping (which is a list of the objects
+     *             returned by {@link ScrapperHelper#returnResult(Object, Object)}).
+     *         </p>
+     *         <p>
+     *             This method will wait synchronously for the scrap to end.
+     *         </p>
+     *
+     *
+     * @throws ScrapFailedException If the underlying {@link Callable#call()} throws
+     *                              an exception, or if the thread execution was
+     *                              interrupted.
+     *
+     */
+    List waitAndGetResults() throws ScrapFailedException;
+
     /**
      * @param timeout <p>
      *                  the time that this method will be waiting for the underlying
@@ -177,6 +195,12 @@ public interface AutomaticScrapperClient<P> {
      *             </strong>
      */
     void terminate();
+
+    /**
+     * @return {@code true} if the task is either completed or terminated,
+     *         {@code false} otherwise.
+     */
+    boolean isCompleted();
 
 
 }

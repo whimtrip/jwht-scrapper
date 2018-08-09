@@ -48,6 +48,7 @@ public final class AutomaticScrapperClientImpl<P> implements AutomaticScrapperCl
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void scrap() throws ScrapperAlreadyStartedException {
 
         if (!scrapped && !scrapStarted) {
@@ -84,7 +85,8 @@ public final class AutomaticScrapperClientImpl<P> implements AutomaticScrapperCl
     /**
      * {@inheritDoc}
      */
-    public synchronized void addObjectsToScrap(List<P> l)  throws ScrapperAlreadyFinishedException {
+    @Override
+    public synchronized void add(List<P> l)  throws ScrapperAlreadyFinishedException {
         if(!scrapped && scrapStarted)
             scrapperClient.addObjectsToScrap(l);
         else
@@ -94,6 +96,7 @@ public final class AutomaticScrapperClientImpl<P> implements AutomaticScrapperCl
     /**
      * {@inheritDoc}
      */
+    @Override
     public ScrappingStats getScrappingStats(){
         return scrapperClient.getScrapingStats();
     }
@@ -109,6 +112,7 @@ public final class AutomaticScrapperClientImpl<P> implements AutomaticScrapperCl
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean isScrapped() {
         return scrapped;
     }
@@ -116,6 +120,7 @@ public final class AutomaticScrapperClientImpl<P> implements AutomaticScrapperCl
     /**
      * {@inheritDoc}
      */
+    @Override
     public List getResults() throws ScrapFailedException, ScrapNotFinishedException {
 
         return getResults(null, null);
@@ -124,28 +129,35 @@ public final class AutomaticScrapperClientImpl<P> implements AutomaticScrapperCl
     /**
      * {@inheritDoc}
      */
-    public List getResults(Long timeout, TimeUnit timeUnit) throws ScrapFailedException, ScrapNotFinishedException {
-
-        if (!scrapped && timeout == null) throw new ScrapNotFinishedException(getScrapperThreadName());
-
-        try {
-            return timeout == null ? ft.get() : ft.get(timeout, timeUnit);
-        }
-
-        catch (InterruptedException | ExecutionException e) {
-            throw new ScrapFailedException(e instanceof ExecutionException ? e.getCause() : e);
-        }
-
-        catch (TimeoutException e) {
-            throw new ScrapNotFinishedException(e, getScrapperThreadName());
-        }
+    @Override
+    public List waitAndGetResults() throws ScrapFailedException {
+        return getResults(null, null, false);
     }
 
     /**
      * {@inheritDoc}
      */
+    @Override
+    public List getResults(Long timeout, TimeUnit timeUnit) throws ScrapFailedException, ScrapNotFinishedException {
+
+        return getResults(timeout, timeUnit, true);
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void terminate() {
         scrapperClient.terminate();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isCompleted() {
+        return scrapped;
     }
 
     /**
@@ -156,5 +168,33 @@ public final class AutomaticScrapperClientImpl<P> implements AutomaticScrapperCl
     private String getScrapperThreadName() {
 
         return "Scrapper-" + scrapperClient.getContext().getHelper().getClass().getSimpleName();
+    }
+
+
+    /**
+     * @param timeout see {@link #getResults(Long, TimeUnit)}
+     * @param timeUnit see {@link #getResults(Long, TimeUnit)}
+     * @param checkFinishedScrap wether an task completion should be checked before getting
+     *                           the result.
+     * @throws ScrapFailedException see {@link #getResults(Long, TimeUnit)}
+     * @throws ScrapNotFinishedException see {@link #getResults(Long, TimeUnit)}
+     * @return see {@link #getResults(Long, TimeUnit)}
+     */
+    private List getResults(Long timeout, TimeUnit timeUnit, boolean checkFinishedScrap) throws ScrapFailedException, ScrapNotFinishedException  {
+
+        if (checkFinishedScrap && !scrapped && timeout == null) throw new ScrapNotFinishedException(getScrapperThreadName());
+
+        try {
+            return timeout == null ? ft.get() : ft.get(timeout, timeUnit);
+        }
+
+        catch (InterruptedException | ExecutionException e) {
+            throw new ScrapFailedException(e instanceof ExecutionException ? e.getCause() : e);
+        }
+
+        catch (TimeoutException e) {
+            terminate();
+            throw new ScrapNotFinishedException(e, getScrapperThreadName());
+        }
     }
 }
