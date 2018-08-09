@@ -1,11 +1,8 @@
-package fr.whimtrip.ext.jwhtscrapper.service.base;
+package fr.whimtrip.ext.jwhtscrapper.intfr;
 
 import fr.whimtrip.ext.jwhtscrapper.exception.*;
 import fr.whimtrip.ext.jwhtscrapper.impl.ScrappingStatsImpl;
-import fr.whimtrip.ext.jwhtscrapper.intfr.HtmlAutoScrapper;
-import fr.whimtrip.ext.jwhtscrapper.intfr.HttpMetrics;
-import fr.whimtrip.ext.jwhtscrapper.intfr.ScrapperHelper;
-import fr.whimtrip.ext.jwhtscrapper.intfr.ScrappingStats;
+import fr.whimtrip.ext.jwhtscrapper.service.base.HttpManagerClient;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -41,7 +38,7 @@ import java.util.concurrent.TimeUnit;
  *     </li>
  *     <li>Terminate the scrapper while closing all current running tasks.</li>
  * </ul>
- *
+ * @param <P> the parent type whose instances will help initiating each scrap.
  * @author Louis-wht
  * @since 1.0.0
  */

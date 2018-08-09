@@ -1,7 +1,5 @@
 package fr.whimtrip.ext.jwhtscrapper.intfr;
 
-import fr.whimtrip.ext.jwhtscrapper.service.base.AutomaticScrapperClient;
-
 /**
  * <p>Part of project jwht-scrapper</p>
  * <p>Created on 27/07/18</p>

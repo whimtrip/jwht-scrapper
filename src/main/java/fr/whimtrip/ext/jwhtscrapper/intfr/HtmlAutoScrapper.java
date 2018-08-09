@@ -8,7 +8,6 @@ import fr.whimtrip.ext.jwhtscrapper.exception.LinkException;
 import fr.whimtrip.ext.jwhtscrapper.exception.ModelBindingException;
 import fr.whimtrip.ext.jwhtscrapper.exception.ScrapperUnsupportedException;
 import fr.whimtrip.ext.jwhtscrapper.exception.WarningSignException;
-import fr.whimtrip.ext.jwhtscrapper.service.base.AutomaticScrapperClient;
 import fr.whimtrip.ext.jwhtscrapper.service.base.HttpManagerClient;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.HttpManagerConfig;
 import fr.whimtrip.ext.jwhtscrapper.service.scoped.ScrapperHtmlAdapter;
@@ -172,6 +171,7 @@ public interface HtmlAutoScrapper<T> {
      *     current configurations.
      * </p>
      * @param url the url to scrap at.
+     * @param fields The post fields to add to the request body.
      * @return the built and prepared {@link BoundRequestBuilder}. It is advised to use
      *         {@link HttpManagerClient#preparePost(String)} under the hood.
      */

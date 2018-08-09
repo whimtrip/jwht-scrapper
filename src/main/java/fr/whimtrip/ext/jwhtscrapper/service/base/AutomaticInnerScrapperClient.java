@@ -3,6 +3,7 @@ package fr.whimtrip.ext.jwhtscrapper.service.base;
 import fr.whimtrip.ext.jwhtscrapper.exception.ScrapperAlreadyFinishedException;
 import fr.whimtrip.ext.jwhtscrapper.exception.ScrapperAlreadyStartedException;
 import fr.whimtrip.ext.jwhtscrapper.exception.ScrapperUnsupportedException;
+import fr.whimtrip.ext.jwhtscrapper.intfr.AutomaticScrapperClient;
 import fr.whimtrip.ext.jwhtscrapper.intfr.HttpMetrics;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrapperHelper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrappingStats;

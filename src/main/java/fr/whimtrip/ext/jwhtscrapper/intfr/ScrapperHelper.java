@@ -12,7 +12,6 @@ import fr.whimtrip.core.util.exception.ObjectCreationException;
 import fr.whimtrip.ext.jwhtscrapper.annotation.Scrapper;
 import fr.whimtrip.ext.jwhtscrapper.exception.ModelBindingException;
 import fr.whimtrip.ext.jwhtscrapper.exception.UrlCreationException;
-import fr.whimtrip.ext.jwhtscrapper.service.base.AutomaticScrapperClient;
 import fr.whimtrip.ext.jwhtscrapper.service.base.BoundRequestBuilderProcessor;
 import fr.whimtrip.ext.jwhtscrapper.service.base.ScrapperThreadCallable;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.RequestsScrappingContext;

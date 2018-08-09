@@ -1,5 +1,6 @@
 package fr.whimtrip.ext.jwhtscrapper.service.base;
 
+import fr.whimtrip.ext.jwhtscrapper.intfr.AutomaticScrapperClient;
 import fr.whimtrip.ext.jwhtscrapper.intfr.HtmlAutoScrapper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrapperHelper;
 

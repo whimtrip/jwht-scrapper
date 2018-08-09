@@ -1,6 +1,6 @@
 package fr.whimtrip.ext.jwhtscrapper.exception;
 
-import fr.whimtrip.ext.jwhtscrapper.service.base.AutomaticScrapperClient;
+import fr.whimtrip.ext.jwhtscrapper.intfr.AutomaticScrapperClient;
 
 /**
  * <p>Part of project jwht-scrapper</p>

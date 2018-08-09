@@ -16,7 +16,7 @@ import java.io.IOException;
  * </p>
  *
  *
- * @see JacksonBasicObjectMapper Default Jackson JSON -> POJO implementation of
+ * @see JacksonBasicObjectMapper Default Jackson JSON to POJO implementation of
  *                               this interface.
  * @author Louis-wht
  * @since 1.0.0
@@ -41,6 +41,7 @@ public interface BasicObjectMapper {
      * </p>
      * @param rawBody the raw HTTP stringified body to use to map it to a POJO instance.
      * @param mappedClazz the class to map the HTTP body to.
+     * @param obj the object to populate.
      * @param <U> the type of the class to map the HTTP body to.
      * @return the mapped POJO instance. must be the same as the instance given as a
      *         parameter.

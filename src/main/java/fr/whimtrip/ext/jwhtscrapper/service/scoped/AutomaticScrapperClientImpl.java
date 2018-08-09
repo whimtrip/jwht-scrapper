@@ -5,7 +5,7 @@ import fr.whimtrip.ext.jwhtscrapper.exception.*;
 import fr.whimtrip.ext.jwhtscrapper.intfr.HttpMetrics;
 import fr.whimtrip.ext.jwhtscrapper.intfr.ScrappingStats;
 import fr.whimtrip.ext.jwhtscrapper.service.base.AutomaticInnerScrapperClient;
-import fr.whimtrip.ext.jwhtscrapper.service.base.AutomaticScrapperClient;
+import fr.whimtrip.ext.jwhtscrapper.intfr.AutomaticScrapperClient;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;

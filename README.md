@@ -791,7 +791,7 @@ public class MyLinkParentPOJO2 {
 ### General Knowledge
 
 One common thing happening when scrapping is hitting false positive or security
-barrier such as captchas. The idea behing Warning Sign is that we had to provide
+barrier such as captchas. The idea behind Warning Sign is that we had to provide
 a standard API to spot those signs and to choose the correct decision to handle
 it properly.
 
