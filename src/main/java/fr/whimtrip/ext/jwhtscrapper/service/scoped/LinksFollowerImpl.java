@@ -188,11 +188,14 @@ public final class LinksFollowerImpl implements LinksFollower {
         List<HtmlToPojoAnnotationMap<LinkListsFromBuilder>> linkListsFromBuilders = adapter.getFieldList(LinkListsFromBuilder.class);
 
 
-        resolveChildPojosLinks(model, hasLinks);
+        if(hasLinks != null)
+            resolveChildPojosLinks(model, hasLinks);
 
-        resolveListLinks(model, linkListsFromBuilders);
+        if(linkListsFromBuilders != null)
+            resolveListLinks(model, linkListsFromBuilders);
 
-        followLinks(links, model, adapter);
+        if(links != null)
+            followLinks(links, model, adapter);
     }
 
 
@@ -310,15 +313,17 @@ public final class LinksFollowerImpl implements LinksFollower {
     ) throws LinkException {
 
         for (HtmlToPojoAnnotationMap<Link> link : links) {
-            Field objField = ((ScrapperHtmlAdapter<P>) adapter).getLinkObject(link);
+            HtmlToPojoAnnotationMap objFieldMap = ((ScrapperHtmlAdapter<P>) adapter).getLinkObject(link);
 
-            if (objField == null) throw new LinkException(link.getField());
+            if (objFieldMap == null) throw new LinkException(link.getField());
 
-            String url = getLinkUrl(link);
+            Field objField = objFieldMap.getField();
+
+            String url = getLinkUrl(link, model);
 
             if(checkRegexCondition(link, url))
             {
-                boolean isListField = objField.getAnnotation(LinkObject.class) == null;
+                boolean isListField = objFieldMap.getAnnotation() instanceof LinkObjects;
 
                 HtmlAdapter<U> newFieldAdapter =
                         (HtmlAdapter<U>)
@@ -356,7 +361,10 @@ public final class LinksFollowerImpl implements LinksFollower {
                 LinkScrappingContext<P, U> lsc = buildContext(container, newFieldAdapter, requestEditor, editRequest);
 
                 if(!isListField)
+                {
+                    if(lsc != null)
                         scrappingContexts.add(lsc);
+                }
                 else
                 {
                     LinkListScrappingContext<P, U> llsc =
@@ -403,6 +411,8 @@ public final class LinksFollowerImpl implements LinksFollower {
      * </p>
      * @param link the {@link Link} annotated {@link HtmlToPojoAnnotationMap} field
      *             to analyse.
+     * @param model the model to extract stringified link from.
+     * @param <U> the type of the model to extract stringified link from.
      * @return the url retrieved from the corresponding {@link Link} annotated field.
      * @throws LinkException if any of the {@link Link} annotated fields contains a
      *                       null value {@link NullLinkException}, isn't a String
@@ -410,7 +420,7 @@ public final class LinksFollowerImpl implements LinksFollower {
      *                       be retrieved using reflection.
      */
     @Nullable
-    private String getLinkUrl(@NotNull final HtmlToPojoAnnotationMap<Link> link) throws LinkException {
+    private <U> String getLinkUrl(@NotNull final HtmlToPojoAnnotationMap<Link> link, @NotNull final U model) throws LinkException {
 
         String linkVal = null;
 

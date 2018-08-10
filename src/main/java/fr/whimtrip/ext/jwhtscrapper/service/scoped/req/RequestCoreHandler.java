@@ -1,6 +1,6 @@
 package fr.whimtrip.ext.jwhtscrapper.service.scoped.req;
 
-import fr.whimtrip.ext.jwhtscrapper.enm.Status;
+import fr.whimtrip.ext.jwhtscrapper.enm.ProxyStatus;
 import fr.whimtrip.ext.jwhtscrapper.exception.RequestFailedException;
 import fr.whimtrip.ext.jwhtscrapper.exception.RequestMaxRetriesReachedException;
 import fr.whimtrip.ext.jwhtscrapper.exception.RequestTimeoutException;
@@ -15,9 +15,12 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.ConnectException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import static fr.whimtrip.ext.jwhtscrapper.enm.Status.*;
+import static fr.whimtrip.ext.jwhtscrapper.enm.ProxyStatus.*;
+import static fr.whimtrip.ext.jwhtscrapper.enm.StatusRange.CONNECT_EXCEPTION_STATUS_CODE;
 import static fr.whimtrip.ext.jwhtscrapper.enm.StatusRange.TIMEOUT_STATUS_CODE;
 import static fr.whimtrip.ext.jwhtscrapper.enm.StatusRange.UNKNOWN_EXCEPTION_STATUS_CODE;
 
@@ -170,22 +173,41 @@ public final class RequestCoreHandler {
             actE = e;
             handleRequestException();
         }
+        catch (ExecutionException e)
+        {
+            actE = e.getCause();
+
+            if(actE instanceof ConnectException)
+                handleConnectException();
+            else
+            {
+                handleUnknownException(e);
+            }
+
+        }
         catch(Exception e)
         {
             actE = e;
-            firstTry = false;
-            handleUnknownException();
+            handleUnknownException(e);
+
         }
 
-        if(httpManagerConfig.useProxy() && requestIssued) unfreezeProxy();
-        if(!requestIssued) return retryRequest(actE);
+        if(httpManagerConfig.useProxy() && requestIssued)
+        {
+            unfreezeProxy();
+        }
+        if(!requestIssued)
+        {
+            return retryRequest(actE);
+        }
 
         return response;
     }
 
+
     /**
      * <p>
-     *     Will unfreeze a proxy which was marked as {@link Status#FROZEN}
+     *     Will unfreeze a proxy which was marked as {@link ProxyStatus#FROZEN}
      *     when the requests issued with this proxy was successful.
      * </p>
      */
@@ -228,19 +250,28 @@ public final class RequestCoreHandler {
      */
     private void handleTimeoutException() {
         requestSynchronizer.logHttpStatus(TIMEOUT_STATUS_CODE, firstTry);
-        firstTry = false;
         handleRequestException();
     }
 
 
+    /**
+     * This method will handle Connect exceptions in order to properly
+     * log them. Under the hood, it will later call {@link #handleRequestException()}.
+     */
+    private void handleConnectException() {
+        requestSynchronizer.logHttpStatus(CONNECT_EXCEPTION_STATUS_CODE, firstTry);
+        handleRequestException();
+    }
 
     /**
      * This method will handle request exceptions {@link RequestTimeoutException}
      * and {@link RequestFailedException}.
      */
     private void handleRequestException() {
+
+        firstTry = false;
         if(httpManagerConfig.useProxy() && actualProxy != null) {
-            Status newStatus = actualProxy.getStatus() == WORKING ? FROZEN : BANNED;
+            ProxyStatus newStatus = actualProxy.getStatus() == WORKING ? FROZEN : BANNED;
 
             RequestUtils.setProxyStatus(actualProxy, newStatus, httpManagerConfig.getProxyFinder());
             if(log.isInfoEnabled())
@@ -251,12 +282,12 @@ public final class RequestCoreHandler {
     /**
      * This method will handle all other exceptions that might have occured in the
      * request execution scope. IO Exceptions for example might be handled here.
+     * @param e the throwable causing this unknwon exception.
      */
-    private void handleUnknownException() {
-
+    private void handleUnknownException(Exception e) {
+        httpManagerConfig.getExceptionLogger().logException(e);
         requestSynchronizer.incrementLastProxyChange();
         requestSynchronizer.logHttpStatus(UNKNOWN_EXCEPTION_STATUS_CODE, firstTry);
-        firstTry = false;
         handleRequestException();
     }
 

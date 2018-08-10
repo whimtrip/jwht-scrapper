@@ -1,6 +1,6 @@
 package fr.whimtrip.ext.jwhtscrapper.impl;
 
-import fr.whimtrip.ext.jwhtscrapper.enm.Status;
+import fr.whimtrip.ext.jwhtscrapper.enm.ProxyStatus;
 import fr.whimtrip.ext.jwhtscrapper.intfr.Proxy;
 
 
@@ -18,7 +18,7 @@ import fr.whimtrip.ext.jwhtscrapper.intfr.Proxy;
  */
 public class BasicProxy implements Proxy {
 
-    private Status status = Status.WORKING;
+    private ProxyStatus status = ProxyStatus.WORKING;
 
     private String ipAdress;
 
@@ -40,7 +40,7 @@ public class BasicProxy implements Proxy {
      * {@inheritDoc}
      */
     @Override
-    public Status getStatus() {
+    public ProxyStatus getStatus() {
 
         return status;
     }
@@ -49,7 +49,7 @@ public class BasicProxy implements Proxy {
      * {@inheritDoc}
      */
     @Override
-    public void setStatus(Status status) {
+    public void setStatus(ProxyStatus status) {
         this.status = status;
     }
 

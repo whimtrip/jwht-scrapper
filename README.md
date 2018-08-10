@@ -62,7 +62,7 @@ for them to be part of this framework.
 <dependency>
     <groupId>fr.whimtrip</groupId>
     <artifactId>whimtrip-ext-scrapper</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 </dependency>
 
 ```
@@ -86,14 +86,14 @@ a compulsory`@Scrapper` annotation to define your [configurations](#configuratio
 
 @Scrapper(
         // Perform GET request
-        method = Link.Method.GET,
+        method = Method.GET,
         // Map the resulting pages on this class
         scrapModel = Restaurant.class,
         // Scrap no more than 100 pages
         scrapLimit = 100,
         requestsConfig =
             @RequestsConfig(
-                    // de
+                    // default cookies to use on each request
                     defaultCookies = {
                             @Cookie(
                                     name = "SetCurrency",
@@ -101,6 +101,7 @@ a compulsory`@Scrapper` annotation to define your [configurations](#configuratio
                                     domain = ".cool-restaurants.com"
                             )
                     },
+                    // default headers to use on each request
                     defaultHeaders = {
                             @Header(
                                     name = "Host",
@@ -1103,6 +1104,25 @@ for example to your `logback.xml` :
 
 ```xml
 <logger name="fr.whimtrip.ext.jwhtscrapper" level="DEBUG"/>
+```
+
+Also please note that if you have a different appender than sl4j-simple (in which
+case you'll receive an exception saying that you have two logger on your class path
+from sl4j), you should import this library with the following maven config instead :
+
+```xml
+
+<dependency>
+    <groupId>fr.whimtrip</groupId>
+    <artifactId>whimtrip-core-utils</artifactId>
+    <version>1.0.12</version>
+    <exclusions>
+        <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>*</artifactId>
+        </exclusion>
+    </exclusions>
+</dependency>
 ```
 
 ## Other Features

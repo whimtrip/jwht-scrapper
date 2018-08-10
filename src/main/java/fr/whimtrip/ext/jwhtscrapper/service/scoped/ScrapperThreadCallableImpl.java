@@ -8,6 +8,7 @@
 
 package fr.whimtrip.ext.jwhtscrapper.service.scoped;
 
+import fr.whimtrip.core.util.intrf.ExceptionLogger;
 import fr.whimtrip.ext.jwhtscrapper.enm.Method;
 import fr.whimtrip.ext.jwhtscrapper.exception.ScrapperException;
 import fr.whimtrip.ext.jwhtscrapper.exception.WarningSignException;
@@ -56,6 +57,7 @@ public final class ScrapperThreadCallableImpl<P, M> implements ScrapperThreadCal
     private final ScrapperHelper<P, M> scrapperHelper;
     private final HtmlAutoScrapper<M> htmlAutoScrapper;
     private final BoundRequestBuilderProcessor requestProcessor;
+    private final ExceptionLogger exceptionLogger;
 
 
     private boolean done = false;
@@ -66,7 +68,8 @@ public final class ScrapperThreadCallableImpl<P, M> implements ScrapperThreadCal
             final P parentObject,
             final ScrappingContext<P, M, ? extends ScrapperHelper<P, M>> context,
             final HtmlAutoScrapper<M> htmlAutoScrapper,
-            final BoundRequestBuilderProcessor requestProcessor
+            final BoundRequestBuilderProcessor requestProcessor,
+            final ExceptionLogger exceptionLogger
     )
     {
         this.parentObject = parentObject;
@@ -75,6 +78,7 @@ public final class ScrapperThreadCallableImpl<P, M> implements ScrapperThreadCal
         scrapperHelper = context.getHelper();
         requestsScrappingContext = context.getRequestsScrappingContext();
         this.requestProcessor = requestProcessor;
+        this.exceptionLogger = exceptionLogger;
     }
 
     /**
@@ -138,6 +142,7 @@ public final class ScrapperThreadCallableImpl<P, M> implements ScrapperThreadCal
 
         catch(Exception e)
         {
+            exceptionLogger.logException(e);
             scrapperHelper.handleException(e, parentObject, model);
             scrapped = false;
             throw e;

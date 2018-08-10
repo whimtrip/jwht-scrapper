@@ -67,6 +67,11 @@ public enum StatusRange {
     TIMED_OUT(-2),
 
     /**
+     * When connexion (usually to the proxy) was refused.
+     */
+    CONNECTION_EXCEPTION(-3),
+
+    /**
      * Any other non standard other HTTP status code.
      */
     OTHER(-1);
@@ -83,6 +88,8 @@ public enum StatusRange {
      * The status code to use to log a timeout exception to a {@link RequestSynchronizer}
      */
     public static final int TIMEOUT_STATUS_CODE = -200;
+
+    public static final int CONNECT_EXCEPTION_STATUS_CODE = -300;
 
 
     /**

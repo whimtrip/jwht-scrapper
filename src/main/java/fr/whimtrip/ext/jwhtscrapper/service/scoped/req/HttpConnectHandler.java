@@ -1,6 +1,6 @@
 package fr.whimtrip.ext.jwhtscrapper.service.scoped.req;
 
-import fr.whimtrip.ext.jwhtscrapper.enm.Status;
+import fr.whimtrip.ext.jwhtscrapper.enm.ProxyStatus;
 import fr.whimtrip.ext.jwhtscrapper.exception.RequestTimeoutException;
 import fr.whimtrip.ext.jwhtscrapper.intfr.Proxy;
 import fr.whimtrip.ext.jwhtscrapper.service.base.RequestSynchronizer;
@@ -121,7 +121,7 @@ public final class HttpConnectHandler {
         {
             actE = e;
             if(proxy != null)
-                RequestUtils.setProxyStatus(proxy, Status.BANNED, httpManagerConfig.getProxyFinder());
+                RequestUtils.setProxyStatus(proxy, ProxyStatus.BANNED, httpManagerConfig.getProxyFinder());
         }
         catch(InterruptedException | ExecutionException e)
         {
@@ -130,14 +130,14 @@ public final class HttpConnectHandler {
             if(cause instanceof ConnectException)
             {
                 if(proxy != null)
-                    RequestUtils.setProxyStatus(proxy, Status.BANNED, httpManagerConfig.getProxyFinder());
+                    RequestUtils.setProxyStatus(proxy, ProxyStatus.BANNED, httpManagerConfig.getProxyFinder());
             }
         }
         catch(TimeoutException e )
         {
             actE = e;
             if(proxy != null)
-                RequestUtils.setProxyStatus(proxy, Status.FROZEN, httpManagerConfig.getProxyFinder());
+                RequestUtils.setProxyStatus(proxy, ProxyStatus.FROZEN, httpManagerConfig.getProxyFinder());
         }
 
         if(!connected)

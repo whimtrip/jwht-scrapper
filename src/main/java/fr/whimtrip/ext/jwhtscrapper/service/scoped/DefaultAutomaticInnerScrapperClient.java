@@ -380,9 +380,9 @@ public final class DefaultAutomaticInnerScrapperClient<P, M> implements Automati
                 new StringBuilder()
                         .append("There are ")
                         .append(finishedTasks)
-                        .append("finished tasks out of ")
+                        .append(" finished tasks out of ")
                         .append(totalScrapCount)
-                        .append(" tasks to run.")
+                        .append(" tasks to run. ")
                         .append(percentageOfTasksFinished)
                         .append("% of the scrap was done.")
                         .toString()
@@ -498,7 +498,7 @@ public final class DefaultAutomaticInnerScrapperClient<P, M> implements Automati
                 break;
 
             FutureTask<Object> ft = new ScrapperFutureTask<>(
-                    new ScrapperThreadCallableImpl(p, context, htmlAutoScrapper, requestProcessor)
+                    new ScrapperThreadCallableImpl(p, context, htmlAutoScrapper, requestProcessor, exceptionLogger)
             );
             fts.add(ft);
             runningTasks.add(ft);

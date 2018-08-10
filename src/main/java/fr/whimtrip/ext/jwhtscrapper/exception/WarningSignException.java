@@ -35,8 +35,7 @@ public class WarningSignException extends RequestFailedException {
 
 
     public WarningSignException(Field field) {
-        super("Warning sign triggered while doing setting the value to the field "
-                + field.getDeclaringClass().getName() + "." + field.getName());
+        super("Warning sign triggered while setting the value to the field " + field);
 
         WarningSign ws = field.getAnnotation(WarningSign.class);
         action = ws.action();

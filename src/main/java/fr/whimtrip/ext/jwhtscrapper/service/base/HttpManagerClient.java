@@ -134,4 +134,16 @@ public interface HttpManagerClient {
      */
     @NotNull
     HttpMetrics getHttpMetrics() throws ScrapperUnsupportedException;
+
+    /**
+     * <p>
+     *     Default implementation uses a map of request mapped to
+     *     their respective context. This context needs to be wiped
+     *     out when the request is finished (understand that all
+     *     retries operations, warning sign catches... must have
+     *     been handled) properly foremost.
+     * </p>
+     * @param req the request to remove the context for.
+     */
+    void removeContext(@NotNull final BoundRequestBuilder req);
 }

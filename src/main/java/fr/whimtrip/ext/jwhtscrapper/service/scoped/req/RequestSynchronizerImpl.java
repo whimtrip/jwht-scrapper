@@ -1,5 +1,8 @@
 package fr.whimtrip.ext.jwhtscrapper.service.scoped.req;
 
+import fr.whimtrip.ext.jwhtscrapper.annotation.WarningSign;
+import fr.whimtrip.ext.jwhtscrapper.enm.PausingBehavior;
+import fr.whimtrip.ext.jwhtscrapper.intfr.HtmlAutoScrapper;
 import fr.whimtrip.ext.jwhtscrapper.intfr.HttpMetrics;
 import fr.whimtrip.ext.jwhtscrapper.service.base.RequestSynchronizer;
 import fr.whimtrip.ext.jwhtscrapper.service.holder.DefaultHttpMetrics;
@@ -39,6 +42,11 @@ public final class RequestSynchronizerImpl implements RequestSynchronizer {
     /**
      * <p>Default constructor of this class. Features the httpManag</p>
      * @param httpManagerConfig the httpManagerConfig that will rule over this synchronizer.
+     * @param scrapStopped an atomic boolean, normally shared with {@link HtmlAutoScrapper}
+     *                     corresponding instance that will change its state when {@link WarningSign}
+     *                     warning signs with {@link PausingBehavior#PAUSE_CURRENT_THREAD_ONLY}
+     *                     pausing behavior is detected. This will be used to effectively stop
+     *                     all further HTTP requests while the current threads are still paused.
      */
     public RequestSynchronizerImpl(@NotNull final HttpManagerConfig httpManagerConfig, @NotNull final AtomicBoolean scrapStopped) {
         this.lastRequest = System.currentTimeMillis() - httpManagerConfig.getAwaitBetweenRequests();

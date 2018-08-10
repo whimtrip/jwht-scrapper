@@ -247,7 +247,8 @@ public final class DefaultHttpManagerClientBuilder {
     public HttpManagerClient build() {
         HttpManagerConfig httpManagerConfig = new HttpManagerConfig(
                 exceptionLogger,
-                proxyFinder, boundRequestBuilderProcessor,
+                proxyFinder,
+                boundRequestBuilderProcessor,
                 awaitBetweenRequests,
                 proxyChangeRate,
                 timeout,

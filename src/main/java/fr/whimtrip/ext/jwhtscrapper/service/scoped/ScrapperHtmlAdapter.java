@@ -114,22 +114,28 @@ public class ScrapperHtmlAdapter<T> extends DefaultHtmlAdapterImpl<T> {
      * @return the field we will set the resulting POJO to out of the
      *         {@link Link} url scrapped.
      */
-    public java.lang.reflect.Field getLinkObject(HtmlToPojoAnnotationMap<Link> link)
+    public HtmlToPojoAnnotationMap getLinkObject(HtmlToPojoAnnotationMap<Link> link)
     {
 
         List<? extends HtmlToPojoAnnotationMap<LinkObject>> linkObjectFields = getFieldList(LinkObject.class);
-        for(HtmlToPojoAnnotationMap<LinkObject> linkObject : linkObjectFields)
+        if(linkObjectFields != null)
         {
-            if(linkObject.getAnnotation().value().equals(link.getName()))
-                return linkObject.getField();
+            for (HtmlToPojoAnnotationMap<LinkObject> linkObject : linkObjectFields)
+            {
+                if(linkObject.getAnnotation().value().equals(link.getName()))
+                    return linkObject;
+            }
         }
 
         List<? extends HtmlToPojoAnnotationMap<LinkObjects>> linkObjectsFields = getFieldList(LinkObjects.class);
-        for(HtmlToPojoAnnotationMap<LinkObjects> linkObjects : linkObjectsFields)
+        if(linkObjectsFields != null)
         {
-            if(   Arrays.asList(linkObjects.getAnnotation().value()).contains(link.getName())
-               && Collection.class.isAssignableFrom(linkObjects.getField().getType())   )
-                return linkObjects.getField();
+            for(HtmlToPojoAnnotationMap<LinkObjects> linkObjects : linkObjectsFields)
+            {
+                if(   Arrays.asList(linkObjects.getAnnotation().value()).contains(link.getName())
+                   && Collection.class.isAssignableFrom(linkObjects.getField().getType())   )
+                    return linkObjects;
+            }
         }
 
         return null;

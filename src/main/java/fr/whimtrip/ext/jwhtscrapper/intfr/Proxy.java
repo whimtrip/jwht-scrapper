@@ -1,6 +1,6 @@
 package fr.whimtrip.ext.jwhtscrapper.intfr;
 
-import fr.whimtrip.ext.jwhtscrapper.enm.Status;
+import fr.whimtrip.ext.jwhtscrapper.enm.ProxyStatus;
 import fr.whimtrip.ext.jwhtscrapper.impl.BasicProxy;
 import org.asynchttpclient.proxy.ProxyServer;
 
@@ -42,9 +42,9 @@ public interface Proxy {
     /**
      *
      * @return the status of the current proxy.
-     * @see Status
+     * @see ProxyStatus
      */
-    Status getStatus();
+    ProxyStatus getStatus();
 
     /**
      * @return the ipv4 ip adress of the proxy server
@@ -72,6 +72,6 @@ public interface Proxy {
      * Set a new status to this proxy.
      * @param status the status you want to assign the proxy.
      */
-    void setStatus(Status status);
+    void setStatus(ProxyStatus status);
 
 }

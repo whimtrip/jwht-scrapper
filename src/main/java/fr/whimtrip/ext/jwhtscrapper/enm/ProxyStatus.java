@@ -15,7 +15,7 @@ package fr.whimtrip.ext.jwhtscrapper.enm;
  * @author Louis-wht
  * @since 1.0.0
  */
-public enum Status {
+public enum ProxyStatus {
 
     /** Working Proxy */
     WORKING,

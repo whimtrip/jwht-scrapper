@@ -22,10 +22,10 @@ public class NoProxyFinderProvidedException extends ScrapperException {
         super(
                 String.format(
                     "No %s instance was submitted through %s method " +
-                    "\"setProxyFinder\" while %s \"useProxy\" is enabled.",
+                    "\"setProxyFinder\" while @%s \"useProxy\" is enabled.",
                     ProxyFinder.class,
                     AutomaticScrapperManagerBuilder.class,
-                    ProxyConfig.class
+                    ProxyConfig.class.getName()
                 )
         );
     }

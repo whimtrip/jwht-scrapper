@@ -53,8 +53,9 @@ public class LinkException extends ScrapperException {
     public LinkException(Field field) {
         super(
                 String.format(
-                        "Field %s has a %s but isn't mapped to any object through %s or %s",
-                        field, Link.class, LinkObject.class, LinkObjects.class
+                        "Field %s has a @%s annotation but isn't mapped to any object through @%s " +
+                        "or @%s annotations",
+                        field, Link.class, LinkObject.class.getName(), LinkObjects.class.getName()
                 )
         );
 

@@ -329,56 +329,98 @@ public final class HtmlAutoScrapperImpl<T> implements HtmlAutoScrapper<T> {
         }
         catch(WarningSignException e)
         {
-            log.warn("A warning sign was triggered! {}", e.getMessage());
-            boundRequestBuilderProcessor.printReq(req);
-
-            if(
-                    e.getPausingBehavior() == PAUSE_ALL_THREADS
-                 || e.getPausingBehavior() == PAUSE_CURRENT_THREAD_ONLY)
-            {
-
-                if (e.getPausingBehavior() == PAUSE_ALL_THREADS) {
-                    scrapStopped.set(false);
-                    lastThrownWarningSignException = e;
-                }
-
-                WhimtripUtils.waitFor((long) warningSignDelay, log, 20);
-
-                // this is to ensure that the same pausing threads is the one that is
-                // commanding the scrapping to stop.
-                if(e.getPausingBehavior() == PAUSE_ALL_THREADS &&  e == lastThrownWarningSignException)
-                    scrapStopped.set(true);
-            }
-
-
-            if(e.getAction() == Action.THROW_EXCEPTION)
-            {
-                log.warn("Current scrap handled a fatal error which shouldn't lead to further scrapping for that object");
-                throw e;
-            }
-
-            if(e.getAction() == Action.STOP_ACTUAL_SCRAP)
-            {
-                log.warn("Current object shouldn't be further scrapped");
-                // this will propagate up to the parent scrap call which will return
-                // untouched object
-                throw new WarningSignActualScrapStoppedException(e);
-            }
-
-            if(e.getAction() == Action.RETRY)
-            {
-                return scrap(req, obj, adapter, followRedirections, parentCall);
-            }
-
-            // Action.NONE -> Won't do nothing, scrap will continue but not on the current
-            // POJO branching.
-            return obj;
+            return handleWarningSign(req, obj, adapter, followRedirections, parentCall, e);
 
         }
         catch (IOException | HtmlToPojoException e)
         {
             throw new ModelBindingException(e);
         }
+        finally
+        {
+            // removing the http manager client request context to avoid memory
+            // overloading
+            httpManagerClient.removeContext(req);
+        }
+    }
+
+
+    /**
+     * <p>
+     *     This provide the core private method that will handle a warning sign and
+     *     the actions to be taken when triggered.
+     * </p>
+     * @param req the prepared {@link BoundRequestBuilder}
+     * @param obj the object to map the resulting scrap to.
+     * @param adapter the {@link HtmlAdapter} to use to map the resulting
+     *                HTML body to a POJO. if the {@link BasicObjectMapper}
+     *                is used instead, the adapter will still be used to perform
+     *                field injection, links following and warning sign triggering.
+     * @param followRedirections wether HTTP redirections should be followed or not.
+     * @param e the warning exception triggered.
+     * @param <U> the type of the POJO to map it to. This inner method can be called
+     *            recursively for links scrapping with other POJOs type. this explain
+     *           why {@code T} is not used here.
+     * @return the scrapped and ready to use POJO instance.
+     * @throws ModelBindingException see {@link HtmlAutoScrapper#scrap(BoundRequestBuilder, Object)}.
+     * @throws LinkException see {@link HtmlAutoScrapper#scrap(BoundRequestBuilder, Object)}.
+     * @throws WarningSignException see {@link HtmlAutoScrapper#scrap(BoundRequestBuilder, Object)}.
+     */
+    private <U> U handleWarningSign(
+            @NotNull  BoundRequestBuilder req,
+            @Nullable U obj,
+            @NotNull  HtmlAdapter<U> adapter,
+                      boolean followRedirections,
+                      boolean parentCall,
+                      WarningSignException e
+
+    ) throws ModelBindingException, LinkException, WarningSignException
+    {
+
+        log.warn("A warning sign was triggered! {}", e.getMessage());
+        boundRequestBuilderProcessor.printReq(req);
+
+        if(
+                e.getPausingBehavior() == PAUSE_ALL_THREADS
+             || e.getPausingBehavior() == PAUSE_CURRENT_THREAD_ONLY)
+        {
+
+            if (e.getPausingBehavior() == PAUSE_ALL_THREADS) {
+                scrapStopped.set(false);
+                lastThrownWarningSignException = e;
+            }
+
+            WhimtripUtils.waitFor((long) warningSignDelay, log, 20);
+
+            // this is to ensure that the same pausing threads is the one that is
+            // commanding the scrapping to stop.
+            if(e.getPausingBehavior() == PAUSE_ALL_THREADS &&  e == lastThrownWarningSignException)
+                scrapStopped.set(true);
+        }
+
+
+        if(e.getAction() == Action.THROW_EXCEPTION)
+        {
+            log.warn("Current scrap handled a fatal error which shouldn't lead to further scrapping for that object");
+            throw e;
+        }
+
+        if(e.getAction() == Action.STOP_ACTUAL_SCRAP)
+        {
+            log.warn("Current object shouldn't be further scrapped");
+            // this will propagate up to the parent scrap call which will return
+            // untouched object
+            throw new WarningSignActualScrapStoppedException(e);
+        }
+
+        if(e.getAction() == Action.RETRY)
+        {
+            return scrap(req, obj, adapter, followRedirections, parentCall);
+        }
+
+        // Action.NONE -> Won't do nothing, scrap will continue but not on the current
+        // POJO branching.
+        return obj;
     }
 
 

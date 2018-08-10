@@ -56,6 +56,11 @@ public interface RequestSynchronizer {
      *                       {@link StatusRange#UNKNOWN_EXCEPTION_STATUS_CODE}
      *                       HTTP status code.
      *                   </strong>
+     *                   <strong>
+     *                       Connect exceptions should be logged with a
+     *                       {@link StatusRange#CONNECT_EXCEPTION_STATUS_CODE}
+     *                       HTTP status code.
+     *                   </strong>
      * @param newScrap wether it's a first time try of this current request or
      *                 if it's a retry. It will be used for statistical purposes.
      */

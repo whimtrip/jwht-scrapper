@@ -53,6 +53,7 @@ import java.util.Map;
  */
 public final class HttpWithProxyManagerClient implements HttpManagerClient{
 
+
     private static final String USER_AGENT_HEADER_NAME = "User-Agent";
 
     private final HttpManagerConfig httpManagerConfig;
@@ -136,13 +137,9 @@ public final class HttpWithProxyManagerClient implements HttpManagerClient{
                     .setFollowRedirections(followRedirections)
                     .getResponse();
 
-        synchronized (contextHolder) {
-            contextHolder.remove(req);
-        }
 
         return response;
     }
-
 
     /**
      * {@inheritDoc}
@@ -167,6 +164,14 @@ public final class HttpWithProxyManagerClient implements HttpManagerClient{
         return requestSynchronizer.getLastProxyChange();
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public void removeContext(@NotNull final BoundRequestBuilder req) {
+        synchronized (contextHolder) {
+            contextHolder.remove(req);
+        }
+    }
 
     /**
      * <p>Inner method for request preparation shared between POST requests and GET requests</p>
