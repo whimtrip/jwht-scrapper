@@ -180,14 +180,14 @@ public class CoolRestaurantsScrapperHelper implements ScrapperHelper<Uncompleted
     }
 
     @Override
-    public Object returnResult(@NotNull Accommodation parent, @NotNull TaSearchListing model) {
+    public Object returnResult(@NotNull UncompletedRestaurant parent, @NotNull Restaurant model) {
         // Returns something or a null value out of the scrap. This will then be retrieved
         // in the output return List when gathering the scrapping results.
         return parent;
     }
 
     @Override
-    public boolean wasScrapped(@NotNull Accommodation parent, @NotNull TaSearchListing model) {
+    public boolean wasScrapped(@NotNull UncompletedRestaurant parent, @NotNull Restaurant model) {
         // This will only be used for metrics purposes so that this can be accounted as a
         // valid scrap or a fail. You can return true every time if you do not want to use 
         // this feature
